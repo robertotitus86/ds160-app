@@ -3,7 +3,7 @@ export const metadata = {
   description: "Asistente simple para DS-160",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="es">
       <body style={{ fontFamily: 'system-ui, Arial, sans-serif', margin: 0 }}>
@@ -18,3 +18,4 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+

@@ -1,1 +1,1 @@
-export { default } from "../../cancel/page"
+export { default } from "../../cancel/page";

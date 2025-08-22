@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { SERVICES, normalizeSelection, totalFromSelection } from "@/lib/services";
+import { SERVICES, normalizeSelection } from "@/lib/services";
 
 export async function POST(req) {
   const body = await req.json().catch(() => ({}));
@@ -11,7 +11,6 @@ export async function POST(req) {
   }
   const stripe = new Stripe(stripeKey);
 
-  // Construir line_items con precios dinámicos por servicio
   const line_items = SERVICES.filter(s => selection[s.id]).map(s => ({
     price_data: {
       currency: "usd",
@@ -26,14 +25,11 @@ export async function POST(req) {
   }
 
   const origin = req.headers.get("origin") || req.headers.get("referer") || "";
-  const success_url = `${origin}/success`;
-  const cancel_url = `${origin}/cancel`;
-
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     line_items,
-    success_url,
-    cancel_url,
+    success_url: `${origin}/success`,
+    cancel_url: `${origin}/cancel`,
   });
 
   return NextResponse.json({ url: session.url });

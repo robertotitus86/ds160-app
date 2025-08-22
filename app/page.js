@@ -1,9 +1,11 @@
+import { BRAND } from "@/lib/brand";
+
 export default function Home() {
   return (
-    <main style={{maxWidth:780, margin:'60px auto', padding:24}}>
-      <h1>Bienvenido/a</h1>
-      <p>Este proyecto contiene el Asistente DS-160 con pagos por Tarjeta (Stripe), PayPal y Transferencia.</p>
-      <p><a href="/ds160" style={{color:'#2563eb', textDecoration:'underline'}}>Ir al asistente DS-160 →</a></p>
+    <main style={{maxWidth:820, margin:'60px auto', padding:24}}>
+      <h1 style={{color: BRAND.primary}}>Bienvenido al asistente DS-160</h1>
+      <p>Comienza tu trámite con nuestro asistente guiado y paga de forma segura.</p>
+      <p><a href="/ds160" style={{color:BRAND.primary, fontWeight:600}}>Ir al formulario DS-160 →</a></p>
     </main>
-  )
+  );
 }

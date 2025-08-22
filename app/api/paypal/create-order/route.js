@@ -1,30 +1,6 @@
 import { NextResponse } from "next/server";
 import { normalizeSelection, totalFromSelection, summaryLabel } from "@/lib/services";
-
-function getBaseUrl(env) {
-  return env === "live" ? "https://api-m.paypal.com" : "https://api-m.sandbox.paypal.com";
-}
-
-async function getAccessToken(clientId, secret, env) {
-  const base = getBaseUrl(env);
-  const res = await fetch(`${base}/v1/oauth2/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: "grant_type=client_credentials",
-    // @ts-ignore
-    cache: "no-store",
-    credentials: "include",
-    // @ts-ignore
-    next: { revalidate: 0 },
-    // Basic Auth
-    headers: {
-      Authorization: "Basic " + Buffer.from(`${clientId}:${secret}`).toString("base64"),
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-  });
-  if (!res.ok) throw new Error("No token PayPal");
-  return res.json();
-}
+import { getBaseUrl, getAccessToken } from "@/lib/paypal";
 
 export async function POST(req) {
   const body = await req.json().catch(() => ({}));
@@ -40,7 +16,6 @@ export async function POST(req) {
   }
   const origin = req.headers.get("origin") || req.headers.get("referer") || "";
   const base = getBaseUrl(env);
-
   const { access_token } = await getAccessToken(clientId, secret, env);
 
   const orderRes = await fetch(`${base}/v2/checkout/orders`, {
@@ -51,15 +26,10 @@ export async function POST(req) {
     },
     body: JSON.stringify({
       intent: "CAPTURE",
-      purchase_units: [
-        {
-          description: summaryLabel(selection),
-          amount: {
-            currency_code: "USD",
-            value: total,
-          },
-        },
-      ],
+      purchase_units: [{
+        description: summaryLabel(selection),
+        amount: { currency_code: "USD", value: total },
+      }],
       application_context: {
         brand_name: "DS160 Services",
         landing_page: "LOGIN",
@@ -72,9 +42,6 @@ export async function POST(req) {
 
   const order = await orderRes.json();
   const approve = order?.links?.find((l) => l.rel === "approve")?.href;
-  if (!approve) {
-    return NextResponse.json({ error: "No approve URL" }, { status: 500 });
-  }
-
+  if (!approve) return NextResponse.json({ error: "No approve URL" }, { status: 500 });
   return NextResponse.json({ approveUrl: approve, id: order.id });
 }

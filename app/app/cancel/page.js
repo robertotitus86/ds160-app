@@ -1,9 +1,0 @@
-export default function Cancel() {
-  return (
-    <main style={{maxWidth:720, margin:'60px auto', padding:24, textAlign:'center'}}>
-      <h1>⚠️ Pago cancelado</h1>
-      <p>Pareciera que cancelaste el proceso de pago. Puedes intentarlo nuevamente cuando gustes.</p>
-      <p><a href="/ds160" style={{color:'#2563eb', textDecoration:'underline'}}>Volver al asistente</a></p>
-    </main>
-  );
-}

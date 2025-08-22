@@ -13,7 +13,7 @@ export default function DS160(){
     } else if(form.paymentMethod==='paypal'){
       const r=await fetch('/api/paypal/create-order',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({services:sel})});
       const d=await r.json(); if(d?.approveUrl) location.href=d.approveUrl; else alert('No se pudo iniciar pago');
-    } else if(form.paymentMethod==='transfer'){ alert('Registra la transferencia por correo.'); }
+    } else { alert('Registra la transferencia por correo.'); }
   }
   return (<main style={{maxWidth:880,margin:'40px auto',padding:24}}>
     <h1>Asistente DS-160</h1>

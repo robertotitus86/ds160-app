@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import PayPalButton from "./PayPalButton";
 import Link from "next/link";
 
@@ -12,43 +12,26 @@ const SERVICES = [
 
 export default function CheckoutDS160() {
   const [selected, setSelected] = useState(["fill"]);
-  const [method, setMethod] = useState("payphone"); // 'payphone' | 'paypal' | 'transfer'
-  const [loading, setLoading] = useState(false);
-
+  const [method, setMethod] = useState("payphone"); // payphone | paypal | transfer
   const subtotal = useMemo(
     () => selected.reduce((acc, id) => {
       const s = SERVICES.find(x => x.id === id);
       return acc + (s ? s.price : 0);
-    }, 0),
-    [selected]
+    }, 0), [selected]
   );
-
-  const total = useMemo(
-    () => (method === "payphone" ? +(subtotal * 1.06).toFixed(2) : subtotal),
-    [subtotal, method]
-  );
-
-  const toggle = (id) => {
-    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
-  };
+  const total = useMemo(() => method === "payphone" ? +(subtotal * 1.06).toFixed(2) : subtotal, [subtotal, method]);
+  const toggle = (id) => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
   const payWithPayPhone = async () => {
     if (subtotal <= 0) return alert("Selecciona al menos un servicio.");
-    try {
-      setLoading(true);
-      const r = await fetch("/api/payphone/link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ baseAmountUsd: subtotal }),
-      });
-      const data = await r.json();
-      if (data?.link) window.location.href = data.link;
-      else alert(data?.error || "No se pudo crear el Link PayPhone");
-    } catch (e) {
-      alert("Error al iniciar el pago PayPhone");
-    } finally {
-      setLoading(false);
-    }
+    const r = await fetch("/api/payphone/link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ baseAmountUsd: subtotal }),
+    });
+    const data = await r.json();
+    if (data?.link) window.location.href = data.link;
+    else alert(data?.error || "No se pudo crear el Link PayPhone");
   };
 
   return (
@@ -101,10 +84,12 @@ export default function CheckoutDS160() {
           <Link href="/transferencia">Ir a Transferencia</Link>
         </div>
       ) : (
-        <button onClick={payWithPayPhone} disabled={loading || subtotal<=0} style={{padding:"10px 16px", borderRadius:8, border:"none", background:"#16a34a", color:"#fff", fontWeight:700, cursor:"pointer"}}>
-          {loading ? "Procesando..." : `Pagar $${total.toFixed(2)} con PayPhone`}
+        <button onClick={payWithPayPhone} disabled={subtotal<=0}
+          style={{padding:"10px 16px", borderRadius:8, border:"none", background:"#16a34a", color:"#fff", fontWeight:700, cursor:"pointer"}}>
+          {`Pagar $${total.toFixed(2)} con PayPhone`}
         </button>
       )}
     </div>
   );
 }
+

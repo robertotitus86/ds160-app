@@ -1,3 +1,4 @@
+
 export async function POST(req) {
   try {
     const { baseAmountUsd } = await req.json();
@@ -30,7 +31,8 @@ export async function POST(req) {
         additionalData: "Recargo del 6% aplicado",
         oneTime: true,
         expireIn: 24,
-        isAmountEditable: false
+        isAmountEditable: false,
+        // Si puedes configurar el retorno en tu panel, apunta a /gracias?method=payphone
       }),
     });
 

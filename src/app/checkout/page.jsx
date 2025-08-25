@@ -1,6 +1,9 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import PayPalButton from "./PayPalButton";
+import Link from "next/link";
 
 const SERVICES = [
   { id: "fill",  name: "Llenado de formulario DS-160", price: 30 },
@@ -10,7 +13,7 @@ const SERVICES = [
 
 export default function CheckoutDS160() {
   const [selected, setSelected] = useState(["fill"]);
-  const [method, setMethod] = useState("payphone");
+  const [method, setMethod] = useState("payphone"); // 'payphone' | 'paypal' | 'transfer'
   const [loading, setLoading] = useState(false);
 
   const subtotal = useMemo(
@@ -39,90 +42,107 @@ export default function CheckoutDS160() {
     );
   };
 
-  const onPay = async () => {
-    if (subtotal <= 0) {
-      alert("Selecciona al menos un servicio.");
-      return;
-    }
-
-    if (method === "payphone") {
-      try {
-        setLoading(true);
-        const r = await fetch("/api/payphone/link", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ baseAmountUsd: subtotal }),
-        });
-        const data = await r.json();
-        if (data?.link) {
-          window.location.href = data.link;
-        } else {
-          alert(data?.error || "No se pudo crear el Link PayPhone");
-        }
-      } catch (e) {
-        console.error(e);
-        alert("Error al iniciar el pago PayPhone");
-      } finally {
-        setLoading(false);
+  const payWithPayPhone = async () => {
+    try {
+      setLoading(true);
+      const r = await fetch("/api/payphone/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ baseAmountUsd: subtotal }),
+      });
+      const data = await r.json();
+      if (data?.link) {
+        window.location.href = data.link;
+      } else {
+        alert(data?.error || "No se pudo crear el Link PayPhone");
       }
-    } else if (method === "paypal") {
-      alert("PayPal aún no implementado.");
-    } else if (method === "transfer") {
-      window.location.href = "/transferencia";
+    } catch (e) {
+      console.error(e);
+      alert("Error al iniciar el pago PayPhone");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{maxWidth:720, margin:"0 auto"}}>
-      <h1 style={{fontSize:36, fontWeight:800, marginBottom:24}}>Asistente DS-160</h1>
+    <div className="card">
+      <h1 style={{fontSize:28, fontWeight:900}}>Checkout</h1>
+      <div className="space" />
 
       <section style={{marginBottom:24}}>
-        <h2 style={{fontSize:18, fontWeight:700, marginBottom:12}}>Servicios</h2>
+        <h2 style={{fontSize:18, fontWeight:800, marginBottom:12}}>Servicios</h2>
 
-        <div style={{display:"grid", gap:12}}>
+        <div className="grid">
           {SERVICES.map(s => {
             const checked = selected.includes(s.id);
             return (
-              <label key={s.id} style={{
-                       display:"flex", alignItems:"center", justifyContent:"space-between",
-                       gap:12, padding:"12px 16px",
-                       border:"1px solid #e5e7eb", borderRadius:12, background:"#fff"}}>
-                <span style={{display:"flex", alignItems:"center", gap:12}}>
+              <label key={s.id} className="card" style={{padding:12}}>
+                <span style={{display:'flex', alignItems:'center', gap:12}}>
                   <input type="checkbox" checked={checked} onChange={() => toggle(s.id)} />
-                  {s.name}
+                  <span>{s.name}</span>
                 </span>
-                <strong>${s.price.toFixed(2)}</strong>
+                <div className="row" style={{marginTop:8}}>
+                  <span className="muted">Precio</span>
+                  <strong>${s.price.toFixed(2)}</strong>
+                </div>
               </label>
             );
           })}
         </div>
 
-        <div style={{display:"flex", justifyContent:"space-between", marginTop:16}}>
-          <strong>Total</strong>
+        <div className="row" style={{marginTop:16}}>
+          <strong>Subtotal</strong>
           <strong>${subtotal.toFixed(2)}</strong>
         </div>
 
         {method === "payphone" && (
-          <div style={{marginTop:8, color:"#64748b"}}>
-            * Con PayPhone se agrega <b>+6%</b>: pagarás <b>${total.toFixed(2)}</b>.
+          <div className="banner" style={{marginTop:10}}>
+            Con PayPhone se agrega <b>+6%</b>: pagarás <b>${total.toFixed(2)}</b>.
           </div>
         )}
       </section>
 
       <section style={{marginBottom:24}}>
-        <h3 style={{fontSize:18, fontWeight:700, marginBottom:8}}>Método de pago</h3>
-        <div style={{display:"flex", gap:16, alignItems:"center"}}>
-          <label><input type="radio" name="method" value="payphone" checked={method==="payphone"} onChange={()=>setMethod("payphone")} /> PayPhone</label>
-          <label><input type="radio" name="method" value="paypal" checked={method==="paypal"} onChange={()=>setMethod("paypal")} /> PayPal</label>
-          <label><input type="radio" name="method" value="transfer" checked={method==="transfer"} onChange={()=>setMethod("transfer")} /> Transferencia</label>
+        <h3 style={{fontSize:18, fontWeight:800, marginBottom:8}}>Método de pago</h3>
+
+        <div style={{display:"flex", gap:16, alignItems:"center", flexWrap:'wrap'}}>
+          <label className="card" style={{padding:'8px 12px'}}>
+            <input type="radio" name="method" value="payphone"
+                   checked={method==="payphone"} onChange={()=>setMethod("payphone")} />{" "}
+            PayPhone
+          </label>
+          <label className="card" style={{padding:'8px 12px'}}>
+            <input type="radio" name="method" value="paypal"
+                   checked={method==="paypal"} onChange={()=>setMethod("paypal")} />{" "}
+            PayPal
+          </label>
+          <label className="card" style={{padding:'8px 12px'}}>
+            <input type="radio" name="method" value="transfer"
+                   checked={method==="transfer"} onChange={()=>setMethod("transfer")} />{" "}
+            Transferencia
+          </label>
         </div>
       </section>
 
-      <button onClick={onPay} disabled={loading || subtotal<=0}
-        style={{padding:"10px 16px", borderRadius:8, border:"none", background:"#16a34a",
-                color:"#fff", fontWeight:700, cursor:"pointer"}}>
-        {loading ? "Procesando..." : `Pagar $${(method==="payphone"?total:subtotal).toFixed(2)}`}
-      </button>
+      {method === "paypal" ? (
+        <div>
+          <p className="muted" style={{marginBottom:8}}>
+            Pagarás <b>${subtotal.toFixed(2)}</b> con PayPal.
+          </p>
+          <PayPalButton amountUsd={subtotal} />
+        </div>
+      ) : method === "transfer" ? (
+        <div>
+          <p className="muted" style={{marginBottom:8}}>
+            Te enviaremos a la página con instrucciones y validación.
+          </p>
+          <Link href="/transferencia" className="btn btn-outline">Ir a Transferencia</Link>
+        </div>
+      ) : (
+        <button onClick={payWithPayPhone} disabled={loading || subtotal<=0} className="btn" style={{background:'var(--accent)', borderColor:'var(--accent)'}}>
+          {loading ? "Procesando..." : `Pagar $${total.toFixed(2)} con PayPhone`}
+        </button>
+      )}
     </div>
   );
 }

@@ -1,6 +1,4 @@
-
 "use client";
-
 import { useEffect, useRef } from "react";
 
 export default function PayPalButton({ amountUsd = 1 }) {
@@ -28,31 +26,24 @@ export default function PayPalButton({ amountUsd = 1 }) {
           return data.id;
         },
         onApprove: async (data) => {
-          const r = await fetch("/api/paypal/capture", {
+          await fetch("/api/paypal/capture", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ orderId: data.orderID }),
           });
-          const cap = await r.json();
           window.location.href = "/gracias?method=paypal";
         },
-        onError: (err) => {
-          console.error("PayPal error:", err);
-          alert("Error con PayPal");
-        }
+        onError: (err) => { console.error(err); alert("Error con PayPal"); }
       }).render(divRef.current);
     }
 
     if (!document.getElementById("paypal-sdk")) {
       const s = document.createElement("script");
-      s.id = "paypal-sdk";
-      s.src = src;
-      s.onload = renderButtons;
+      s.id = "paypal-sdk"; s.src = src; s.onload = renderButtons;
       document.body.appendChild(s);
-    } else {
-      renderButtons();
-    }
+    } else { renderButtons(); }
   }, [amountUsd]);
 
   return <div ref={divRef} />;
 }
+

@@ -5,7 +5,6 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: "Monto inválido" }), { status: 400 });
     }
 
-    // +6% recargo
     const totalUsd = +(baseAmountUsd * 1.06).toFixed(2);
     const baseCents = Math.round(baseAmountUsd * 100);
     const feeCents  = Math.round((totalUsd - baseAmountUsd) * 100);
@@ -22,7 +21,7 @@ export async function POST(req) {
         amountWithoutTax: baseCents,
         amountWithTax: 0,
         tax: 0,
-        service: feeCents, // aquí viaja el 6%
+        service: feeCents,
         tip: 0,
         currency: "USD",
         reference: `DS-160 (${baseAmountUsd.toFixed(2)} + 6%)`,

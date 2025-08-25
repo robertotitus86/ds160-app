@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 const SERVICES = [
   { id: "fill",  name: "Llenado de formulario DS-160", price: 30 },
@@ -9,8 +9,9 @@ const SERVICES = [
 ];
 
 export default function CheckoutDS160() {
+  // Por defecto PayPhone seleccionado (no Stripe)
   const [selected, setSelected] = useState(["fill"]);
-  const [method, setMethod] = useState("payphone");
+  const [method, setMethod] = useState("payphone"); // "payphone" | "paypal" | "transfer"
   const [loading, setLoading] = useState(false);
 
   const subtotal = useMemo(
@@ -21,10 +22,19 @@ export default function CheckoutDS160() {
     [selected]
   );
 
+  // Si el método es PayPhone, muestra +6%
   const total = useMemo(
     () => (method === "payphone" ? +(subtotal * 1.06).toFixed(2) : subtotal),
     [subtotal, method]
   );
+
+  // Si llegas con ?method=payphone desde otro lado, respétalo
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const m = new URLSearchParams(window.location.search).get("method");
+      if (m && ["payphone","paypal","transfer"].includes(m)) setMethod(m);
+    }
+  }, []);
 
   const toggle = (id) => {
     setSelected(prev =>
@@ -48,7 +58,7 @@ export default function CheckoutDS160() {
         });
         const data = await r.json();
         if (data?.link) {
-          window.location.href = data.link;
+          window.location.href = data.link; // formulario PayPhone
         } else {
           alert(data?.error || "No se pudo crear el Link PayPhone");
         }
@@ -59,7 +69,7 @@ export default function CheckoutDS160() {
         setLoading(false);
       }
     } else if (method === "paypal") {
-      alert("PayPal aún no implementado");
+      alert("PayPal aún no está implementado.");
     } else if (method === "transfer") {
       window.location.href = "/transferencia";
     }
@@ -71,15 +81,23 @@ export default function CheckoutDS160() {
 
       <section style={{marginBottom:24}}>
         <h2 style={{fontSize:18, fontWeight:700, marginBottom:12}}>Servicios</h2>
+
         <div style={{display:"grid", gap:12}}>
           {SERVICES.map(s => {
             const checked = selected.includes(s.id);
             return (
-              <label key={s.id} style={{display:"flex", alignItems:"center", justifyContent:"space-between",
+              <label key={s.id}
+                     style={{
+                       display:"flex", alignItems:"center", justifyContent:"space-between",
                        gap:12, padding:"12px 16px",
-                       border:"1px solid #e5e7eb", borderRadius:12, background:"#fff"}}>
+                       border:"1px solid #e5e7eb", borderRadius:12, background:"#fff"
+                     }}>
                 <span style={{display:"flex", alignItems:"center", gap:12}}>
-                  <input type="checkbox" checked={checked} onChange={() => toggle(s.id)} />
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggle(s.id)}
+                  />
                   {s.name}
                 </span>
                 <strong>${s.price.toFixed(2)}</strong>
@@ -102,17 +120,52 @@ export default function CheckoutDS160() {
 
       <section style={{marginBottom:24}}>
         <h3 style={{fontSize:18, fontWeight:700, marginBottom:8}}>Método de pago</h3>
+
         <div style={{display:"flex", gap:16, alignItems:"center"}}>
-          <label><input type="radio" name="method" value="payphone" checked={method==="payphone"} onChange={()=>setMethod("payphone")} /> PayPhone</label>
-          <label><input type="radio" name="method" value="paypal" checked={method==="paypal"} onChange={()=>setMethod("paypal")} /> PayPal</label>
-          <label><input type="radio" name="method" value="transfer" checked={method==="transfer"} onChange={()=>setMethod("transfer")} /> Transferencia</label>
+          <label>
+            <input
+              type="radio"
+              name="method"
+              value="payphone"
+              checked={method === "payphone"}
+              onChange={() => setMethod("payphone")}
+            />{" "}
+            PayPhone (tarjeta/transferencia)
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="method"
+              value="paypal"
+              checked={method === "paypal"}
+              onChange={() => setMethod("paypal")}
+            />{" "}
+            PayPal
+          </label>
+
+          <label>
+            <input
+              type="radio"
+              name="method"
+              value="transfer"
+              checked={method === "transfer"}
+              onChange={() => setMethod("transfer")}
+            />{" "}
+            Transferencia
+          </label>
         </div>
       </section>
 
-      <button onClick={onPay} disabled={loading || subtotal<=0}
-        style={{padding:"10px 16px", borderRadius:8, border:"none", background:"#16a34a",
-                color:"#fff", fontWeight:700, cursor:"pointer"}}>
-        {loading ? "Procesando..." : `Pagar $${(method==="payphone"?total:subtotal).toFixed(2)}`}
+      <button
+        onClick={onPay}
+        disabled={loading || subtotal <= 0}
+        style={{
+          padding:"10px 16px", borderRadius:8, border:"none",
+          background:"#16a34a", color:"#fff", fontWeight:700, cursor:"pointer"
+        }}
+      >
+        {loading ? "Procesando..." : `Pagar $${(method === "payphone" ? total : subtotal).toFixed(2)}`}
       </button>
     </div>
   );

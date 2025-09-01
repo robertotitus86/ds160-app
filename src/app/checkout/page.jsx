@@ -12,7 +12,7 @@ const SERVICES = [
 
 export default function CheckoutDS160() {
   const [selected, setSelected] = useState(["fill"]);
-  const [method, setMethod] = useState("payphone"); // payphone | paypal | transfer
+  const [method, setMethod] = useState("payphone"); 
   const subtotal = useMemo(
     () => selected.reduce((acc, id) => {
       const s = SERVICES.find(x => x.id === id);
@@ -44,7 +44,7 @@ export default function CheckoutDS160() {
           {SERVICES.map(s => {
             const checked = selected.includes(s.id);
             return (
-              <label key={s.id} style={{display:"flex",justifyContent:"space-between",gap:12,padding:"12px 16px",border:"1px solid #e5e7eb",borderRadius:12,background:"#fff"}}>
+              <label key={s.id} className="card light" style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                 <span style={{display:"flex",alignItems:"center",gap:12}}>
                   <input type="checkbox" checked={checked} onChange={() => toggle(s.id)} />
                   {s.name}
@@ -58,7 +58,7 @@ export default function CheckoutDS160() {
           <strong>Total</strong><strong>${subtotal.toFixed(2)}</strong>
         </div>
         {method === "payphone" && (
-          <div style={{marginTop:8, color:"#64748b"}}>
+          <div className="muted" style={{marginTop:8}}>
             * Con PayPhone se agrega <b>+6%</b>: pagarás <b>${total.toFixed(2)}</b>.
           </div>
         )}
@@ -75,21 +75,19 @@ export default function CheckoutDS160() {
 
       {method === "paypal" ? (
         <div>
-          <p style={{color:"#64748b", marginBottom:8}}>Pagarás <b>${subtotal.toFixed(2)}</b> con PayPal.</p>
+          <p className="muted" style={{marginBottom:8}}>Pagarás <b>${subtotal.toFixed(2)}</b> con PayPal.</p>
           <PayPalButton amountUsd={subtotal} />
         </div>
       ) : method === "transfer" ? (
         <div>
-          <p style={{color:"#64748b", marginBottom:8}}>Te enviaremos a la página con instrucciones.</p>
+          <p className="muted" style={{marginBottom:8}}>Te enviaremos a la página con instrucciones.</p>
           <Link href="/transferencia">Ir a Transferencia</Link>
         </div>
       ) : (
-        <button onClick={payWithPayPhone} disabled={subtotal<=0}
-          style={{padding:"10px 16px", borderRadius:8, border:"none", background:"#16a34a", color:"#fff", fontWeight:700, cursor:"pointer"}}>
+        <button onClick={payWithPayPhone} disabled={subtotal<=0} className="btn btn-primary">
           {`Pagar $${total.toFixed(2)} con PayPhone`}
         </button>
       )}
     </div>
   );
 }
-

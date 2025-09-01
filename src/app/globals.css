@@ -32,6 +32,17 @@ a { color: inherit; text-decoration: none; }
   border-radius: 14px;
   padding: 20px;
   box-shadow: 0 8px 24px rgba(2,6,23,0.25);
+  /* Tarjeta clara para listas dentro de tema oscuro */
+.card.light {
+  background: #ffffff;           /* fondo claro */
+  color: #0f172a;                /* texto oscuro */
+  border: 1px solid var(--border);
+}
+.card.light strong {
+  color: #0f172a;                /* asegura precios oscuros */
+}
+.card.light input[type="checkbox"] {
+  accent-color: #0ea5e9;         /* color del check */
 }
 
 .btn { padding: 10px 16px; border-radius: 10px; border: 1px solid var(--primary); background: var(--primary); color: #00121d; font-weight: 800; cursor: pointer; }

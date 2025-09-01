@@ -84,3 +84,58 @@ button, .btn {
 .btn-outline:hover {
   border-color: #334155;
 }
+/* ====== Cards de servicios (white-on-dark) ====== */
+.card.item-card {
+  background: #ffffff;
+  color: #0f172a;                 /* texto oscuro SIEMPRE */
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 2px 10px rgba(2, 6, 23, 0.08);
+}
+
+.card.item-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(2, 6, 23, 0.12);
+}
+
+.card.item-card .left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #0f172a;                 /* asegura contraste */
+  font-weight: 600;
+}
+
+.card.item-card .price {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+/* check estandar */
+.card.item-card input[type="checkbox"] {
+  accent-color: #0ea5e9;
+}
+
+/* línea de ayuda (+6%) con más contraste pero discreta */
+.help {
+  color: #cbd5e1;
+}
+
+/* botón principal */
+.btn-primary {
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.btn-primary:hover { background: #15803d; }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
+

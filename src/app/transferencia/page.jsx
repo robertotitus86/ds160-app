@@ -10,11 +10,11 @@ export default function Transferencia() {
 
       <div className="card">
         <div className="space-y-2">
-          <div className="row"><span className="muted">Titular</span><strong>Tu Empresa S.A.</strong></div>
+          <div className="row"><span className="muted">Titular</span><strong>Roberto Acosta</strong></div>
           <div className="row"><span className="muted">Banco</span><strong>Banco Pichincha</strong></div>
-          <div className="row"><span className="muted">Cuenta</span><strong>0000000000</strong></div>
+          <div className="row"><span className="muted">Cuenta</span><strong>2200449871</strong></div>
           <div className="row"><span className="muted">Tipo</span><strong>Ahorros</strong></div>
-          <div className="row"><span className="muted">Identificación</span><strong>1799999999001</strong></div>
+          <div className="row"><span className="muted">Identificación</span><strong>1719731380</strong></div>
         </div>
       </div>
 

@@ -1,14 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import PayPalButton from "./PayPalButton";
 import Link from "next/link";
+// Si tienes PayPal activo, descomenta la siguiente línea y asegúrate de tener el componente:
+// import PayPalButton from "./PayPalButton";
 
 const SERVICES = [
   { id: "fill",  name: "Llenado de formulario DS-160", price: 30 },
   { id: "appt",  name: "Toma de cita",                   price: 10 },
   { id: "full",  name: "Asesoría completa",              price: 25 },
 ];
+
+// Lee tu endpoint y si el frontend debe sumar +6%
+const PAYPHONE_ENDPOINT =
+  process.env.NEXT_PUBLIC_PAYPHONE_ENDPOINT || "/api/payphone/link";
+const ADD_6PCT =
+  String(process.env.NEXT_PUBLIC_PAYPHONE_ADD_6PCT || "true") === "true";
 
 export default function CheckoutDS160() {
   const [selected, setSelected] = useState([]);
@@ -18,41 +25,61 @@ export default function CheckoutDS160() {
     () => selected.reduce((acc, id) => acc + (SERVICES.find(x => x.id === id)?.price || 0), 0),
     [selected]
   );
-  const total = useMemo(() => (method === "payphone" ? +(subtotal * 1.06).toFixed(2) : subtotal), [subtotal, method]);
+
+  const totalUi = useMemo(
+    () => ADD_6PCT && method === "payphone" ? +(subtotal * 1.06).toFixed(2) : subtotal,
+    [subtotal, method]
+  );
 
   const toggle = (id) =>
-    setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
+  // ADAPTA los nombres del body y de la respuesta a TU API si difieren
   const payWithPayPhone = async () => {
     if (subtotal <= 0) return alert("Selecciona al menos un servicio.");
-    const r = await fetch("/api/payphone/link", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ baseAmountUsd: subtotal }),
+
+    const montoAEnviar = ADD_6PCT ? totalUi : subtotal; // evita doble +6% si tu backend ya lo hace
+    const body = {
+      // ⬇️ CAMBIA el nombre del campo al que espera tu backend:
+      baseAmountUsd: montoAEnviar
+      // p.ej. usa "amountUsd" o "total" si así lo definiste en tu API
+    };
+
+    const r = await fetch(PAYPHONE_ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
     });
-    const data = await r.json();
-    if (data?.link) window.location.href = data.link;
+
+    let data;
+    try { data = await r.json(); } catch { data = null; }
+
+    // ⬇️ CAMBIA la propiedad que retorna tu backend con el link de pago:
+    const link = data?.paymentUrl || data?.link || data?.url;
+
+    if (link) window.location.href = link;
     else alert(data?.error || "No se pudo crear el Link PayPhone");
   };
 
   return (
-    <>
-      <div className="panel hero" style={{marginBottom:16}}>
-        <h1 className="h1" style={{marginBottom:0}}>Asistente DS-160</h1>
+    <div>
+      <div className="card" style={{marginBottom:16}}>
+        <h1 className="text-3xl" style={{fontWeight:900}}>Asistente DS-160</h1>
       </div>
 
       {/* Servicios */}
-      <section className="section">
+      <section style={{marginBottom:16}}>
         <h2 style={{fontWeight:900, marginBottom:10}}>Servicios</h2>
         <div style={{display:"grid", gap:12}}>
           {SERVICES.map(s => {
             const checked = selected.includes(s.id);
             return (
-              <label key={s.id} className="card item">
-                <span className="left">
+              <label key={s.id} className="item-card">
+                <span style={{display:"flex", alignItems:"center", gap:12}}>
                   <input type="checkbox" checked={checked} onChange={() => toggle(s.id)} />
                   {s.name}
                 </span>
-                <span className="price">${s.price.toFixed(2)}</span>
+                <strong>${s.price.toFixed(2)}</strong>
               </label>
             );
           })}
@@ -60,46 +87,49 @@ export default function CheckoutDS160() {
       </section>
 
       {/* Totales */}
-      <section className="section">
+      <section style={{marginBottom:16}}>
         <div className="row" style={{fontWeight:900}}>
           <span>Total</span>
           <span>${subtotal.toFixed(2)}</span>
         </div>
-        {method === "payphone" && (
+        {method === "payphone" && ADD_6PCT && (
           <p className="muted" style={{marginTop:6}}>
-            * Con PayPhone se agrega <b>+6%</b>: pagarás <b>${total.toFixed(2)}</b>.
+            * Con PayPhone se agrega <b>+6%</b>: pagarás <b>${totalUi.toFixed(2)}</b>.
           </p>
         )}
       </section>
 
-      {/* Método */}
-      <section className="section">
+      {/* Método de pago */}
+      <section style={{marginBottom:16}}>
         <h3 style={{fontWeight:900, marginBottom:8}}>Método de pago</h3>
-        <div style={{display:"flex", gap:18, alignItems:"center", flexWrap:"wrap"}}>
+        <div style={{display:"flex", gap:16, alignItems:"center", flexWrap:"wrap"}}>
           <label><input type="radio" name="m" checked={method==="payphone"} onChange={()=>setMethod("payphone")} /> PayPhone</label>
           <label><input type="radio" name="m" checked={method==="paypal"}   onChange={()=>setMethod("paypal")} /> PayPal</label>
           <label><input type="radio" name="m" checked={method==="transfer"} onChange={()=>setMethod("transfer")} /> Transferencia</label>
         </div>
       </section>
 
-      {/* Acción */}
+      {/* Acción según método */}
       {method === "paypal" ? (
-        <div className="section">
-          <p className="muted" style={{marginBottom:8}}>Pagarás <b>${subtotal.toFixed(2)}</b> con PayPal.</p>
+        <div>
+          <p className="muted" style={{marginBottom:8}}>
+            Pagarás <b>${subtotal.toFixed(2)}</b> con PayPal.
+          </p>
+          {/* Descomenta si tienes PayPal listo:
           <PayPalButton amountUsd={subtotal} />
+          */}
+          <p className="muted">PayPal no está configurado en este entorno.</p>
         </div>
       ) : method === "transfer" ? (
-        <div className="section">
+        <div>
           <p className="muted" style={{marginBottom:8}}>Te enviaremos a la página con instrucciones.</p>
           <Link href="/transferencia" className="btn btn-ghost">Ir a Transferencia</Link>
         </div>
       ) : (
-        <div className="section">
-          <button onClick={payWithPayPhone} disabled={subtotal<=0} className="btn btn-primary">
-            {`Pagar $${total.toFixed(2)} con PayPhone`}
-          </button>
-        </div>
+        <button onClick={payWithPayPhone} disabled={subtotal<=0} className="btn btn-primary">
+          {`Pagar $${totalUi.toFixed(2)} con PayPhone`}
+        </button>
       )}
-    </>
+    </div>
   );
 }

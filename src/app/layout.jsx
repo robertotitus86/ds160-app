@@ -1,3 +1,4 @@
+import "./globals.css";
 export const metadata = { title: "Asistente DS-160" };
 
 export default function RootLayout({ children }) {

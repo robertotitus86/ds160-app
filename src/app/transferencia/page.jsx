@@ -14,24 +14,26 @@ const BANK = {
   identificacion: "1719731380",
 };
 
+// cache-bust para evitar que el navegador muestre una versión vieja del QR
+const QR_SRC = "/deuna-qr.jpg?v=3";
+
 export default function TransferenciaPage() {
   return (
     <main className="min-h-screen">
-      <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 space-y-6">
-        {/* Título + intro */}
-        <header className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold">Pago por Transferencia</h1>
-          <p className="text-gray-300 max-w-3xl">
-            Escanea el código QR para pagar con Deuna o realiza una transferencia bancaria y
-            sube el comprobante para validarlo.
-          </p>
-        </header>
+      {/* contenedor global */}
+      <div className="max-w-6xl mx-auto px-6 md:px-10 py-10">
+        {/* Título e intro */}
+        <h1 className="text-3xl md:text-4xl font-extrabold">Pago por Transferencia</h1>
+        <p className="text-gray-300 mt-2 max-w-3xl">
+          Escanea el código QR para pagar con Deuna o realiza una transferencia bancaria
+          y sube el comprobante para validarlo.
+        </p>
 
-        {/* Tarjeta bancaria alineada a la derecha */}
-        <div className="flex justify-end">
+        {/* TARJETA BANCARIA (arriba derecha, como tu imagen) */}
+        <div className="mt-6 flex justify-end">
           <div className="w-full max-w-md rounded-2xl bg-[#0f172a] border border-white/10 p-6 shadow">
             <table className="w-full text-sm">
-              <tbody className="[&>tr>td:first-child]:text-gray-400 [&>tr>td:first-child]:pr-3">
+              <tbody className="[&>tr>td:first-child]:text-gray-400 [&>tr>td:first-child]:pr-4">
                 <tr><td>Titular</td><td className="text-right font-medium">{BANK.titular}</td></tr>
                 <tr><td>Banco</td><td className="text-right font-medium">{BANK.banco}</td></tr>
                 <tr><td>Cuenta</td><td className="text-right font-medium">{BANK.cuenta}</td></tr>
@@ -42,17 +44,17 @@ export default function TransferenciaPage() {
           </div>
         </div>
 
-        {/* Bloque centrado: Pago con Deuna (QR visible) */}
-        <section className="text-center pt-2">
+        {/* PAGO CON DEUNA (centrado, igual al diseño) */}
+        <section className="mt-10 text-center">
           <h2 className="text-xl font-semibold">Pago con Deuna!</h2>
           <p className="text-gray-400 mt-2">
             Escanea el siguiente QR o descárgalo para pagar fácilmente:
           </p>
 
-          {/* ✅ Usamos <img> nativo para evitar cualquier problema del optimizador de Next */}
+          {/* QR VISIBLE (img nativo + cache-bust) */}
           <div className="inline-block mt-4 rounded-2xl bg-[#0f172a]/40 border border-white/10 p-4">
             <img
-              src="/deuna-qr.jpg"
+              src={QR_SRC}
               alt="QR Deuna"
               width={160}
               height={160}
@@ -61,7 +63,7 @@ export default function TransferenciaPage() {
             />
           </div>
 
-          {/* Botones debajo del QR */}
+          {/* Botones en fila */}
           <div className="flex justify-center gap-3 mt-5">
             <a
               href="/deuna-qr.jpg"
@@ -81,23 +83,11 @@ export default function TransferenciaPage() {
           </div>
         </section>
 
-        {/* Botón banca web alineado a la izquierda */}
-        <div>
+        {/* Botón banca web (alineado a la izquierda, como tu UI) */}
+        <div className="mt-6">
           <a
             href="https://www.pichincha.com/portal"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 transition"
-          >
-            Ir a Banca Web
-          </a>
-        </div>
+            className="inline
 
-        {/* Validación del pago */}
-        <section>
-          <TransferenciaClient />
-        </section>
-      </div>
-    </main>
-  );
-}

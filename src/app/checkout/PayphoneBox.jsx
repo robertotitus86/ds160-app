@@ -24,7 +24,7 @@ export default function PayphoneBox({ totalUSD, reference = "Pago DS-160" }) {
       document.head.appendChild(link);
     }
 
-    const renderButton = () => {
+    const mount = () => {
       try {
         const token = process.env.NEXT_PUBLIC_PAYPHONE_TOKEN;
         const storeId = process.env.NEXT_PUBLIC_PAYPHONE_STORE_ID;
@@ -45,8 +45,9 @@ export default function PayphoneBox({ totalUSD, reference = "Pago DS-160" }) {
           token,
           storeId,
           clientTransactionId,
+          // sin IVA -> todo al campo amount y amountWithoutTax
           amount: amountCents,
-          amountWithoutTax: amountCents, // si no aplicas IVA
+          amountWithoutTax: amountCents,
           currency: "USD",
           reference,
           lang: "es",
@@ -62,12 +63,12 @@ export default function PayphoneBox({ totalUSD, reference = "Pago DS-160" }) {
     };
 
     if (window.PPaymentButtonBox) {
-      renderButton();
+      mount();
     } else {
       const s = document.createElement("script");
       s.src = "https://cdn.payphonetodoesposible.com/box/v1.1/payphone-payment-box.js";
       s.type = "module";
-      s.onload = renderButton;
+      s.onload = mount;
       s.onerror = () => setErrorMsg("No se pudo cargar el script de PayPhone.");
       document.body.appendChild(s);
     }
@@ -77,9 +78,7 @@ export default function PayphoneBox({ totalUSD, reference = "Pago DS-160" }) {
     <div>
       <div id="pp-button" className="min-h-[46px]" />
       {errorMsg && (
-        <p className="mt-3 text-sm text-red-400">
-          {errorMsg}
-        </p>
+        <p className="mt-3 text-sm text-red-400">{errorMsg}</p>
       )}
     </div>
   );

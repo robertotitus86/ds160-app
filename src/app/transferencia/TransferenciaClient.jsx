@@ -34,14 +34,19 @@ export default function TransferenciaClient() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!file) return alert("Adjunta el comprobante antes de enviar.");
+    if (!file) {
+      alert("Adjunta el comprobante antes de enviar.");
+      return;
+    }
     setIsSending(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
+
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Error al subir");
+      if (!res.ok) throw new Error(data?.error || "Error al subir.");
+
       setUploadedUrl(data.url);
       alert("Comprobante subido correctamente.");
     } catch (err) {
@@ -52,10 +57,10 @@ export default function TransferenciaClient() {
   };
 
   return (
-    <section className="rounded-2xl bg-[#0f172a] border border-white/10 p-6">
-      <h2 className="text-xl font-semibold mb-4">Validación del pago</h2>
-      <p className="text-sm text-gray-400 mb-4">
-        Sube una foto o PDF del comprobante.
+    <div className="space-y-4">
+      <h2 className="text-xl font-semibold">Validación del pago</h2>
+      <p className="text-sm text-gray-400">
+        Sube una foto o PDF del comprobante (máx. 8&nbsp;MB).
       </p>
 
       <form onSubmit={onSubmit} className="space-y-4">
@@ -66,6 +71,7 @@ export default function TransferenciaClient() {
           className="block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-[#6d28d9] file:px-4 file:py-2 file:text-white hover:file:bg-[#5b21b6]"
         />
 
+        {/* Preview si es imagen */}
         {previewUrl && (
           <div className="mt-2">
             <img
@@ -76,9 +82,11 @@ export default function TransferenciaClient() {
           </div>
         )}
 
+        {/* Estado si es PDF */}
         {file && !previewUrl && file.type === "application/pdf" && (
           <p className="text-sm text-gray-300">
-            Archivo PDF seleccionado: <span className="font-medium">{file.name}</span>
+            Archivo PDF seleccionado:{" "}
+            <span className="font-medium">{file.name}</span>
           </p>
         )}
 
@@ -119,6 +127,6 @@ export default function TransferenciaClient() {
           </p>
         )}
       </form>
-    </section>
+    </div>
   );
 }

@@ -1,13 +1,11 @@
 // src/app/transferencia/page.jsx
+import styles from "./transferencia.module.css";
 import TransferenciaClient from "./TransferenciaClient";
 
 export const metadata = {
   title: "Pago por Transferencia | Asistente DS-160",
   description: "Pago con Deuna, datos bancarios y validación de comprobante.",
 };
-
-// Cache-bust para evitar caché viejo del QR
-const QR_SRC = "/deuna-qr.jpg?v=5";
 
 const BANK = {
   titular: "Roberto Acosta",
@@ -17,91 +15,64 @@ const BANK = {
   identificacion: "1719731380",
 };
 
+// cache-bust para evitar versiones antiguas en caché
+const QR_SRC = "/deuna-qr.jpg?v=6";
+
 export default function TransferenciaPage() {
   return (
-    <main className="min-h-screen">
-      <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 space-y-8">
+    <main>
+      <div className={styles.wrap}>
+        {/* Título e introducción */}
+        <h1 className={styles.title}>Pago por Transferencia</h1>
+        <p className={styles.intro}>
+          Escanea el código QR para pagar con Deuna o realiza una transferencia bancaria.
+          Al finalizar, sube el comprobante para validar la transacción.
+        </p>
 
-        {/* Título + intro */}
-        <header className="space-y-2">
-          <h1 className="text-3xl md:text-4xl font-extrabold">
-            Pago por Transferencia
-          </h1>
-          <p className="text-gray-300 max-w-3xl">
-            Escanea el código QR para pagar con Deuna o realiza una transferencia.
-            Al finalizar, sube el comprobante para validarlo.
-          </p>
-        </header>
-
-        {/* Tarjeta bancaria (arriba a la derecha) */}
-        <div className="flex justify-end">
-          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0f172a] p-6 shadow">
-            <table className="w-full text-sm">
-              <tbody className="[&>tr>td:first-child]:text-gray-400 [&>tr>td:first-child]:pr-4">
-                <tr><td>Titular</td><td className="text-right font-medium">{BANK.titular}</td></tr>
-                <tr><td>Banco</td><td className="text-right font-medium">{BANK.banco}</td></tr>
-                <tr><td>Cuenta</td><td className="text-right font-medium">{BANK.cuenta}</td></tr>
-                <tr><td>Tipo</td><td className="text-right font-medium">{BANK.tipo}</td></tr>
-                <tr><td>Identificación</td><td className="text-right font-medium">{BANK.identificacion}</td></tr>
+        {/* Tarjeta bancaria arriba a la derecha */}
+        <div className={styles.bankRow}>
+          <div className={`${styles.card} ${styles.bankCard}`}>
+            <table className={styles.bankTable}>
+              <tbody>
+                <tr><td>Titular</td><td>{BANK.titular}</td></tr>
+                <tr><td>Banco</td><td>{BANK.banco}</td></tr>
+                <tr><td>Cuenta</td><td>{BANK.cuenta}</td></tr>
+                <tr><td>Tipo</td><td>{BANK.tipo}</td></tr>
+                <tr><td>Identificación</td><td>{BANK.identificacion}</td></tr>
               </tbody>
             </table>
           </div>
         </div>
 
         {/* Pago con Deuna (centrado) */}
-        <section className="text-center">
-          <h2 className="text-xl font-semibold">Pago con Deuna!</h2>
-          <p className="text-gray-400 mt-2">
-            Escanea el siguiente QR o descárgalo para pagar fácilmente:
-          </p>
+        <section className={styles.section}>
+          <h2>Pago con Deuna!</h2>
+          <p>Escanea el siguiente QR o descárgalo para pagar fácilmente:</p>
 
-          {/* QR visible en tarjeta */}
-          <div className="inline-block mt-4 rounded-2xl border border-white/10 bg-[#0f172a] p-4">
-            {/* Usamos <img> para evitar cualquier problema del optimizador */}
-            <img
-              src={QR_SRC}
-              alt="QR Deuna"
-              width={180}
-              height={180}
-              className="block rounded-md select-none"
-              loading="eager"
-            />
+          <div className={styles.qrCard}>
+            {/* <img> nativo = QR siempre visible */}
+            <img src={QR_SRC} alt="QR Deuna" width="170" height="170" className={styles.qr} />
           </div>
 
-          {/* Botones (evitan azul por defecto) */}
-          <div className="mt-5 flex justify-center gap-3">
-            <a
-              href="/deuna-qr.jpg"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-[#6d28d9] text-white hover:bg-[#5b21b6] transition"
-            >
+          <div className={styles.actions}>
+            <a href="/deuna-qr.jpg" target="_blank" rel="noopener noreferrer" className={`${styles.btn} ${styles.primary}`}>
               Abrir QR
             </a>
-            <a
-              href="/deuna-qr.jpg"
-              download
-              className="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-[#6d28d9] text-white hover:bg-[#6d28d9]/10 transition"
-            >
+            <a href="/deuna-qr.jpg" download className={`${styles.btn} ${styles.ghost}`}>
               Descargar QR
             </a>
           </div>
         </section>
 
-        {/* Botón banca web (izquierda) */}
-        <div>
-          <a
-            href="https://www.pichincha.com/portal"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-gray-700 text-white hover:bg-gray-600 transition"
-          >
+        {/* Botón a banca web (izquierda) */}
+        <div className={styles.left}>
+          <a href="https://www.pichincha.com/portal" target="_blank" rel="noopener noreferrer">
             Ir a Banca Web
           </a>
         </div>
 
-        {/* Validación del pago (tarjeta separada) */}
-        <section className="rounded-2xl border border-white/10 bg-[#0f172a] p-6">
+        {/* Validación del pago */}
+        <section className={`${styles.card} ${styles.uploadCard}`}>
           <TransferenciaClient />
         </section>
       </div>

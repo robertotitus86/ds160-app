@@ -14,7 +14,7 @@ export default function TransferenciaClient() {
     if (!f) return;
 
     const okType = f.type.startsWith("image/") || f.type === "application/pdf";
-    const okSize = f.size <= 8 * 1024 * 1024;
+    const okSize = f.size <= 8 * 1024 * 1024; // 8 MB
 
     if (!okType) {
       alert("Solo se aceptan imágenes (JPG/PNG) o PDF.");
@@ -52,10 +52,10 @@ export default function TransferenciaClient() {
   };
 
   return (
-    <div className="rounded-2xl bg-[#0f172a] border border-white/10 p-6">
+    <section className="rounded-2xl bg-[#0f172a] border border-white/10 p-6">
       <h2 className="text-xl font-semibold mb-4">Validación del pago</h2>
       <p className="text-sm text-gray-400 mb-4">
-        Sube una imagen (JPG/PNG) o un PDF del comprobante (máx. 8&nbsp;MB).
+        Sube una foto o PDF del comprobante.
       </p>
 
       <form onSubmit={onSubmit} className="space-y-4">
@@ -119,6 +119,6 @@ export default function TransferenciaClient() {
           </p>
         )}
       </form>
-    </div>
+    </section>
   );
 }

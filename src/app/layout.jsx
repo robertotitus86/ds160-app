@@ -1,20 +1,37 @@
+// src/app/layout.jsx
 import "./globals.css";
-export const metadata = { title: "Asistente DS-160" };
+
+export const metadata = {
+  title: "Asistente DS-160",
+  description: "Llenado, citas y pagos seguros",
+};
 
 export default function RootLayout({ children }) {
+  // Si quieres mostrar una etiqueta (p. ej., "Demo"), ponla en NEXT_PUBLIC_APP_BADGE.
+  const badge = process.env.NEXT_PUBLIC_APP_BADGE; // si está vacío, no muestra nada
+
   return (
     <html lang="es">
       <body>
-        <nav>
-          <div className="container navbar">
-            <div className="brand">
-              <div className="brand-badge" />
-              <div>
-                <div style={{fontWeight:900}}>Asistente DS-160 <span style={{opacity:.7}}>Beta</span></div>
-                <div style={{color:"var(--muted)", fontSize:12, marginTop:-2}}>Llenado, citas y pagos seguros</div>
-              </div>
+        <nav className="nav">
+          <div className="container nav-row">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <strong>Asistente DS-160</strong>
+              {badge ? (
+                <span
+                  style={{
+                    fontSize: 12,
+                    opacity: 0.75,
+                    border: "1px solid #334155",
+                    padding: "2px 6px",
+                    borderRadius: 6,
+                  }}
+                >
+                  {badge}
+                </span>
+              ) : null}
             </div>
-            <div className="navlinks">
+            <div className="links">
               <a href="/">Inicio</a>
               <a href="/checkout">Checkout</a>
               <a href="/transferencia">Transferencia</a>
@@ -24,10 +41,13 @@ export default function RootLayout({ children }) {
 
         <main className="container">{children}</main>
 
-        <footer>
-          <div className="container copy">© {new Date().getFullYear()} Asistente DS-160 · Seguridad y cumplimiento</div>
+        <footer className="footer">
+          <div className="container" style={{ padding: "16px 0", color: "#94a3b8", fontSize: 14 }}>
+            © {new Date().getFullYear()} Asistente DS-160
+          </div>
         </footer>
       </body>
     </html>
   );
 }
+

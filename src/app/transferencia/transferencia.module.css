@@ -1,0 +1,59 @@
+:root{
+  --bg-card:#0f172a;
+  --border:rgba(255,255,255,.08);
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+  --accent:#6d28d9;
+  --accent-600:#5b21b6;
+  --btn-gray:#374151;
+  --btn-gray-hover:#4b5563;
+  --success:#059669;
+  --success-hover:#10b981;
+}
+
+.wrap{max-width:1100px;margin:0 auto;padding:40px 24px;color:var(--text);}
+.title{font-weight:800;font-size:clamp(24px,3vw,34px);line-height:1.2;margin:0 0 8px;}
+.intro{color:var(--muted);max-width:760px;margin:0 0 20px;}
+
+.bankRow{display:flex;justify-content:flex-end;}
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 4px 18px rgba(0,0,0,.15);}
+.bankCard{width:100%;max-width:420px;}
+.bankTable{width:100%;border-collapse:separate;border-spacing:0 8px;font-size:14px}
+.bankTable td:first-child{color:var(--muted);padding-right:18px}
+.bankTable td:last-child{text-align:right;font-weight:600;color:var(--text)}
+
+.section{margin-top:28px;text-align:center}
+.section h2{font-size:20px;font-weight:700;margin:0}
+.section p{margin:8px 0 0;color:var(--muted)}
+
+.qrCard{display:inline-block;margin-top:14px;border:1px solid var(--border);border-radius:16px;background:rgba(0,0,0,.18);padding:14px}
+.qr{display:block;border-radius:10px}
+
+.actions{display:flex;justify-content:center;gap:12px;margin-top:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border-radius:12px;text-decoration:none;font-weight:600;transition:.18s ease;color:var(--text)}
+.primary{background:var(--accent)}
+.primary:hover{background:var(--accent-600)}
+.ghost{border:1px solid var(--accent)}
+.ghost:hover{background:rgba(109,40,217,.12)}
+.gray{background:var(--btn-gray)}
+.gray:hover{background:var(--btn-gray-hover)}
+
+.left{margin-top:18px}
+.left a{display:inline-flex;align-items:center;justify-content:center;padding:10px 16px;border-radius:12px;background:var(--btn-gray);color:var(--text);text-decoration:none;transition:.18s}
+.left a:hover{background:var(--btn-gray-hover)}
+
+.uploadCard{margin-top:22px}
+
+.formRow{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.file{width:100%;max-width:760px}
+.buttonsRow{display:flex;gap:12px;margin-top:12px}
+.btnSuccess{background:var(--success)}
+.btnSuccess:hover{background:var(--success-hover)}
+.btnOutline{border:1px solid var(--border);}
+
+.preview{margin-top:10px;border:1px solid var(--border);border-radius:10px;max-width:760px}
+
+@media (max-width:768px){
+  .bankRow{justify-content:stretch}
+  .bankCard{max-width:none}
+}

@@ -15,13 +15,13 @@ const BANK = {
   identificacion: "1719731380",
 };
 
-// cache-bust para evitar caché viejo del QR
-const QR_SRC = "/deuna-qr.jpg?v=7";
+// cache-bust para el QR
+const QR_SRC = "/deuna-qr.jpg?v=8";
 
 export default function TransferenciaPage() {
   return (
     <main>
-      <div className={styles.wrap}>
+      <div className={`${styles.wrap} ${styles.vars}`}>
         <h1 className={styles.title}>Pago por Transferencia</h1>
         <p className={styles.intro}>
           Escanea el código QR para pagar con Deuna o realiza una transferencia bancaria.

@@ -14,7 +14,7 @@ export default function TransferenciaClient() {
     if (!f) return;
 
     const okType = f.type.startsWith("image/") || f.type === "application/pdf";
-    const okSize = f.size <= 8 * 1024 * 1024; // 8 MB
+    const okSize = f.size <= 8 * 1024 * 1024;
 
     if (!okType) {
       alert("Solo se aceptan imágenes (JPG/PNG) o PDF.");
@@ -22,7 +22,7 @@ export default function TransferenciaClient() {
       return;
     }
     if (!okSize) {
-      alert("El archivo supera 8 MB. Comprime o selecciona otro.");
+      alert("El archivo supera 8 MB.");
       e.target.value = "";
       return;
     }
@@ -34,19 +34,14 @@ export default function TransferenciaClient() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!file) {
-      alert("Adjunta el comprobante antes de enviar.");
-      return;
-    }
+    if (!file) return alert("Adjunta el comprobante antes de enviar.");
     setIsSending(true);
     try {
       const fd = new FormData();
       fd.append("file", file);
-
       const res = await fetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Error al subir");
-
       setUploadedUrl(data.url);
       alert("Comprobante subido correctamente.");
     } catch (err) {
@@ -57,7 +52,7 @@ export default function TransferenciaClient() {
   };
 
   return (
-    <section className="rounded-2xl bg-[#0f172a] border border-white/10 p-6">
+    <div className="rounded-2xl bg-[#0f172a] border border-white/10 p-6">
       <h2 className="text-xl font-semibold mb-4">Validación del pago</h2>
       <p className="text-sm text-gray-400 mb-4">
         Sube una imagen (JPG/PNG) o un PDF del comprobante (máx. 8&nbsp;MB).
@@ -124,6 +119,6 @@ export default function TransferenciaClient() {
           </p>
         )}
       </form>
-    </section>
+    </div>
   );
 }

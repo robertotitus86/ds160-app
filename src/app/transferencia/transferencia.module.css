@@ -1,4 +1,5 @@
-:global(:root){
+/* Variables de tema aplicadas a un selector local */
+.vars{
   --bg-card:#0f172a;
   --border:rgba(255,255,255,.08);
   --text:#e5e7eb;
@@ -57,3 +58,4 @@
   .bankRow{justify-content:stretch}
   .bankCard{max-width:none}
 }
+

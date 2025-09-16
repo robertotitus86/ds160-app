@@ -17,7 +17,55 @@ export default function Transferencia() {
           <div className="row"><span className="muted">Identificación</span><strong>1719731380</strong></div>
         </div>
       </div>
+{/* Pago con Deuna! */}
+<div style={{ marginTop: "2rem", textAlign: "center" }}>
+  <h3 style={{ fontWeight: "bold" }}>Pago con Deuna!</h3>
+  <p>Escanea el siguiente QR o descárgalo para pagar fácilmente:</p>
 
+  <img
+    src="/deuna-qr.jpg" // 🔹 nombre de tu archivo en /public
+    alt="QR Deuna"
+    style={{
+      width: "100%",
+      maxWidth: "300px",
+      margin: "1rem auto",
+      borderRadius: "12px",
+      background: "#fff",
+      padding: "8px"
+    }}
+  />
+
+  <div style={{ marginTop: "1rem" }}>
+    <a
+      href="/deuna-qr.jpg"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{
+        marginRight: "1rem",
+        color: "#fff",
+        background: "#6d28d9",
+        padding: "0.5rem 1rem",
+        borderRadius: "6px",
+        textDecoration: "none"
+      }}
+    >
+      Abrir QR
+    </a>
+    <a
+      href="/deuna-qr.jpg"
+      download="deuna-qr.jpg"
+      style={{
+        color: "#6d28d9",
+        border: "1px solid #6d28d9",
+        padding: "0.5rem 1rem",
+        borderRadius: "6px",
+        textDecoration: "none"
+      }}
+    >
+      Descargar QR
+    </a>
+  </div>
+</div>
       <div className="space-x-2">
         <a className="btn btn-ghost" href="https://www.pichincha.com/portal-personas" target="_blank">Ir a Banca Web</a>
       </div>

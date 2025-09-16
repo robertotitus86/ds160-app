@@ -15,21 +15,20 @@ const BANK = {
   identificacion: "1719731380",
 };
 
-// cache-bust para evitar versiones antiguas en caché
-const QR_SRC = "/deuna-qr.jpg?v=6";
+// cache-bust para evitar caché viejo del QR
+const QR_SRC = "/deuna-qr.jpg?v=7";
 
 export default function TransferenciaPage() {
   return (
     <main>
       <div className={styles.wrap}>
-        {/* Título e introducción */}
         <h1 className={styles.title}>Pago por Transferencia</h1>
         <p className={styles.intro}>
           Escanea el código QR para pagar con Deuna o realiza una transferencia bancaria.
           Al finalizar, sube el comprobante para validar la transacción.
         </p>
 
-        {/* Tarjeta bancaria arriba a la derecha */}
+        {/* Tarjeta bancaria (arriba derecha) */}
         <div className={styles.bankRow}>
           <div className={`${styles.card} ${styles.bankCard}`}>
             <table className={styles.bankTable}>
@@ -50,7 +49,6 @@ export default function TransferenciaPage() {
           <p>Escanea el siguiente QR o descárgalo para pagar fácilmente:</p>
 
           <div className={styles.qrCard}>
-            {/* <img> nativo = QR siempre visible */}
             <img src={QR_SRC} alt="QR Deuna" width="170" height="170" className={styles.qr} />
           </div>
 
@@ -64,14 +62,14 @@ export default function TransferenciaPage() {
           </div>
         </section>
 
-        {/* Botón a banca web (izquierda) */}
+        {/* Banca web (izquierda) */}
         <div className={styles.left}>
           <a href="https://www.pichincha.com/portal" target="_blank" rel="noopener noreferrer">
             Ir a Banca Web
           </a>
         </div>
 
-        {/* Validación del pago */}
+        {/* Validación (tarjeta separada) */}
         <section className={`${styles.card} ${styles.uploadCard}`}>
           <TransferenciaClient />
         </section>

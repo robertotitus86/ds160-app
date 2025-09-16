@@ -14,7 +14,7 @@ export default function TransferenciaClient() {
     const f = e.target.files?.[0];
     if (!f) return;
     const okType = f.type.startsWith("image/") || f.type === "application/pdf";
-    const okSize = f.size <= 8 * 1024 * 1024; // 8 MB
+    const okSize = f.size <= 8 * 1024 * 1024;
     if (!okType) { alert("Solo imágenes (JPG/PNG) o PDF."); e.target.value = ""; return; }
     if (!okSize) { alert("El archivo supera 8 MB."); e.target.value = ""; return; }
     setFile(f);
@@ -47,12 +47,7 @@ export default function TransferenciaClient() {
       <p className={styles.intro} style={{marginTop:0}}>Sube una foto o PDF del comprobante (máx. 8 MB).</p>
 
       <form onSubmit={onSubmit} className={styles.formRow}>
-        <input
-          type="file"
-          accept="image/*,application/pdf"
-          onChange={onFileChange}
-          className={styles.file}
-        />
+        <input type="file" accept="image/*,application/pdf" onChange={onFileChange} className={styles.file} />
 
         {previewUrl && (
           <img src={previewUrl} alt="Vista previa del comprobante" className={styles.preview} />

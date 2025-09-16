@@ -1,132 +1,111 @@
-// src/app/transferencia/TransferenciaClient.jsx
-"use client";
+// src/app/transferencia/page.jsx
+import TransferenciaClient from "./TransferenciaClient";
 
-import { useState } from "react";
+export const metadata = {
+  title: "Pago por Transferencia | Asistente DS-160",
+  description: "Pago con Deuna, datos bancarios y validación de comprobante.",
+};
 
-export default function TransferenciaClient() {
-  const [file, setFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState("");
-  const [isSending, setIsSending] = useState(false);
-  const [uploadedUrl, setUploadedUrl] = useState("");
+// Cache-bust para evitar caché viejo del QR
+const QR_SRC = "/deuna-qr.jpg?v=5";
 
-  const onFileChange = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
+const BANK = {
+  titular: "Roberto Acosta",
+  banco: "Banco Pichincha",
+  cuenta: "2200449871",
+  tipo: "Ahorros",
+  identificacion: "1719731380",
+};
 
-    const okType = f.type.startsWith("image/") || f.type === "application/pdf";
-    const okSize = f.size <= 8 * 1024 * 1024; // 8 MB
-
-    if (!okType) {
-      alert("Solo se aceptan imágenes (JPG/PNG) o PDF.");
-      e.target.value = "";
-      return;
-    }
-    if (!okSize) {
-      alert("El archivo supera 8 MB.");
-      e.target.value = "";
-      return;
-    }
-
-    setFile(f);
-    setPreviewUrl(f.type.startsWith("image/") ? URL.createObjectURL(f) : "");
-    setUploadedUrl("");
-  };
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    if (!file) {
-      alert("Adjunta el comprobante antes de enviar.");
-      return;
-    }
-    setIsSending(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Error al subir.");
-
-      setUploadedUrl(data.url);
-      alert("Comprobante subido correctamente.");
-    } catch (err) {
-      alert(`No se pudo subir: ${err.message}`);
-    } finally {
-      setIsSending(false);
-    }
-  };
-
+export default function TransferenciaPage() {
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Validación del pago</h2>
-      <p className="text-sm text-gray-400">
-        Sube una foto o PDF del comprobante (máx. 8&nbsp;MB).
-      </p>
+    <main className="min-h-screen">
+      <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 space-y-8">
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        <input
-          type="file"
-          accept="image/*,application/pdf"
-          onChange={onFileChange}
-          className="block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:bg-[#6d28d9] file:px-4 file:py-2 file:text-white hover:file:bg-[#5b21b6]"
-        />
-
-        {/* Preview si es imagen */}
-        {previewUrl && (
-          <div className="mt-2">
-            <img
-              src={previewUrl}
-              alt="Vista previa del comprobante"
-              className="rounded-md border border-white/10 max-w-full h-auto"
-            />
-          </div>
-        )}
-
-        {/* Estado si es PDF */}
-        {file && !previewUrl && file.type === "application/pdf" && (
-          <p className="text-sm text-gray-300">
-            Archivo PDF seleccionado:{" "}
-            <span className="font-medium">{file.name}</span>
+        {/* Título + intro */}
+        <header className="space-y-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold">
+            Pago por Transferencia
+          </h1>
+          <p className="text-gray-300 max-w-3xl">
+            Escanea el código QR para pagar con Deuna o realiza una transferencia.
+            Al finalizar, sube el comprobante para validarlo.
           </p>
-        )}
+        </header>
 
-        <div className="flex gap-3">
-          <button
-            type="submit"
-            disabled={isSending}
-            className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-60 transition"
-          >
-            {isSending ? "Enviando..." : "Enviar comprobante"}
-          </button>
-          {file && (
-            <button
-              type="button"
-              onClick={() => {
-                setFile(null);
-                setPreviewUrl("");
-                setUploadedUrl("");
-              }}
-              className="px-4 py-2 rounded-xl border border-white/20 hover:bg-white/5 transition"
-            >
-              Quitar archivo
-            </button>
-          )}
+        {/* Tarjeta bancaria (arriba a la derecha) */}
+        <div className="flex justify-end">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#0f172a] p-6 shadow">
+            <table className="w-full text-sm">
+              <tbody className="[&>tr>td:first-child]:text-gray-400 [&>tr>td:first-child]:pr-4">
+                <tr><td>Titular</td><td className="text-right font-medium">{BANK.titular}</td></tr>
+                <tr><td>Banco</td><td className="text-right font-medium">{BANK.banco}</td></tr>
+                <tr><td>Cuenta</td><td className="text-right font-medium">{BANK.cuenta}</td></tr>
+                <tr><td>Tipo</td><td className="text-right font-medium">{BANK.tipo}</td></tr>
+                <tr><td>Identificación</td><td className="text-right font-medium">{BANK.identificacion}</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
 
-        {uploadedUrl && (
-          <p className="text-sm text-emerald-400">
-            Comprobante guardado:{" "}
-            <a
-              className="underline break-all"
-              href={uploadedUrl}
-              target="_blank"
-              rel="noreferrer"
-            >
-              {uploadedUrl}
-            </a>
+        {/* Pago con Deuna (centrado) */}
+        <section className="text-center">
+          <h2 className="text-xl font-semibold">Pago con Deuna!</h2>
+          <p className="text-gray-400 mt-2">
+            Escanea el siguiente QR o descárgalo para pagar fácilmente:
           </p>
-        )}
-      </form>
-    </div>
+
+          {/* QR visible en tarjeta */}
+          <div className="inline-block mt-4 rounded-2xl border border-white/10 bg-[#0f172a] p-4">
+            {/* Usamos <img> para evitar cualquier problema del optimizador */}
+            <img
+              src={QR_SRC}
+              alt="QR Deuna"
+              width={180}
+              height={180}
+              className="block rounded-md select-none"
+              loading="eager"
+            />
+          </div>
+
+          {/* Botones (evitan azul por defecto) */}
+          <div className="mt-5 flex justify-center gap-3">
+            <a
+              href="/deuna-qr.jpg"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-[#6d28d9] text-white hover:bg-[#5b21b6] transition"
+            >
+              Abrir QR
+            </a>
+            <a
+              href="/deuna-qr.jpg"
+              download
+              className="inline-flex items-center justify-center px-4 py-2 rounded-xl border border-[#6d28d9] text-white hover:bg-[#6d28d9]/10 transition"
+            >
+              Descargar QR
+            </a>
+          </div>
+        </section>
+
+        {/* Botón banca web (izquierda) */}
+        <div>
+          <a
+            href="https://www.pichincha.com/portal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-gray-700 text-white hover:bg-gray-600 transition"
+          >
+            Ir a Banca Web
+          </a>
+        </div>
+
+        {/* Validación del pago (tarjeta separada) */}
+        <section className="rounded-2xl border border-white/10 bg-[#0f172a] p-6">
+          <TransferenciaClient />
+        </section>
+      </div>
+    </main>
   );
 }
+

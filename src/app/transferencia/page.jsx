@@ -18,7 +18,6 @@ const BANK = {
 export default function TransferenciaPage() {
   return (
     <main className="min-h-screen">
-      {/* CONTENEDOR GLOBAL */}
       <div className="max-w-6xl mx-auto px-6 md:px-10 py-10 space-y-6">
         {/* Título + intro */}
         <header className="space-y-2">
@@ -58,7 +57,6 @@ export default function TransferenciaPage() {
             Escanea el siguiente QR o descárgalo para pagar fácilmente:
           </p>
 
-          {/* QR más pequeño */}
           <div className="inline-block mt-4 rounded-2xl bg-[#0f172a]/40 border border-white/10 p-4">
             <Image
               src="/deuna-qr.jpg"
@@ -70,7 +68,6 @@ export default function TransferenciaPage() {
             />
           </div>
 
-          {/* Botones bajo el QR */}
           <div className="flex justify-center gap-3 mt-5">
             <a
               href="/deuna-qr.jpg"
@@ -83,4 +80,30 @@ export default function TransferenciaPage() {
             <a
               href="/deuna-qr.jpg"
               download
-              className="px-4 py-2 rounded-xl border border-[#6d28d9] hover:bg-[#6d28d9]/10 tr
+              className="px-4 py-2 rounded-xl border border-[#6d28d9] hover:bg-[#6d28d9]/10 transition"
+            >
+              Descargar QR
+            </a>
+          </div>
+        </section>
+
+        {/* Botón banca web */}
+        <div>
+          <a
+            href="https://www.pichincha.com/portal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-4 py-2 rounded-xl bg-gray-700 hover:bg-gray-600 transition"
+          >
+            Ir a Banca Web
+          </a>
+        </div>
+
+        {/* Validación del pago */}
+        <section>
+          <TransferenciaClient />
+        </section>
+      </div>
+    </main>
+  );
+}

@@ -1,17 +1,16 @@
-// src/app/api/payphone/link/route.js
 import { NextResponse } from "next/server";
 
 /**
  * Crea un link/botón de pago en PayPhone.
- * Body JSON esperado:
+ * Espera body JSON:
  * {
- *   "amount": 3000, // en centavos
+ *   "amount": 3000,                 // en centavos (30.00 -> 3000)
  *   "reference": "DS160-001",
- *   "description": "Llenado DS-160",
+ *   "description": "Servicios DS-160",
  *   "buyerEmail": "cliente@mail.com", // opcional
  *   "buyerPhone": "0999999999",       // opcional
- *   "responseUrl": "https://tu-dominio/checkout/confirm",
- *   "cancelUrl": "https://tu-dominio/checkout/cancel" // opcional
+ *   "responseUrl": "https://.../checkout/confirm",
+ *   "cancelUrl": "https://.../checkout/cancel"
  * }
  */
 export async function POST(req) {
@@ -26,16 +25,14 @@ export async function POST(req) {
       );
     }
 
-    // 1) Traemos token + storeId desde nuestro endpoint /api/payphone/token
-    const tokenRes = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/payphone/token`, {
+    // 1) Traemos token + storeId desde nuestro endpoint
+    const base = process.env.NEXT_PUBLIC_BASE_URL || "";
+    const tokenRes = await fetch(`${base}/api/payphone/token`, {
       method: "GET",
       cache: "no-store",
-    }).catch(() => null);
+    });
 
-    // Si no tienes NEXT_PUBLIC_BASE_URL configurado, usa ruta relativa:
-    // const tokenRes = await fetch("/api/payphone/token", { method: "GET", cache: "no-store" });
-
-    if (!tokenRes || !tokenRes.ok) {
+    if (!tokenRes.ok) {
       return NextResponse.json(
         { error: "No se pudo obtener credenciales de PayPhone" },
         { status: 500 }
@@ -43,12 +40,13 @@ export async function POST(req) {
     }
     const { token, storeId, env } = await tokenRes.json();
 
+    // 2) Endpoint base según entorno
     const BASE_URL =
       (env || "prod") === "sandbox"
         ? "https://sandbox.payphonetodoesposible.com"
         : "https://pay.payphonetodoesposible.com";
 
-    // ⚠️ Este endpoint puede variar según el tenant. Si tu doc indica otro, cámbialo aquí:
+    // 3) Según tenant/versión, puede ser /api/button o /api/button/Send, verifica tu doc.
     const LINK_ENDPOINT = "/api/button";
 
     const payload = {
@@ -86,8 +84,7 @@ export async function POST(req) {
       );
     }
 
-    // La mayoría de tenants devuelven alguna URL para redirigir al pago:
-    // checkoutUrl | payWithPayPhoneUrl | url | link
+    // Devuelve el objeto tal como lo entrega PayPhone
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json(

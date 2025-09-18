@@ -1,23 +1,26 @@
-export async function GET() {
+// src/app/api/payphone/token/route.js
+import { requestToken } from "@/lib/payphone";
+
+export function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
+export async function POST() {
   try {
-    const res = await fetch("https://pay.payphonetodoesposible.com/api/auth/token", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        clientId: process.env.PAYPHONE_CLIENT_ID,
-        clientSecret: process.env.PAYPHONE_CLIENT_SECRET,
-      }),
-    });
-
-    if (!res.ok) {
-      return new Response(JSON.stringify({ error: "No se pudo obtener token" }), { status: 500 });
-    }
-
-    const data = await res.json();
-    return new Response(JSON.stringify(data), { status: 200 });
+    const token = await requestToken();
+    return Response.json({ ok: true, token }, { status: 200 });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), { status: 500 });
+    return Response.json(
+      { ok: false, message: err.message || String(err) },
+      { status: 500 }
+    );
   }
 }
+

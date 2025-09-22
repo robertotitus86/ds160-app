@@ -1,6 +1,6 @@
 // src/app/api/payphone/link/route.js
 
-// GET: para probar rápido en el navegador que la ruta existe y devuelve JSON
+// GET: sanity check (abre en el navegador /api/payphone/link y debe mostrar JSON)
 export async function GET() {
   return new Response(
     JSON.stringify({ ok: true, endpoint: "/api/payphone/link" }),
@@ -40,7 +40,7 @@ export async function POST(req) {
       );
     }
 
-    // 3) Endpoints / credenciales
+    // 3) Endpoints / credenciales (ajusta BASE_URL a prod o sandbox)
     const BASE_URL = process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodo.com";
     const AUTH_ENDPOINT = process.env.PAYPHONE_AUTH_ENDPOINT || "/api/token";
     const LINK_ENDPOINT = process.env.PAYPHONE_LINK_ENDPOINT || "/api/button/Prepare";
@@ -60,25 +60,28 @@ export async function POST(req) {
       );
     }
 
-    // 4) Obtener token (ajusta a tu tenant si requiere form-urlencoded)
+    // 4) Obtener token (flow típico: x-www-form-urlencoded + grant_type=client_credentials)
     const authRes = await fetch(`${BASE_URL}${AUTH_ENDPOINT}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ clientId: CLIENT_ID, clientSecret: CLIENT_SECRET }),
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body:
+        `client_id=${encodeURIComponent(CLIENT_ID)}` +
+        `&client_secret=${encodeURIComponent(CLIENT_SECRET)}` +
+        `&grant_type=client_credentials`,
     });
 
     const authData = await authRes.json().catch(() => null);
-    if (!authRes.ok || !authData?.accessToken) {
+    if (!authRes.ok || !authData?.access_token) {
       return new Response(
         JSON.stringify({
           ok: false,
-          message: authData?.message || "No se pudo obtener token de PayPhone",
+          message: authData?.error_description || "No se pudo obtener token de PayPhone",
           raw: authData,
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    const token = authData.accessToken;
+    const token = authData.access_token;
 
     // 5) Prepare (crear link)
     const amountCents = Math.round(amountNumber * 100);

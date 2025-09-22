@@ -1,133 +1,54 @@
+// src/app/checkout/page.jsx
 "use client";
-
-import React, { useState, useMemo } from "react";
-
-// Definición de servicios y precios
-const services = [
-  { id: "ds160", label: "Llenado de formulario DS-160", price: 30 },
-  { id: "cita", label: "Toma de cita", price: 10 },
-  { id: "asesoria", label: "Asesoría completa", price: 25 },
-];
+import React, { useMemo, useState } from "react";
 
 export default function CheckoutPage() {
-  const [selected, setSelected] = useState(["ds160"]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [selected, setSelected] = useState({
+    form: true,
+    appointment: false,
+    full: false,
+  });
 
-  // Calcula el subtotal
+  const services = [
+    { id: "form", label: "Llenado de formulario DS-160", price: 30.0 },
+    { id: "appointment", label: "Toma de cita", price: 10.0 },
+    { id: "full", label: "Asesoría completa", price: 25.0 },
+  ];
+
   const subtotal = useMemo(() => {
     return services
-      .filter((s) => selected.includes(s.id))
-      .reduce((total, s) => total + s.price, 0);
+      .filter((s) => selected[s.id])
+      .reduce((acc, s) => acc + s.price, 0);
   }, [selected]);
 
-  // Calcula el total con recargo de 6 %
-  const total = useMemo(() => {
-    return Math.round(subtotal * 1.06 * 100) / 100;
-  }, [subtotal]);
+  const feePct = 0.06;
+  const total = useMemo(() => +(subtotal * (1 + feePct)).toFixed(2), [subtotal]);
 
-  // Selecciona o deselecciona un servicio
-  const toggleService = (id) => {
-    setSelected((prev) =>
-      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  };
-
-  // Maneja el pago con PayPhone
-  const handlePay = async () => {
-    setError("");
-    if (subtotal <= 0) return;
-    setLoading(true);
+  async function handlePay() {
     try {
-      const res = await fetch("/api/payphone/link", {
+      const r = await fetch("/api/payphone/create-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amountUSD: total,
-          reference: "DS160",
+          amount: total, // tu API lo convertirá a centavos si hace falta
+          items: services.filter((s) => selected[s.id]),
         }),
       });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        throw new Error(data.message || "Error generando link");
-      }
-      if (data.url) {
-        window.location.href = data.url;
+      const data = await r.json();
+      if (!r.ok) throw new Error(data?.error || "No se pudo generar el link");
+      // PayPhone suele devolver una URL para redirigir:
+      if (data?.paymentUrl) {
+        window.location.href = data.paymentUrl;
       } else {
-        throw new Error(
-          "La respuesta de PayPhone no contiene una URL de pago válida"
-        );
+        alert("No llegó paymentUrl desde PayPhone.");
       }
-    } catch (err) {
-      setError(
-        `PayPhone devolvió un error. No se pudo generar el link de pago. Detalle: ${err.message}`
-      );
-    } finally {
-      setLoading(false);
+    } catch (e) {
+      alert(e.message);
     }
-  };
+  }
 
   return (
-    <main className="px-8 py-10 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold">Asistente DS-160</h1>
+    <main style={{ maxWidth: 720, margin: "0 auto", padding: 24 }}>
+      <h1>Asistente DS-160</h1>
+      <h2>Servicios</
 
-      <section>
-        <h2 className="text-xl font-semibold mb-4">Servicios</h2>
-        <div className="space-y-2">
-          {services.map((s) => (
-            <label
-              key={s.id}
-              className="flex items-center justify-between p-4 rounded-lg bg-zinc-800 hover:bg-zinc-700 cursor-pointer"
-            >
-              <span className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  checked={selected.includes(s.id)}
-                  onChange={() => toggleService(s.id)}
-                  className="form-checkbox text-violet-600"
-                />
-                {s.label}
-              </span>
-              <span className="font-semibold">
-                ${s.price.toFixed(2)}
-              </span>
-            </label>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="flex items-center justify-between text-lg">
-          <span>Subtotal:</span>
-          <span className="font-semibold">
-            ${subtotal.toFixed(2)}
-          </span>
-        </div>
-        <p className="text-sm text-zinc-400 mt-2">
-          * Con PayPhone se agrega +6 %. Pagarás{" "}
-          <strong>${total.toFixed(2)}</strong>.
-        </p>
-      </section>
-
-      <section>
-        <h2 className="text-xl font-semibold mb-2">
-          Método de pago
-        </h2>
-        <button
-          onClick={handlePay}
-          disabled={loading || subtotal <= 0}
-          className="px-5 py-3 rounded-lg bg-violet-600 hover:bg-violet-700 text-white disabled:opacity-50"
-        >
-          {loading
-            ? "Creando link..."
-            : `Pagar $${total.toFixed(2)} con PayPhone`}
-        </button>
-        {error && (
-          <p className="mt-4 text-sm text-red-400">
-            {error}
-          </p>
-        )}
-      </section>
-    </main>
-  );
-}

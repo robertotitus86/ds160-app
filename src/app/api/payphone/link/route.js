@@ -6,6 +6,18 @@ export async function GET() {
   );
 }
 
+// Utilidad: base64 sin depender de Buffer (por si se ejecuta en Edge)
+function toBase64(str) {
+  try {
+    // Node (Buffer)
+    // eslint-disable-next-line no-undef
+    return Buffer.from(str).toString("base64");
+  } catch {
+    // Fallback web
+    return btoa(unescape(encodeURIComponent(str)));
+  }
+}
+
 export async function POST(req) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -59,13 +71,12 @@ export async function POST(req) {
     }
 
     // ---------- 4) OBTENER TOKEN: probar dos variantes ----------
+    let token = null;
+    let debugAuth = {};
 
     // Variante A: x-www-form-urlencoded + Basic (muy común)
-    const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
-    let token = null;
-    let firstErr = null;
-
     try {
+      const basic = toBase64(`${CLIENT_ID}:${CLIENT_SECRET}`);
       const resA = await fetch(`${BASE_URL}${AUTH_ENDPOINT}`, {
         method: "POST",
         headers: {
@@ -75,16 +86,13 @@ export async function POST(req) {
         body: "grant_type=client_credentials",
       });
       const dataA = await resA.json().catch(() => null);
-      if (resA.ok && dataA?.access_token) {
-        token = dataA.access_token;
-      } else {
-        firstErr = { status: resA.status, data: dataA };
-      }
+      debugAuth.variantA = { status: resA.status, data: dataA };
+      if (resA.ok && dataA?.access_token) token = dataA.access_token;
     } catch (e) {
-      firstErr = { error: e?.message || String(e) };
+      debugAuth.variantA = { error: e?.message || String(e) };
     }
 
-    // Variante B: x-www-form-urlencoded sin Basic, con client_id/secret en body
+    // Variante B: x-www-form-urlencoded S/ Basic (client_id/secret en body)
     if (!token) {
       try {
         const resB = await fetch(`${BASE_URL}${AUTH_ENDPOINT}`, {
@@ -96,17 +104,10 @@ export async function POST(req) {
             `&grant_type=client_credentials`,
         });
         const dataB = await resB.json().catch(() => null);
-        if (resB.ok && dataB?.access_token) {
-          token = dataB.access_token;
-        } else if (!firstErr) {
-          firstErr = { status: resB.status, data: dataB };
-        } else {
-          // Guarda ambas para depurar
-          firstErr = { variantA: firstErr, variantB: { status: resB.status, data: dataB } };
-        }
+        debugAuth.variantB = { status: resB.status, data: dataB };
+        if (resB.ok && dataB?.access_token) token = dataB.access_token;
       } catch (e) {
-        if (!firstErr) firstErr = { error: e?.message || String(e) };
-        else firstErr = { variantA: firstErr, variantB: { error: e?.message || String(e) } };
+        debugAuth.variantB = { error: e?.message || String(e) };
       }
     }
 
@@ -115,7 +116,7 @@ export async function POST(req) {
         JSON.stringify({
           ok: false,
           message: "No se pudo obtener token de PayPhone",
-          raw: firstErr,
+          raw: debugAuth, // <- AQUÍ VIENE EL MOTIVO REAL
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
@@ -153,7 +154,8 @@ export async function POST(req) {
       );
     }
 
-    const paymentUrl = ppData?.paymentUrl || ppData?.url || ppData?.payWithCardUrl;
+    const paymentUrl =
+      ppData?.paymentUrl || ppData?.url || ppData?.payWithCardUrl;
     if (!paymentUrl) {
       return new Response(
         JSON.stringify({

@@ -1,10 +1,14 @@
 // src/app/api/payphone/token/route.js
+
 import { NextResponse } from "next/server";
 
 export async function POST() {
   try {
+    // Credenciales que debes definir en Vercel
     const clientId = process.env.PAYPHONE_CLIENT_ID;
     const clientSecret = process.env.PAYPHONE_CLIENT_SECRET;
+
+    // Valores por defecto que puedes redefinir por variable de entorno
     const baseUrl = process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodoesposible.com";
     const authEndpoint = process.env.PAYPHONE_AUTH_ENDPOINT || "/api/auth/token";
 
@@ -15,6 +19,7 @@ export async function POST() {
       );
     }
 
+    // Solicita el token usando tus credenciales
     const res = await fetch(`${baseUrl}${authEndpoint}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -22,6 +27,7 @@ export async function POST() {
     });
 
     const text = await res.text();
+
     if (!res.ok) {
       return NextResponse.json(
         { error: "Error PayPhone (token)", status: res.status, detail: text },
@@ -37,8 +43,12 @@ export async function POST() {
       );
     }
 
+    // Devuelve el token
     return NextResponse.json({ token: data.token });
   } catch (err) {
-    return NextResponse.json({ error: "Error interno", detail: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error interno", detail: err.message },
+      { status: 500 }
+    );
   }
 }

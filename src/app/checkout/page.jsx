@@ -2,21 +2,15 @@
 
 import React, { useState, useMemo } from "react";
 
-interface Service {
-  id: string;
-  label: string;
-  price: number;
-}
-
 // Definición de servicios y precios
-const services: Service[] = [
+const services = [
   { id: "ds160", label: "Llenado de formulario DS-160", price: 30 },
   { id: "cita", label: "Toma de cita", price: 10 },
   { id: "asesoria", label: "Asesoría completa", price: 25 },
 ];
 
 export default function CheckoutPage() {
-  const [selected, setSelected] = useState<string[]>(["ds160"]);
+  const [selected, setSelected] = useState(["ds160"]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,17 +21,15 @@ export default function CheckoutPage() {
       .reduce((total, s) => total + s.price, 0);
   }, [selected]);
 
-  // Calcula el total con recargo de 6%
+  // Calcula el total con recargo de 6 %
   const total = useMemo(() => {
     return Math.round(subtotal * 1.06 * 100) / 100;
   }, [subtotal]);
 
   // Selecciona o deselecciona un servicio
-  const toggleService = (id: string) => {
+  const toggleService = (id) => {
     setSelected((prev) =>
-      prev.includes(id)
-        ? prev.filter((s) => s !== id)
-        : [...prev, id]
+      prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
     );
   };
 
@@ -66,7 +58,7 @@ export default function CheckoutPage() {
           "La respuesta de PayPhone no contiene una URL de pago válida"
         );
       }
-    } catch (err: any) {
+    } catch (err) {
       setError(
         `PayPhone devolvió un error. No se pudo generar el link de pago. Detalle: ${err.message}`
       );
@@ -112,7 +104,7 @@ export default function CheckoutPage() {
           </span>
         </div>
         <p className="text-sm text-zinc-400 mt-2">
-          * Con PayPhone se agrega +6%. Pagarás{" "}
+          * Con PayPhone se agrega +6 %. Pagarás{" "}
           <strong>${total.toFixed(2)}</strong>.
         </p>
       </section>

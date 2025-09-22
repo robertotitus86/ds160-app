@@ -1,115 +1,145 @@
-// src/app/api/payphone/link/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+// src/app/api/payphone/link/route.js
 
-export const runtime = 'nodejs'              // Asegura runtime Node en Vercel
-export const dynamic = 'force-dynamic'       // Evita cacheo indeseado
+import { NextRequest, NextResponse } from "next/server";
 
-const PAYPHONE_ENDPOINT = 'https://pay.payphonetodoesposible.com/api/Links' // Endpoint oficial Links
-// Docs: https://docs.payphone.app/links-de-pago
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-function corsHeaders(origin?: string) {
+// Convierte montos en dólares a centavos enteros
+function toCents(x) {
+  const n = Number(x ?? 0);
+  return Number.isFinite(n) ? Math.round(n * 100) : 0;
+}
+
+// Genera cabeceras CORS simples
+function corsHeaders(origin) {
   return {
-    'Access-Control-Allow-Origin': origin ?? '*',
-    'Access-Control-Allow-Methods': 'POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  }
+    "Access-Control-Allow-Origin": origin ?? "*",
+    "Access-Control-Allow-Methods": "POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
 }
 
-export async function OPTIONS(req: NextRequest) {
-  return new NextResponse(null, { status: 204, headers: corsHeaders(req.headers.get('origin') ?? '*') })
+// Maneja preflight CORS (OPTIONS)
+export async function OPTIONS(req) {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(req.headers.get("origin") ?? "*"),
+  });
 }
 
-function toCents(x: unknown) {
-  const n = Number(x ?? 0)
-  return Number.isFinite(n) ? Math.round(n * 100) : 0
-}
+// Maneja la creación del enlace de pago
+export async function POST(req) {
+  const origin = req.headers.get("origin") ?? "*";
+  const headers = corsHeaders(origin);
 
-export async function POST(req: NextRequest) {
-  const origin = req.headers.get('origin') ?? '*'
-  const headers = corsHeaders(origin)
+  // Store ID de tu comercio (lo obtienes en Payphone Business)
+  const storeId = process.env.PAYPHONE_STORE_ID;
+  const baseUrl = process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodoesposible.com";
+  const linkEndpoint =
+    process.env.PAYPHONE_LINK_ENDPOINT || "/api/button/GeneratePaymentLink";
 
-  const token = process.env.PAYPHONE_TOKEN
-  const storeId = process.env.PAYPHONE_STORE_ID
-  if (!token || !storeId) {
+  if (!storeId) {
     return NextResponse.json(
-      { error: 'Faltan credenciales PAYPHONE_TOKEN / PAYPHONE_STORE_ID en el entorno' },
+      { error: "Falta PAYPHONE_STORE_ID en el entorno" },
       { status: 500, headers }
-    )
+    );
   }
 
-  let bodyIn: any = {}
-  try { bodyIn = await req.json() } catch { /* vacío usa defaults */ }
+  // Toma token existente o lo genera on-the-fly si no existe
+  let token = process.env.PAYPHONE_TOKEN;
+  if (!token) {
+    try {
+      const authEndpoint = process.env.PAYPHONE_AUTH_ENDPOINT || "/api/auth/token";
+      const resToken = await fetch(`${baseUrl}${authEndpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: process.env.PAYPHONE_CLIENT_ID,
+          clientSecret: process.env.PAYPHONE_CLIENT_SECRET,
+        }),
+      });
+      const tokenData = await resToken.json();
+      token = tokenData.token;
+    } catch (e) {
+      return NextResponse.json(
+        { error: "No se pudo obtener token", detail: e.message },
+        { status: 500, headers }
+      );
+    }
+  }
 
+  // Lee el cuerpo de la solicitud
+  let body = {};
+  try {
+    body = await req.json();
+  } catch {
+    /* usa valores por defecto */
+  }
+
+  // Extrae y valida campos
   const {
-    // Si pasas amountUSD lo uso tal cual; si no, calculo con los desgloses
     amountUSD,
     withTaxUSD = 0,
     noTaxUSD = 0,
     taxUSD = 0,
     serviceUSD = 0,
     tipUSD = 0,
-    description = 'Pago DS-160',
+    description = "Pago DS-160",
     clientTransactionId,
-    editable = false,
-    expireIn = 0,
-  } = bodyIn
+    responseUrl,
+  } = body;
 
   if (!clientTransactionId || String(clientTransactionId).length > 15) {
     return NextResponse.json(
-      { error: 'clientTransactionId requerido y <= 15 caracteres' },
+      { error: "clientTransactionId requerido y <= 15 caracteres" },
       { status: 400, headers }
-    )
+    );
   }
 
-  const payload: Record<string, any> = {
+  // Calcula el monto total en centavos
+  const amount = toCents(
+    amountUSD || withTaxUSD + noTaxUSD + taxUSD + serviceUSD + tipUSD
+  );
+
+  // Construye el payload que exige Payphone
+  const payload = {
     clientTransactionId,
-    currency: 'USD',
     storeId,
+    currency: "USD",
     reference: description,
-    isAmountEditable: !!editable,
-    expireIn: Number(expireIn) || 0,
-  }
+    amount,
+    amountWithTax: toCents(withTaxUSD),
+    amountWithoutTax: toCents(noTaxUSD),
+    tax: toCents(taxUSD),
+    service: toCents(serviceUSD),
+    tip: toCents(tipUSD),
+    responseUrl:
+      responseUrl ||
+      process.env.NEXT_PUBLIC_APP_ORIGIN +
+        "/gracias?method=payphone",
+  };
 
-  if (!editable) {
-    // Enviar montos en CENTAVOS (enteros), y que sumen amount
-    // La doc exige centavos y suma consistente. :contentReference[oaicite:2]{index=2}
-    const amountWithTax = toCents(withTaxUSD)
-    const amountWithoutTax = toCents(noTaxUSD)
-    const tax = toCents(taxUSD)
-    const service = toCents(serviceUSD)
-    const tip = toCents(tipUSD)
-
-    let amount = toCents(amountUSD)
-    if (!amount) amount = amountWithTax + amountWithoutTax + tax + service + tip
-
-    payload.amount = amount
-    if (amountWithTax) payload.amountWithTax = amountWithTax
-    if (amountWithoutTax) payload.amountWithoutTax = amountWithoutTax
-    if (tax) payload.tax = tax
-    if (service) payload.service = service
-    if (tip) payload.tip = tip
-  }
-
-  const apiRes = await fetch(PAYPHONE_ENDPOINT, {
-    method: 'POST',
+  // Llama a la API de Payphone con el token Bearer
+  const apiRes = await fetch(`${baseUrl}${linkEndpoint}`, {
+    method: "POST",
     headers: {
-      'Authorization': `Bearer ${token}`,   // Requisito de la API Links
-      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
-    cache: 'no-store',
-  })
+  });
 
-  // La API de Links devuelve un STRING (la URL del link de cobro). :contentReference[oaicite:3]{index=3}
-  const text = await apiRes.text()
+  const text = await apiRes.text();
+
   if (!apiRes.ok) {
-    let detail: any = text
-    try { detail = JSON.parse(text) } catch {}
     return NextResponse.json(
-      { error: 'Error PayPhone', status: apiRes.status, detail },
+      { error: "Error PayPhone", status: apiRes.status, detail: text },
       { status: 502, headers }
-    )
+    );
   }
 
-  return NextResponse.json({ link: text }, { status: 200, headers })
+  // La API devuelve la URL del link de pago
+  return NextResponse.json({ link: text }, { status: 200, headers });
 }
+

@@ -62,7 +62,7 @@ export async function POST(req) {
 
   if (!storeId) {
     return NextResponse.json(
-      { error: "Missing PAYPHONE_STORE_ID" },
+      { ok: false, message: "Missing PAYPHONE_STORE_ID" },
       { status: 500, headers }
     );
   }
@@ -85,7 +85,7 @@ export async function POST(req) {
       token = tokenData.token;
     } catch (e) {
       return NextResponse.json(
-        { error: "Unable to obtain PayPhone token", detail: e.message },
+        { ok: false, message: "Unable to obtain PayPhone token", detail: e.message },
         { status: 500, headers }
       );
     }
@@ -101,13 +101,17 @@ export async function POST(req) {
   }
 
   const {
+    // Total amount in USD. If only this value is provided, it will be
+    // converted to cents and used for both amount and amountWithoutTax.
     amountUSD,
     withTaxUSD = 0,
     noTaxUSD = 0,
     taxUSD = 0,
     serviceUSD = 0,
     tipUSD = 0,
-    description = "Pago DS-160",
+    // `reference` is accepted for compatibility with existing frontend.
+    reference,
+    description = reference || "Pago DS-160",
     clientTransactionId,
     responseUrl,
     cancellationUrl,
@@ -116,10 +120,13 @@ export async function POST(req) {
     lng,
   } = body;
 
-  // Validate clientTransactionId
-  if (!clientTransactionId || String(clientTransactionId).length > 15) {
+  // Generate a transaction ID if not provided. Maximum 15 characters.
+  let txId = clientTransactionId;
+  if (!txId) {
+    txId = `DS${Date.now().toString(36)}`.substring(0, 15);
+  } else if (String(txId).length > 15) {
     return NextResponse.json(
-      { error: "clientTransactionId is required and must be <= 15 characters" },
+      { ok: false, message: "clientTransactionId must be <= 15 characters" },
       { status: 400, headers }
     );
   }
@@ -140,7 +147,7 @@ export async function POST(req) {
 
   // Build the payload for Button/Prepare. Include only relevant fields.
   const payload = {
-    clientTransactionId,
+    clientTransactionId: txId,
     storeId,
     currency: "USD",
     reference: description,
@@ -164,7 +171,7 @@ export async function POST(req) {
   // Ensure we have a valid responseUrl; if null, reject the request
   if (!payload.responseUrl) {
     return NextResponse.json(
-      { error: "responseUrl is missing; set NEXT_PUBLIC_APP_ORIGIN or provide responseUrl in the body" },
+      { ok: false, message: "responseUrl is missing; set NEXT_PUBLIC_APP_ORIGIN or provide responseUrl in the body" },
       { status: 400, headers }
     );
   }
@@ -189,19 +196,30 @@ export async function POST(req) {
       detail = text;
     }
     return NextResponse.json(
-      { error: "PayPhone API error", status: apiRes.status, detail },
+      { ok: false, message: "PayPhone API error", status: apiRes.status, detail },
       { status: 502, headers }
     );
   }
 
-  // Successful call returns the payment URL(s) as a string or JSON
+  // Successful call returns the payment URL(s). Attempt to parse JSON;
+  // fallback to treating the response as a plain string URL.
   let data;
   try {
     data = JSON.parse(text);
   } catch (e) {
-    // Some endpoints return just a string (URL)
-    data = { link: text };
+    data = text;
   }
-
-  return NextResponse.json(data, { status: 200, headers });
+  // Normalize the response for the frontend. It expects an `ok` flag
+  // and a `url` property. PayPhone returns either an object with
+  // `payWithPayPhone`/`payWithCard` or a direct URL string.
+  let responseBody = {};
+  if (typeof data === "string") {
+    responseBody = { ok: true, url: data };
+  } else if (data && typeof data === "object") {
+    const url = data.payWithPayPhone || data.payWithCard || data.link || null;
+    responseBody = { ok: true, url, raw: data };
+  } else {
+    responseBody = { ok: true, url: null, raw: data };
+  }
+  return NextResponse.json(responseBody, { status: 200, headers });
 }

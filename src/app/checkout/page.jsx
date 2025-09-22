@@ -27,32 +27,23 @@ export default function CheckoutPage() {
 
   async function handlePay() {
     try {
-      // ...
-const r = await fetch("/api/payphone/link", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({
-    amountUSD: total,
-    responseUrl: "https://ds160-app-6go6.vercel.app/checkout/confirm",
-    cancelUrl:   "https://ds160-app-6go6.vercel.app/checkout/cancel",
-  }),
-});
+      const r = await fetch("/api/payphone/link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amountUSD: total,
+          responseUrl: "https://ds160-app-6go6.vercel.app/checkout/confirm",
+          cancelUrl:   "https://ds160-app-6go6.vercel.app/checkout/cancel",
+          items: services.filter((s) => selected[s.id]),
+        }),
+      });
 
-const data = await r.json();
-if (!r.ok || !data?.ok) {
-  const extra = data?.raw ? `\nDetalles: ${JSON.stringify(data.raw)}` : "";
-  throw new Error(`${data?.message || "PayPhone API error"}${extra}`);
-}
-// ...
-
+      // 👇 SOLO UNA VEZ
       const data = await r.json();
 
       if (!r.ok || !data?.ok) {
-        const msg =
-          data?.message ||
-          data?.error ||
-          "PayPhone API error";
-        throw new Error(msg);
+        const extra = data?.raw ? `\nDetalles: ${JSON.stringify(data.raw)}` : "";
+        throw new Error(`${data?.message || "PayPhone API error"}${extra}`);
       }
 
       if (data?.url) {
@@ -61,7 +52,7 @@ if (!r.ok || !data?.ok) {
         alert("La respuesta no contiene URL de pago.");
       }
     } catch (e) {
-      alert(e.message || "PayPhone API error");
+      alert(e.message || "Error inesperado");
     }
   }
 

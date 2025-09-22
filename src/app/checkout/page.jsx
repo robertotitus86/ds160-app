@@ -2,7 +2,6 @@
 import React, { useMemo, useState } from "react";
 
 export default function CheckoutPage() {
-  // Selección simple de servicios
   const [selected, setSelected] = useState({
     form: true,
     appointment: false,
@@ -23,7 +22,6 @@ export default function CheckoutPage() {
     [selected]
   );
 
-  // Ejemplo: comisión 6% (ajústalo si cambia)
   const feePct = 0.06;
   const total = useMemo(() => +(subtotal * (1 + feePct)).toFixed(2), [subtotal]);
 
@@ -33,28 +31,31 @@ export default function CheckoutPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // Mando el total en USD. El backend puede convertir a centavos si PayPhone lo exige
           amountUSD: total,
-          // Si NO configuras NEXT_PUBLIC_APP_ORIGIN, puedes forzar el responseUrl aquí:
-          // responseUrl: "https://tu-dominio/gracias?method=payphone",
-          // cancelUrl:   "https://tu-dominio/cancelado?method=payphone",
+          // Fuerza explícitamente las URLs para que coincidan con tu app de PayPhone:
+          responseUrl: "https://ds160-app-6go6.vercel.app/checkout/confirm",
+          cancelUrl:   "https://ds160-app-6go6.vercel.app/checkout/cancel",
           items: services.filter((s) => selected[s.id]),
         }),
       });
 
       const data = await r.json();
+
       if (!r.ok || !data?.ok) {
-        throw new Error(data?.message || "No se pudo generar el link de pago");
+        const msg =
+          data?.message ||
+          data?.error ||
+          "PayPhone API error";
+        throw new Error(msg);
       }
 
-      if (data.url) {
-        // Redirige al link de PayPhone (o demo si aún no conectas PayPhone)
+      if (data?.url) {
         window.location.href = data.url;
       } else {
         alert("La respuesta no contiene URL de pago.");
       }
     } catch (e) {
-      alert(e.message);
+      alert(e.message || "PayPhone API error");
     }
   }
 
@@ -91,4 +92,3 @@ export default function CheckoutPage() {
     </main>
   );
 }
-

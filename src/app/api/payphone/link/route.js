@@ -1,6 +1,4 @@
-// src/app/api/payphone/link/route.js
-
-// GET: sanity check (abre en el navegador /api/payphone/link y debe mostrar JSON)
+// GET: sanity check
 export async function GET() {
   return new Response(
     JSON.stringify({ ok: true, endpoint: "/api/payphone/link" }),
@@ -22,7 +20,7 @@ export async function POST(req) {
       );
     }
 
-    // 2) Construir URLs de retorno
+    // 2) URLs de retorno
     const originEnv = (process.env.NEXT_PUBLIC_APP_ORIGIN || "").replace(/\/$/, "");
     const finalResponseUrl =
       responseUrl || (originEnv ? `${originEnv}/checkout/confirm` : null);
@@ -40,8 +38,8 @@ export async function POST(req) {
       );
     }
 
-    // 3) Endpoints / credenciales (ajusta BASE_URL a prod o sandbox)
-    const BASE_URL = process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodo.com";
+    // 3) Endpoints / credenciales
+    const BASE_URL = (process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodo.com").replace(/\/$/, "");
     const AUTH_ENDPOINT = process.env.PAYPHONE_AUTH_ENDPOINT || "/api/token";
     const LINK_ENDPOINT = process.env.PAYPHONE_LINK_ENDPOINT || "/api/button/Prepare";
 
@@ -60,28 +58,68 @@ export async function POST(req) {
       );
     }
 
-    // 4) Obtener token (flow típico: x-www-form-urlencoded + grant_type=client_credentials)
-    const authRes = await fetch(`${BASE_URL}${AUTH_ENDPOINT}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body:
-        `client_id=${encodeURIComponent(CLIENT_ID)}` +
-        `&client_secret=${encodeURIComponent(CLIENT_SECRET)}` +
-        `&grant_type=client_credentials`,
-    });
+    // ---------- 4) OBTENER TOKEN: probar dos variantes ----------
 
-    const authData = await authRes.json().catch(() => null);
-    if (!authRes.ok || !authData?.access_token) {
+    // Variante A: x-www-form-urlencoded + Basic (muy común)
+    const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
+    let token = null;
+    let firstErr = null;
+
+    try {
+      const resA = await fetch(`${BASE_URL}${AUTH_ENDPOINT}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${basic}`,
+        },
+        body: "grant_type=client_credentials",
+      });
+      const dataA = await resA.json().catch(() => null);
+      if (resA.ok && dataA?.access_token) {
+        token = dataA.access_token;
+      } else {
+        firstErr = { status: resA.status, data: dataA };
+      }
+    } catch (e) {
+      firstErr = { error: e?.message || String(e) };
+    }
+
+    // Variante B: x-www-form-urlencoded sin Basic, con client_id/secret en body
+    if (!token) {
+      try {
+        const resB = await fetch(`${BASE_URL}${AUTH_ENDPOINT}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body:
+            `client_id=${encodeURIComponent(CLIENT_ID)}` +
+            `&client_secret=${encodeURIComponent(CLIENT_SECRET)}` +
+            `&grant_type=client_credentials`,
+        });
+        const dataB = await resB.json().catch(() => null);
+        if (resB.ok && dataB?.access_token) {
+          token = dataB.access_token;
+        } else if (!firstErr) {
+          firstErr = { status: resB.status, data: dataB };
+        } else {
+          // Guarda ambas para depurar
+          firstErr = { variantA: firstErr, variantB: { status: resB.status, data: dataB } };
+        }
+      } catch (e) {
+        if (!firstErr) firstErr = { error: e?.message || String(e) };
+        else firstErr = { variantA: firstErr, variantB: { error: e?.message || String(e) } };
+      }
+    }
+
+    if (!token) {
       return new Response(
         JSON.stringify({
           ok: false,
-          message: authData?.error_description || "No se pudo obtener token de PayPhone",
-          raw: authData,
+          message: "No se pudo obtener token de PayPhone",
+          raw: firstErr,
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
-    const token = authData.access_token;
 
     // 5) Prepare (crear link)
     const amountCents = Math.round(amountNumber * 100);
@@ -115,8 +153,7 @@ export async function POST(req) {
       );
     }
 
-    const paymentUrl =
-      ppData?.paymentUrl || ppData?.url || ppData?.payWithCardUrl;
+    const paymentUrl = ppData?.paymentUrl || ppData?.url || ppData?.payWithCardUrl;
     if (!paymentUrl) {
       return new Response(
         JSON.stringify({

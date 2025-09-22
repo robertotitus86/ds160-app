@@ -27,17 +27,23 @@ export default function CheckoutPage() {
 
   async function handlePay() {
     try {
-      const r = await fetch("/api/payphone/link", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amountUSD: total,
-          // Fuerza explícitamente las URLs para que coincidan con tu app de PayPhone:
-          responseUrl: "https://ds160-app-6go6.vercel.app/checkout/confirm",
-          cancelUrl:   "https://ds160-app-6go6.vercel.app/checkout/cancel",
-          items: services.filter((s) => selected[s.id]),
-        }),
-      });
+      // ...
+const r = await fetch("/api/payphone/link", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    amountUSD: total,
+    responseUrl: "https://ds160-app-6go6.vercel.app/checkout/confirm",
+    cancelUrl:   "https://ds160-app-6go6.vercel.app/checkout/cancel",
+  }),
+});
+
+const data = await r.json();
+if (!r.ok || !data?.ok) {
+  const extra = data?.raw ? `\nDetalles: ${JSON.stringify(data.raw)}` : "";
+  throw new Error(`${data?.message || "PayPhone API error"}${extra}`);
+}
+// ...
 
       const data = await r.json();
 

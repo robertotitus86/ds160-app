@@ -1,89 +1,110 @@
 // src/app/api/payphone/debug/route.js
-// Diagnóstico de conectividad/token con PayPhone con logs detallados.
-// Corre en Node.js, fuerza IPv4 y TLS >= 1.2, y sugiere regiones.
+// Diagnóstico de token con PayPhone (prueba varios endpoints y variantes)
+// Corre en Node.js (no Edge) y devuelve JSON siempre.
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-// Prueba distintas regiones: USA-Este (iad1), USA-Oeste (sfo1), Europa (dub1), LatAm (gru1)
-export const preferredRegion = ["iad1", "sfo1", "dub1", "gru1"];
 
-import dns from "node:dns";
-dns.setDefaultResultOrder("ipv4first");
-
-import https from "node:https";
-import { Agent as UndiciAgent, fetch as ufetch } from "undici";
-
-// https.Agent para forzar TLS1.2+ (por si el stack lo requiere)
-const httpsAgent = new https.Agent({
-  keepAlive: true,
-  // Fuerza mínimo TLS 1.2
-  minVersion: "TLSv1.2",
-  maxVersion: "TLSv1.3"
-});
-
-// Undici Agent para forzar IPv4; habilitamos opciones TLS también
-const ipv4 = new UndiciAgent({
-  connect: {
-    family: 4,
-    // Opciones TLS (undici las pasa al socket)
-    tls: {
-      minVersion: "TLSv1.2",
-      maxVersion: "TLSv1.3",
-      rejectUnauthorized: true,
-    }
-  }
-});
-
-function b64(s) { return Buffer.from(s).toString("base64"); }
+function toBase64(s) {
+  return Buffer.from(s).toString("base64");
+}
 
 async function tryOnce(url, headers, body) {
   try {
-    // Intento con undici (IPv4)
-    const r = await ufetch(url, {
-      method: "POST",
-      dispatcher: ipv4,
-      headers,
-      body
-    });
-    const text = await r.text();
-    return { via: "undici-ipv4", status: r.status, body: text.slice(0, 1000) };
+    const res = await fetch(url, { method: "POST", headers, body });
+    const text = await res.text();
+    return { status: res.status, body: text.slice(0, 1000) };
   } catch (e) {
-    // Intento alterno con https.request (para obtener errores TLS más verbosos)
-    try {
-      const res2 = await new Promise((resolve, reject) => {
-        const req = https.request(url, {
-          method: "POST",
-          headers,
-          agent: httpsAgent,
-        }, (res) => {
-          let data = "";
-          res.on("data", (c) => (data += c));
-          res.on("end", () => resolve({ statusCode: res.statusCode, body: data.slice(0, 1000) }));
-        });
-        req.on("error", reject);
-        if (body) req.write(body);
-        req.end();
-      });
-      return { via: "https-agent", status: res2.statusCode, body: res2.body, err1: e.message };
-    } catch (e2) {
-      return {
-        via: "both-failed",
-        error1: e?.message || String(e),
-        error2: e2?.message || String(e2),
-        name1: e?.name, code1: e?.code, cause1: e?.cause ? String(e.cause) : undefined,
-        name2: e2?.name, code2: e2?.code, cause2: e2?.cause ? String(e2.cause) : undefined
-      };
-    }
+    return { error: e?.message || String(e) };
   }
 }
 
-async function tryAuth(url, id, sec) {
-  const results = [];
+async function tryAuth(url, clientId, clientSecret) {
+  const attempts = [];
 
   // A) Basic + x-www-form-urlencoded
-  results.push({
+  attempts.push({
     variant: "A_basic+form",
     url,
     ...(await tryOnce(
       url,
-      { "Content-Type": "application/x-www-form-urlencoded", "Authorization"
+      {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${toBase64(`${clientId}:${clientSecret}`)}`
+      },
+      "grant_type=client_credentials"
+    ))
+  });
+
+  // B) form sin Basic (client_id y client_secret en el body)
+  attempts.push({
+    variant: "B_form_only",
+    url,
+    ...(await tryOnce(
+      url,
+      { "Content-Type": "application/x-www-form-urlencoded" },
+      `client_id=${encodeURIComponent(clientId)}&client_secret=${encodeURIComponent(clientSecret)}&grant_type=client_credentials`
+    ))
+  });
+
+  // C) JSON
+  attempts.push({
+    variant: "C_json_body",
+    url,
+    ...(await tryOnce(
+      url,
+      { "Content-Type": "application/json" },
+      JSON.stringify({
+        client_id: clientId,
+        client_secret: clientSecret,
+        grant_type: "client_credentials"
+      })
+    ))
+  });
+
+  return attempts;
+}
+
+export async function GET() {
+  try {
+    const BASE = (process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodo.com").replace(/\/$/, "");
+    const AUTH = process.env.PAYPHONE_AUTH_ENDPOINT || "/api/token";
+
+    const CLIENT_ID = process.env.PAYPHONE_CLIENT_ID;
+    const CLIENT_SECRET = process.env.PAYPHONE_CLIENT_SECRET;
+
+    if (!CLIENT_ID || !CLIENT_SECRET) {
+      return new Response(
+        JSON.stringify({ ok: false, message: "Faltan PAYPHONE_CLIENT_ID / PAYPHONE_CLIENT_SECRET" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const candidates = Array.from(
+      new Set([
+        `${BASE}${AUTH}`,
+        `${BASE}/api/token`,
+        `${BASE}/security/oauth/token`,
+        `${BASE}/oauth/token`,
+        `${BASE}/api/auth/token`,
+        `${BASE}/api/authentication/token`
+      ])
+    );
+
+    let attempts = [];
+    for (const url of candidates) {
+      const r = await tryAuth(url, CLIENT_ID, CLIENT_SECRET);
+      attempts = attempts.concat(r);
+    }
+
+    return new Response(JSON.stringify({ ok: true, attempts }, null, 2), {
+      status: 200,
+      headers: { "Content-Type": "application/json" }
+    });
+  } catch (e) {
+    return new Response(JSON.stringify({ ok: false, message: e.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" }
+    });
+  }
+}

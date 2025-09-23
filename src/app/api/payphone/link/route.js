@@ -1,9 +1,15 @@
 // src/app/api/payphone/link/route.js
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const preferredRegion = ["gru1", "scl1", "iad1"];
 
-function toBase64(str) {
-  try { return Buffer.from(str).toString("base64"); }
-  catch { return btoa(unescape(encodeURIComponent(str))); }
-}
+import dns from "node:dns";
+dns.setDefaultResultOrder("ipv4first");
+
+import { Agent, fetch as ufetch } from "undici";
+const ipv4 = new Agent({ connect: { family: 4 } });
+
+function toBase64(str) { return Buffer.from(str).toString("base64"); }
 
 async function getToken(BASE, AUTH, clientId, clientSecret) {
   const urls = [
@@ -11,92 +17,33 @@ async function getToken(BASE, AUTH, clientId, clientSecret) {
     `${BASE}/api/token`,
     `${BASE}/security/oauth/token`,
     `${BASE}/oauth/token`,
-    `${BASE}/api/auth/token`,
-    `${BASE}/api/authentication/token`,
   ];
-  const seen = new Set();
-  const uniqueUrls = urls.filter(u => (seen.has(u) ? false : (seen.add(u), true)));
-
-  // A: Basic + form
-  for (const url of uniqueUrls) {
+  for (const url of urls) {
     try {
-      const basic = toBase64(`${clientId}:${clientSecret}`);
-      const res = await fetch(url, {
+      const r = await ufetch(url, {
         method: "POST",
+        dispatcher: ipv4,
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          Authorization: `Basic ${basic}`,
+          Authorization: `Basic ${toBase64(`${clientId}:${clientSecret}`)}`,
         },
         body: "grant_type=client_credentials",
       });
-      const txt = await res.text();
+      const txt = await r.text();
       try {
         const js = JSON.parse(txt);
-        if (res.ok && js?.access_token) return { token: js.access_token, tried: url, variant: "A_basic+form" };
+        if (r.ok && js?.access_token) return { token: js.access_token, url, raw: js };
       } catch {}
-      if (res.ok && /access_token/i.test(txt)) {
-        const m = txt.match(/"access_token"\s*:\s*"([^"]+)"/i);
-        if (m) return { token: m[1], tried: url, variant: "A_basic+form:text" };
-      }
     } catch {}
   }
-
-  // B: form sin Basic
-  for (const url of uniqueUrls) {
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body:
-          `client_id=${encodeURIComponent(clientId)}` +
-          `&client_secret=${encodeURIComponent(clientSecret)}` +
-          `&grant_type=client_credentials`,
-      });
-      const txt = await res.text();
-      try {
-        const js = JSON.parse(txt);
-        if (res.ok && js?.access_token) return { token: js.access_token, tried: url, variant: "B_form_only" };
-      } catch {}
-      if (res.ok && /access_token/i.test(txt)) {
-        const m = txt.match(/"access_token"\s*:\s*"([^"]+)"/i);
-        if (m) return { token: m[1], tried: url, variant: "B_form_only:text" };
-      }
-    } catch {}
-  }
-
-  // C: JSON
-  for (const url of uniqueUrls) {
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_id: clientId,
-          client_secret: clientSecret,
-          grant_type: "client_credentials",
-        }),
-      });
-      const txt = await res.text();
-      try {
-        const js = JSON.parse(txt);
-        if (res.ok && js?.access_token) return { token: js.access_token, tried: url, variant: "C_json" };
-      } catch {}
-      if (res.ok && /access_token/i.test(txt)) {
-        const m = txt.match(/"access_token"\s*:\s*"([^"]+)"/i);
-        if (m) return { token: m[1], tried: url, variant: "C_json:text" };
-      }
-    } catch {}
-  }
-
   return { token: null };
 }
 
-// Ping
+// ping
 export async function GET() {
-  return new Response(
-    JSON.stringify({ ok: true, endpoint: "/api/payphone/link" }),
-    { status: 200, headers: { "Content-Type": "application/json" } }
-  );
+  return new Response(JSON.stringify({ ok: true, endpoint: "/api/payphone/link" }), {
+    status: 200, headers: { "Content-Type": "application/json" },
+  });
 }
 
 export async function POST(req) {
@@ -106,36 +53,36 @@ export async function POST(req) {
 
     const amountNumber = Number(amountUSD);
     if (!amountNumber || isNaN(amountNumber) || amountNumber <= 0) {
-      return new Response(JSON.stringify({ ok: false, message: "amountUSD inválido (> 0)" }),
+      return new Response(JSON.stringify({ ok: false, message: "amountUSD inválido (>0)" }),
         { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
-    const originEnv = (process.env.NEXT_PUBLIC_APP_ORIGIN || "").replace(/\/$/, "");
-    const finalResponseUrl = responseUrl || (originEnv ? `${originEnv}/checkout/confirm` : null);
-    const finalCancelUrl   = cancelUrl   || (originEnv ? `${originEnv}/checkout/cancel`  : null);
+    const origin = (process.env.NEXT_PUBLIC_APP_ORIGIN || "").replace(/\/$/, "");
+    const finalResponseUrl = responseUrl || (origin ? `${origin}/checkout/confirm` : null);
+    const finalCancelUrl   = cancelUrl   || (origin ? `${origin}/checkout/cancel`  : null);
     if (!finalResponseUrl) {
       return new Response(JSON.stringify({
-        ok: false, message: "responseUrl is missing; set NEXT_PUBLIC_APP_ORIGIN o envíalo en el body"
+        ok: false, message: "responseUrl is missing; set NEXT_PUBLIC_APP_ORIGIN o envíalo en el body",
       }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
-    const BASE = (process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodo.com").replace(/\/$/, "");
-    const AUTH = process.env.PAYPHONE_AUTH_ENDPOINT || "/api/token";
-    const LINK = process.env.PAYPHONE_LINK_ENDPOINT || "/api/button/Prepare";
-    const ID = process.env.PAYPHONE_CLIENT_ID;
+    const BASE   = (process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodo.com").replace(/\/$/, "");
+    const AUTH   = process.env.PAYPHONE_AUTH_ENDPOINT || "/api/token";
+    const LINK   = process.env.PAYPHONE_LINK_ENDPOINT || "/api/button/Prepare";
+    const ID     = process.env.PAYPHONE_CLIENT_ID;
     const SECRET = process.env.PAYPHONE_CLIENT_SECRET;
-    const STORE = process.env.PAYPHONE_STORE_ID;
+    const STORE  = process.env.PAYPHONE_STORE_ID;
 
     if (!ID || !SECRET || !STORE) {
       return new Response(JSON.stringify({
-        ok: false, message: "Faltan variables: PAYPHONE_CLIENT_ID, PAYPHONE_CLIENT_SECRET, PAYPHONE_STORE_ID"
+        ok: false, message: "Faltan PAYPHONE_CLIENT_ID/SECRET/STORE_ID",
       }), { status: 500, headers: { "Content-Type": "application/json" } });
     }
 
     const auth = await getToken(BASE, AUTH, ID, SECRET);
     if (!auth.token) {
       return new Response(JSON.stringify({
-        ok: false, message: "No se pudo obtener token de PayPhone. Revisa /api/payphone/debug",
+        ok: false, message: "No se pudo obtener token de PayPhone (revisa /api/payphone/debug).",
       }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
@@ -147,35 +94,33 @@ export async function POST(req) {
       storeId: STORE,
     };
 
-    const ppRes = await fetch(`${BASE}${LINK}`, {
+    const prep = await ufetch(`${BASE}${LINK}`, {
       method: "POST",
+      dispatcher: ipv4,
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.token}` },
       body: JSON.stringify(payload),
     });
 
-    const txt = await ppRes.text();
-    let ppData = null;
-    try { ppData = JSON.parse(txt); } catch {}
+    const txt = await prep.text();
+    let data = null; try { data = JSON.parse(txt); } catch {}
 
-    if (!ppRes.ok) {
+    if (!prep.ok) {
       return new Response(JSON.stringify({
-        ok: false,
-        message: (ppData && ppData.message) || "PayPhone API error",
-        raw: ppData || txt,
+        ok: false, message: (data && data.message) || "PayPhone API error", raw: data || txt
       }), { status: 400, headers: { "Content-Type": "application/json" } });
     }
 
     const url =
-      (ppData && (ppData.paymentUrl || ppData.url || ppData.payWithCardUrl)) ||
+      (data && (data.paymentUrl || data.url || data.payWithCardUrl)) ||
       (txt.match(/https?:\/\/[^\s"]+/) || [null])[0];
 
     if (!url) {
-      return new Response(JSON.stringify({
-        ok: false, message: "PayPhone no devolvió una URL de pago", raw: ppData || txt,
-      }), { status: 400, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ ok: false, message: "Respuesta sin URL de pago", raw: data || txt }), {
+        status: 400, headers: { "Content-Type": "application/json" },
+      });
     }
 
-    return new Response(JSON.stringify({ ok: true, url, raw: ppData || txt }), {
+    return new Response(JSON.stringify({ ok: true, url }), {
       status: 200, headers: { "Content-Type": "application/json" },
     });
   } catch (e) {

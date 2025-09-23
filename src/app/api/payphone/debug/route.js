@@ -1,50 +1,60 @@
 // src/app/api/payphone/debug/route.js
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const preferredRegion = ["gru1", "scl1", "iad1"]; // Sao Paulo / Santiago / Virginia
+
+import dns from "node:dns";
+dns.setDefaultResultOrder("ipv4first"); // evita problemas con IPv6
+
+import { Agent, fetch as ufetch } from "undici"; // undici = fetch de Node
+const ipv4 = new Agent({ connect: { family: 4 } });
 
 function toBase64(str) {
-  try { return Buffer.from(str).toString("base64"); }
-  catch { return btoa(unescape(encodeURIComponent(str))); }
+  return Buffer.from(str).toString("base64");
 }
 
 async function tryAuth(url, clientId, clientSecret) {
   const results = [];
 
-  // Variante A: x-www-form-urlencoded + Basic
+  // A) Basic + x-www-form-urlencoded
   try {
-    const basic = toBase64(`${clientId}:${clientSecret}`);
-    const res = await fetch(url, {
+    const r = await ufetch(url, {
       method: "POST",
+      dispatcher: ipv4,
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${basic}`,
+        Authorization: `Basic ${toBase64(`${clientId}:${clientSecret}`)}`,
       },
       body: "grant_type=client_credentials",
     });
-    const text = await res.text(); // <-- texto crudo por si no es JSON
-    results.push({ variant: "A_basic+form", url, status: res.status, body: text });
+    const text = await r.text();
+    results.push({ variant: "A_basic+form", url, status: r.status, body: text.slice(0, 500) });
   } catch (e) {
     results.push({ variant: "A_basic+form", url, error: e?.message || String(e) });
   }
 
-  // Variante B: x-www-form-urlencoded (client_id/secret en body)
+  // B) client_id/secret en el body
   try {
-    const res = await fetch(url, {
+    const r = await ufetch(url, {
       method: "POST",
+      dispatcher: ipv4,
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body:
         `client_id=${encodeURIComponent(clientId)}` +
         `&client_secret=${encodeURIComponent(clientSecret)}` +
         `&grant_type=client_credentials`,
     });
-    const text = await res.text();
-    results.push({ variant: "B_form_only", url, status: res.status, body: text });
+    const text = await r.text();
+    results.push({ variant: "B_form_only", url, status: r.status, body: text.slice(0, 500) });
   } catch (e) {
     results.push({ variant: "B_form_only", url, error: e?.message || String(e) });
   }
 
-  // Variante C: JSON (algunas instalaciones privadas lo aceptan)
+  // C) JSON
   try {
-    const res = await fetch(url, {
+    const r = await ufetch(url, {
       method: "POST",
+      dispatcher: ipv4,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         client_id: clientId,
@@ -52,8 +62,8 @@ async function tryAuth(url, clientId, clientSecret) {
         grant_type: "client_credentials",
       }),
     });
-    const text = await res.text();
-    results.push({ variant: "C_json_body", url, status: res.status, body: text });
+    const text = await r.text();
+    results.push({ variant: "C_json_body", url, status: r.status, body: text.slice(0, 500) });
   } catch (e) {
     results.push({ variant: "C_json_body", url, error: e?.message || String(e) });
   }
@@ -63,21 +73,19 @@ async function tryAuth(url, clientId, clientSecret) {
 
 export async function GET() {
   try {
-    const BASE = (process.env.PAYPHONE_BASE_URL || "").replace(/\/$/, "");
+    const BASE = (process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodo.com").replace(/\/$/, "");
     const AUTH = process.env.PAYPHONE_AUTH_ENDPOINT || "/api/token";
     const id = process.env.PAYPHONE_CLIENT_ID;
     const secret = process.env.PAYPHONE_CLIENT_SECRET;
 
-    if (!BASE || !id || !secret) {
-      return new Response(
-        JSON.stringify({ ok: false, message: "Faltan PAYPHONE_BASE_URL, CLIENT_ID o CLIENT_SECRET" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+    if (!id || !secret) {
+      return new Response(JSON.stringify({ ok: false, message: "Faltan PAYPHONE_CLIENT_ID/SECRET" }), {
+        status: 400, headers: { "Content-Type": "application/json" },
+      });
     }
 
-    // Intentaremos varios endpoints comunes
     const candidates = [
-      `${BASE}${AUTH}`,                          // lo que tengas configurado
+      `${BASE}${AUTH}`,
       `${BASE}/api/token`,
       `${BASE}/security/oauth/token`,
       `${BASE}/oauth/token`,
@@ -86,16 +94,10 @@ export async function GET() {
     ];
 
     const seen = new Set();
-    const urls = candidates.filter(u => {
-      if (seen.has(u)) return false;
-      seen.add(u); return true;
-    });
+    const urls = candidates.filter(u => (seen.has(u) ? false : (seen.add(u), true)));
 
     let attempts = [];
-    for (const u of urls) {
-      const r = await tryAuth(u, id, secret);
-      attempts = attempts.concat(r);
-    }
+    for (const u of urls) attempts = attempts.concat(await tryAuth(u, id, secret));
 
     return new Response(JSON.stringify({ ok: true, attempts }, null, 2), {
       status: 200, headers: { "Content-Type": "application/json" },

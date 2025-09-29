@@ -1,42 +1,38 @@
-import { NextRequest, NextResponse } from "next/server";
-import { requiredEnv, fetchJSON } from "@/lib/server-utils";
+import { NextResponse } from "next/server";
+import { requiredEnv, fetchJSON } from "@/lib/payphone"; // usamos tu util existente en JS
 
 const CLIENT_ID = requiredEnv("PAYPHONE_CLIENT_ID");
 const CLIENT_SECRET = requiredEnv("PAYPHONE_CLIENT_SECRET");
 const STORE_ID = requiredEnv("PAYPHONE_STORE_ID");
-
-// Si no defines PAYPHONE_BASE_URL, usamos producción por defecto
 const BASE = process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodoesposible.com";
 
-const METHOD_TOKEN: "GET" | "POST" = "GET";
+// Si tu tenant requiere POST para el token, cambia a "POST"
+const METHOD_TOKEN = "GET";
 
-async function getToken(): Promise<string> {
+async function getToken() {
   const url = `${BASE}/api/auth/token`;
   const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
-  const init: RequestInit = {
+  const init = {
     method: METHOD_TOKEN,
     headers: {
       Authorization: `Basic ${auth}`,
       Accept: "application/json",
       "Content-Type": "application/json"
     }
+    // Si tu tenant exige body en POST, me avisas y te paso el body.
   };
-  const data: any = await fetchJSON(url, init);
+  const data = await fetchJSON(url, init);
   const token = data.token || data.accessToken || data.access_token;
   if (!token) throw new Error("No se recibió token de PayPhone");
   return token;
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req) {
   try {
-    const body = await req.json();
-    const { amount, reference = `ORD-${Date.now()}`, responseUrl } = body || {};
-
+    const payload = await req.json(); // { amount, reference?, responseUrl, ... }
+    const { amount, responseUrl } = payload || {};
     if (!amount || !responseUrl) {
-      return NextResponse.json(
-        { error: "amount y responseUrl son obligatorios" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "amount y responseUrl son obligatorios" }, { status: 400 });
     }
 
     const token = await getToken();
@@ -50,11 +46,11 @@ export async function POST(req: NextRequest) {
         Accept: "application/json",
         StoreId: STORE_ID
       },
-      body: JSON.stringify({ amount, reference, responseUrl, ...body })
+      body: JSON.stringify(payload)
     });
 
     return NextResponse.json(data, { status: 200 });
-  } catch (err: any) {
+  } catch (err) {
     return NextResponse.json({ error: err.message || "Error interno" }, { status: 500 });
   }
 }

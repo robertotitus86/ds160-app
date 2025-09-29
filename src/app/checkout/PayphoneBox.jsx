@@ -1,45 +1,53 @@
 "use client";
 import { useState } from "react";
 
-export default function PayphoneBox({ amountUSD = 31.80 }) {
+export default function PayphoneBox({ amount }) {
   const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState(null);
 
-  const amountCents = Math.round(amountUSD * 100);
-
-  async function pagar() {
-    setErr(null);
-    setLoading(true);
+  const handlePayment = async () => {
     try {
+      setLoading(true);
+
       const res = await fetch("/api/payphone/link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: amountCents,                         // en centavos
-          reference: `ORD-${Date.now()}`,             // tu referencia
-          responseUrl: `${window.location.origin}/checkout/confirm?method=payphone`,
-          // agrega aquí otros campos que tú usas (email, phoneNumber, etc.)
-        })
+          amount: amount * 100, // PayPhone espera valores en centavos
+        }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "No se pudo preparar el pago");
 
-      const url = data.payWithPayPhoneURL || data.payWithCardURL || data.url;
-      if (!url) throw new Error("PayPhone no devolvió URL de pago");
-      window.location.href = url;
-    } catch (e) {
-      setErr(e.message);
+      if (!res.ok) {
+        throw new Error("Error preparando el pago");
+      }
+
+      const data = await res.json();
+
+      if (data?.payWithPayPhoneUrl) {
+        window.location.href = data.payWithPayPhoneUrl;
+      } else {
+        throw new Error("No se generó el link de pago");
+      }
+    } catch (err) {
+      alert(err.message || "Error en el pago con PayPhone");
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
-      <button onClick={pagar} disabled={loading}>
-        {loading ? "Preparando..." : `Pagar $${amountUSD.toFixed(2)} con PayPhone`}
-      </button>
-      {err && <small style={{ color: "crimson" }}>{err}</small>}
-    </div>
+    <button
+      onClick={handlePayment}
+      disabled={loading}
+      style={{
+        padding: "10px 20px",
+        backgroundColor: "#0070f3",
+        color: "white",
+        border: "none",
+        borderRadius: "5px",
+        cursor: "pointer",
+      }}
+    >
+      {loading ? "Procesando..." : `Pagar $${amount.toFixed(2)} con PayPhone`}
+    </button>
   );
 }

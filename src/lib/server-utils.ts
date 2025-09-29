@@ -1,5 +1,6 @@
+// src/lib/server-utils.ts
 export function requiredEnv(name: string): string {
-  const v = process.env[name as string];
+  const v = process.env[name];
   if (!v) throw new Error(`Falta variable de entorno: ${name}`);
   return v;
 }

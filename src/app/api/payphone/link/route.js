@@ -1,25 +1,12 @@
 import { NextResponse } from "next/server";
-
-function requiredEnv(name) {
-  const v = process.env[name];
-  if (!v) throw new Error(`Falta variable de entorno: ${name}`);
-  return v;
-}
-async function fetchJSON(input, init) {
-  const res = await fetch(input, { cache: "no-store", ...init });
-  const txt = await res.text();
-  let data = {};
-  try { data = txt ? JSON.parse(txt) : {}; } catch { data = { raw: txt }; }
-  if (!res.ok) throw new Error(`HTTP ${res.status} - ${typeof data==="object"?JSON.stringify(data):String(data)}`);
-  return data;
-}
+import { requiredEnv, fetchJSON } from "@/lib/payphone"; // usamos tu util existente
 
 const CLIENT_ID = requiredEnv("PAYPHONE_CLIENT_ID");
 const CLIENT_SECRET = requiredEnv("PAYPHONE_CLIENT_SECRET");
 const STORE_ID = requiredEnv("PAYPHONE_STORE_ID");
 const BASE = process.env.PAYPHONE_BASE_URL || "https://pay.payphonetodoesposible.com";
 
-// Si tu cuenta exige POST para el token, cambia a "POST"
+// Si tu tenant requiere POST para el token, cambia a "POST"
 const METHOD_TOKEN = "GET";
 
 async function getToken() {
@@ -32,7 +19,7 @@ async function getToken() {
       Accept: "application/json",
       "Content-Type": "application/json"
     }
-    // Si tu tenant exige body con POST, avísame y te paso el body.
+    // Si tu tenant exige body con POST, me avisas y te paso el body.
   };
   const data = await fetchJSON(url, init);
   const token = data.token || data.accessToken || data.access_token;

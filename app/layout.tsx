@@ -1,4 +1,5 @@
 export const metadata = { title: "DS-160 Asistido" };
+
 import dynamic from "next/dynamic";
 
 const ChatWidget = dynamic(() => import("../components/ChatWidget"), { ssr:false });
@@ -17,7 +18,6 @@ const styles = {
   brand:{ display:'inline-flex', alignItems:'center', gap:10, color:'#e5e7eb', textDecoration:'none', fontWeight:800, letterSpacing:.2 },
   nav:{ display:'flex', gap:10, alignItems:'center' },
   link:{ color:'#cbd5e1', textDecoration:'none', padding:'10px 12px', borderRadius:10 },
-  linkHover:{},
   cta:{ background:'#2563eb', color:'#fff', fontWeight:700, borderRadius:10, padding:'10px 12px', textDecoration:'none',
         boxShadow:'0 10px 24px rgba(37,99,235,.35)' },
   content:{ padding:'28px 20px 80px' },
@@ -29,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <body style={styles.body}>
+
         {/* NAV */}
         <header style={styles.navbar}>
           <div style={{...styles.container, ...styles.navRow}}>
@@ -41,10 +42,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </a>
 
             <nav style={styles.nav}>
-  <a href="/" style={styles.link}>Inicio</a>
-  <a href="/wizard" style={styles.link}>Formulario</a>
-  <a href="/checkout" style={styles.link}>Checkout</a>
-</nav> 
+              <a href="/" style={styles.link}>Inicio</a>
+              <a href="/wizard" style={styles.link}>Formulario</a>
+              <a href="/checkout" style={styles.link}>Checkout</a>
+              {/* ✅ Contacto y WhatsApp removidos del menú */}
+            </nav>
           </div>
         </header>
 
@@ -53,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
 
-        {/* FOOTER exacto como pediste */}
+        {/* FOOTER */}
         <footer style={styles.footer}>
           <div style={{...styles.container, ...styles.footCol}}>
             <small>© 2025 · DS-160 Asistido</small>
@@ -61,11 +63,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
 
-        {/* Widgets */}
+        {/* ✅ BOTÓN FLOTANTE + CHAT */}
         <ChatWidget />
         <WhatsAppFloat />
+
       </body>
     </html>
   );
 }
-

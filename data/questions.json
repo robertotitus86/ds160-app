@@ -1,0 +1,15 @@
+{
+  "sections": [
+    {
+      "id": "personal",
+      "title": "Información personal",
+      "fields": [
+        {
+          "name": "surname",
+          "label": "Apellidos",
+          "help": "Tal como en el pasaporte."
+        }
+      ]
+    }
+  ]
+}

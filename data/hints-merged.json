@@ -1,0 +1,738 @@
+[
+  {
+    "label": "Apellidos",
+    "help": "Tal como en el pasaporte."
+  },
+  {
+    "label": "Surnames",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Given",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Names",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Sex",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Marital Status",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Date and Place of",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Birth",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Country/",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Region",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Origin",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Nationality",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "you",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "hold",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "have",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "held",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "any",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "other",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "than",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "the",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "one",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "indicated",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "above",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "National",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Identification",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Number",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Purpose",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Trip",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "U.S",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Specify",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "made",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "specific",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "travel",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "plans",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Date of",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Arrival",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "in U.S",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Flight (",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "known",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "City",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Departure",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "from",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "U.S.",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Location",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Persons",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "traveling",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "with",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Are",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "there",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Person",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Relationship",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "NOTE",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Provide",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "following",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "previous",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "information",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "complete and",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "accurate",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "all",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "questions",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "that",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "require",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "explanation",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "ever",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "been",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "did",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "a U.S.",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Driver’s",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "License",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "issued",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "a U.S. Visa",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "U.S. Visas",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Date",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Last",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Visa",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Was",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "applying",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "for",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "same",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "type",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "of visa",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "country",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "where",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": ", and",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "this",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "your",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "place of principal of",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "residence",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "ten-",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "printed",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Has",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "U.S. Visa",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "lost",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "stolen",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "cancelled",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "revoked",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "refused",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "a U.S. Visa,",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "admission",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "United",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "States",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "withdrawn",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "application",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "port",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "entry",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "anyone",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "filed",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "immigrant",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "petition",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "behalf",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Citizenship",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "and",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Immigration",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Services",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Street",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Address",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "(Line 1)",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "(Line 2)",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "State",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Province",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Postal",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Zone",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "/ZIP",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Code",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Mailing",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Home",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Primary",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Phone",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Social Media",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Provider",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Platform",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Identifier",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "wish",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "about",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "presence",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "websites",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "applications",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "used",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "within",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "five",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "years",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "create",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "share",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "content",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "photos",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": ", videos, status",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "updates",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": ", etc.)",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "numbers",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Email",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "addresses",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "a social media",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Passport",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Passport/",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Document",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Authority",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "shown",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Issuance",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Expiration",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "had",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Contact",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Organization",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Name",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "U.S. Street",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "ZIP",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Father's",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Full",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "and Date of",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "father",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Mother's",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "immediate",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "relatives",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "not",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "including",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "parents",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": ", in",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Former",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Spouse",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Spouse's",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Place of",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Marriage",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Ended",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "How",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  },
+  {
+    "label": "Terminated",
+    "help": "Campo de tu documento. Pide al asistente explicación detallada si lo necesitas."
+  }
+]

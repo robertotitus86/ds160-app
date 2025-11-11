@@ -3,13 +3,16 @@
 import { Suspense, useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
-// --- Catálogo (mismo que antes) ---
+// --- Catálogo de servicios ---
 const PRICES: Record<string, number> = { llenado:45, asesoria:35, cita:15 };
 const TITLES: Record<string, string> = {
   llenado: "Llenado DS-160",
   asesoria: "Asesoría Entrevista",
   cita: "Toma de Cita",
 };
+
+// --- WhatsApp destino ---
+const WHATSAPP_PHONE = "00593987846751";
 
 export const dynamic = "force-dynamic";
 
@@ -32,17 +35,40 @@ function CheckoutInner() {
 
   const total = items.reduce((acc, id) => acc + (PRICES[id] || 0), 0);
 
-  // ---- estilos coherentes ----
+  // Estilos
   const card: React.CSSProperties = { background:'#0f172a', padding:18, borderRadius:14, border:'1px solid #111827' };
-  const btn:  React.CSSProperties = { background:'#2563eb', color:'#fff', border:'none', borderRadius:10, padding:'10px 14px', textDecoration:'none' as const };
+  const btn:  React.CSSProperties = { background:'#2563eb', color:'#fff', border:'none', borderRadius:10, padding:'10px 14px', textDecoration:'none' as const, cursor:'pointer' };
   const soft: React.CSSProperties = { background:'#0b1220', border:'1px solid #1f2937', borderRadius:12 };
 
-  // ---- Datos Deuna (personaliza) ----
-  const deunaCuentaOculta = "Nro. ******0650";  // visible
-  const deunaCuentaReal   = "XXXXXXXX0650";     // el que copia el botón
+  // Helpers
+  const copy = (text: string) => navigator.clipboard?.writeText(text);
 
-  function copy(text: string) {
-    navigator.clipboard?.writeText(text).then(()=>alert("Copiado al portapapeles"));
+  // Construye el mensaje para WhatsApp
+  function buildWhatsAppMessage() {
+    const ts = new Date();
+    const orderId = `DS160-${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}-${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}`;
+    const servicios = items.map(id => `• ${TITLES[id] || id} — $${PRICES[id]} USD`).join("\n");
+    const url = typeof window !== "undefined" ? window.location.origin : "";
+    const msg =
+`Hola, envío el comprobante de pago de mi pedido.
+
+ID: ${orderId}
+Servicios:
+${servicios}
+
+Total: $${total} USD
+Método: Transferencia
+
+Adjunto imagen del comprobante aquí.
+${url}`;
+    return encodeURIComponent(msg);
+  }
+
+  // Abre WhatsApp con el mensaje prellenado
+  function openWhatsAppWithMessage() {
+    const encoded = buildWhatsAppMessage();
+    const link = `https://wa.me/${WHATSAPP_PHONE}?text=${encoded}`;
+    window.open(link, "_blank");
   }
 
   if (items.length === 0) {
@@ -70,7 +96,7 @@ function CheckoutInner() {
               <b>${PRICES[id]} USD</b>
               <button
                 onClick={()=>setItems(items.filter(x=>x!==id))}
-                style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:8, padding:'4px 8px' }}
+                style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:8, padding:'4px 8px', cursor:'pointer' }}
               >
                 Quitar
               </button>
@@ -81,22 +107,18 @@ function CheckoutInner() {
         <p>Total: <b>${total} USD</b></p>
       </section>
 
-      {/* Pago con Deuna (QR) */}
+      {/* PAGO CON DEUNA (QR) */}
       <section style={{...card, display:'grid', gap:12}}>
-        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', gap:12, flexWrap:'wrap'}}>
-          <h3 style={{margin:0}}>Paga con Deuna (QR)</h3>
-          <span style={{opacity:.8, fontSize:14}}>Rápido y sin comisión para ti</span>
-        </div>
+        <h3 style={{margin:0}}>Paga con Deuna (QR)</h3>
 
         <div style={{display:'grid', gap:16, gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', alignItems:'center'}}>
-          {/* QR más pequeño */}
+          {/* QR */}
           <div style={{...soft, padding:14, display:'grid', placeItems:'center'}}>
-            {/* Asegúrate de subir la imagen a /public/deuna-qr.png */}
             <img
               src="/deuna-qr.png"
               alt="QR Deuna"
               style={{
-                width: "220px",   // <-- tamaño más pequeño
+                width: "220px",
                 height: "auto",
                 borderRadius: "12px",
                 boxShadow: "0 8px 30px rgba(0,0,0,.35)"
@@ -104,38 +126,22 @@ function CheckoutInner() {
             />
           </div>
 
-          {/* Instrucciones + cuenta */}
+          {/* Texto */}
           <div style={{display:'grid', gap:12}}>
             <p style={{margin:0, opacity:.9}}>
               1) Abre tu app Deuna<br/>
-              2) Escanea el código o envía al N° de cuenta<br/>
+              2) Escanea el código<br/>
               3) Coloca el <b>mismo total</b> indicado arriba y confirma
             </p>
 
-            <div style={{...soft, padding:12}}>
-              <div style={{display:'flex', justifyContent:'space-between', gap:10, alignItems:'center', flexWrap:'wrap'}}>
-                <div>
-                  <div style={{opacity:.8, fontSize:12}}>Cuenta Deuna</div>
-                  <div style={{fontWeight:700}}>{deunaCuentaOculta}</div>
-                </div>
-                <button
-                  onClick={()=>copy(deunaCuentaReal)}
-                  style={{ background:'#2563eb', color:'#fff', border:'none', borderRadius:8, padding:'8px 12px' }}
-                  title="Copiar número"
-                >
-                  Copiar número
-                </button>
-              </div>
-            </div>
-
             <small style={{opacity:.7}}>
-              Después del pago, sube tu comprobante abajo o envíalo por WhatsApp. ¡Gracias!
+              Después del pago, sube tu comprobante abajo o envíalo por WhatsApp.
             </small>
           </div>
         </div>
       </section>
 
-      {/* Otros métodos (se mantienen) */}
+      {/* OTROS MÉTODOS */}
       <section style={card}>
         <h3 style={{marginTop:0}}>Otros métodos</h3>
 
@@ -150,28 +156,56 @@ function CheckoutInner() {
           <option value="2checkout">Tarjeta 2Checkout (próximamente)</option>
         </select>
 
-        <div style={{marginTop:16}}>
-          {method==="transferencia" && (
-            <>
-              <p>Sube tu comprobante de pago:</p>
-              <input
-                type="file"
-                style={{
-                  width:'100%',
-                  padding:10,
-                  borderRadius:8,
-                  border:'1px solid #1f2937',
-                  background:'#0b1220',
-                  color:'#fff'
-                }}
-              />
-              <div style={{marginTop:10}}>
-                <button style={btn}>Enviar comprobante</button>
+        {/* Datos visibles solo si es transferencia */}
+        {method === "transferencia" && (
+          <div style={{...soft, padding:14, marginTop:12, display:'grid', gap:12}}>
+            <div style={{opacity:.8, fontSize:13}}>Datos para transferencia</div>
+
+            <div style={{display:'grid', gap:6}}>
+              <div><b>Número de cuenta:</b> 2200449871
+                <button
+                  onClick={()=>copy("2200449871")}
+                  style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:6, padding:'4px 8px', cursor:'pointer' }}
+                  title="Copiar número"
+                >
+                  Copiar
+                </button>
               </div>
-            </>
-          )}
-          {method!=="transferencia" && <p>Este método se habilitará más adelante.</p>}
-        </div>
+              <div><b>Tipo de cuenta:</b> Ahorros</div>
+              <div><b>Banco:</b> Pichincha</div>
+              <div><b>Titular:</b> Roberto Acosta</div>
+            </div>
+
+            <div style={{display:'grid', gap:10}}>
+              <div>
+                <p style={{margin:'8px 0'}}>Sube tu comprobante de pago:</p>
+                <input
+                  type="file"
+                  style={{
+                    width:'100%',
+                    padding:10,
+                    borderRadius:8,
+                    border:'1px solid #1f2937',
+                    background:'#0b1220',
+                    color:'#fff'
+                  }}
+                />
+              </div>
+
+              {/* Botón: abrir WhatsApp con mensaje prellenado */}
+              <button onClick={openWhatsAppWithMessage} style={btn}>
+                Enviar comprobante por WhatsApp
+              </button>
+              <small style={{opacity:.75}}>
+                Se abrirá WhatsApp con el mensaje listo. Solo adjunta la foto del comprobante y envía.
+              </small>
+            </div>
+          </div>
+        )}
+
+        {method!=="transferencia" && (
+          <p style={{marginTop:16}}>Este método se habilitará más adelante.</p>
+        )}
 
         <div style={{marginTop:14}}>
           <a href="/" style={{...btn, background:'#334155'}}>Seguir comprando</a>

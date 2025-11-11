@@ -2,12 +2,17 @@
   "sections": [
     {
       "id": "personal",
-      "title": "Información personal",
+      "title": "Informaci\u00f3n personal",
       "fields": [
         {
           "name": "surname",
-          "label": "Apellidos",
+          "label": "Apellidos (Surname)",
           "help": "Tal como en el pasaporte."
+        },
+        {
+          "name": "given_names",
+          "label": "Nombres (Given Name)",
+          "help": "Exactamente como en el pasaporte."
         }
       ]
     }

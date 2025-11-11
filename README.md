@@ -1,6 +1,17 @@
+# DS-160 Asistido — Chat OpenAI + Botón WhatsApp
 
+## Cómo ejecutar
+```bash
+npm install
+npm run dev
+```
 
-## Chatbot IA
-- API: app/api/chat/route.ts
-- Widget: components/ChatWidget.tsx
-- Env: OPENAI_API_KEY, OPENAI_MODEL
+## Variables en Vercel / .env.local
+```
+OPENAI_API_KEY=sk-...
+OPENAI_MODEL=gpt-4o-mini
+```
+
+## Edita tu número de WhatsApp
+- `components/WhatsAppFloat.tsx` (const `phone`)
+- `app/layout.tsx` enlace del nav

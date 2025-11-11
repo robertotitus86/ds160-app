@@ -41,17 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </a>
 
             <nav style={styles.nav}>
-              <a href="/" style={styles.link}>Inicio</a>
-              <a href="/wizard" style={styles.link}>Formulario</a>
-              <a href="/checkout" style={styles.link}>Checkout</a>
-              <a href="/contacto" style={styles.link}>Contacto</a>
-              <a
-                href="https://wa.me/593999888777?text=Hola%20quiero%20ayuda%20con%20mi%20DS-160"
-                target="_blank" rel="noopener" style={styles.cta}
-              >
-                WhatsApp
-              </a>
-            </nav>
+  <a href="/" style={styles.link}>Inicio</a>
+  <a href="/wizard" style={styles.link}>Formulario</a>
+  <a href="/checkout" style={styles.link}>Checkout</a>
+</nav> 
           </div>
         </header>
 

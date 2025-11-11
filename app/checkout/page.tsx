@@ -1,37 +1,98 @@
 'use client';
 
-import { Suspense } from "react";
+import { Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const PRICES: Record<string, number> = { llenado:45, asesoria:35, cita:15 };
+const TITLES: Record<string, string> = {
+  llenado: "Llenado DS-160",
+  asesoria: "Asesoría Entrevista",
+  cita: "Toma de Cita",
+};
 
 export const dynamic = "force-dynamic";
 
 function CheckoutInner() {
   const params = useSearchParams();
-  const plan = params.get("plan") || "llenado";
-  const prices: Record<string, number> = { llenado:45, asesoria:35, cita:15 };
+  // soporta ?plan=llenado o ?plans=llenado,asesoria,cita
+  const one = params.get("plan");
+  const many = params.get("plans");
+  const fromURL = useMemo(
+    () => (many ? many.split(",").filter(Boolean) : (one ? [one] : [])),
+    [one, many]
+  );
+
+  const [items, setItems] = useState<string[]>([]);
   const [method, setMethod] = useState("transferencia");
 
-  return (
-    <div className="card">
-      <h2>Checkout</h2>
-      <p>Servicio: <b>{plan}</b> — <b>${prices[plan]||0} USD</b></p>
+  // intentar cargar desde localStorage si URL no trae nada
+  useEffect(() => {
+    if (fromURL.length) { setItems(fromURL); return; }
+    try {
+      const raw = localStorage.getItem("ds160_cart");
+      if (raw) setItems(JSON.parse(raw));
+    } catch {}
+  }, [fromURL.join(",")]);
 
-      <label className="label">Método de pago</label>
-      <select value={method} onChange={e=>setMethod(e.target.value)} className="input">
+  const total = items.reduce((acc, id) => acc + (PRICES[id] || 0), 0);
+
+  const card = { background:'#0f172a', padding:18, borderRadius:14, border:'1px solid #111827' };
+  const btn  = { background:'#2563eb', color:'#fff', border:'none', borderRadius:10, padding:'10px 14px', textDecoration:'none' as const };
+
+  if (items.length === 0) {
+    return (
+      <div style={card}>
+        <h2>Checkout</h2>
+        <p>No hay servicios seleccionados.</p>
+        <a href="/" style={btn}>Volver a servicios</a>
+      </div>
+    );
+  }
+
+  return (
+    <div style={card}>
+      <h2>Checkout</h2>
+
+      <h3 style={{marginTop:0}}>Servicios</h3>
+      <ul style={{margin:'6px 0 12px 18px'}}>
+        {items.map((id) => (
+          <li key={id} style={{display:'flex', alignItems:'center', gap:8}}>
+            <span>{TITLES[id] || id}</span>
+            <span>—</span>
+            <b>${PRICES[id]} USD</b>
+            <button
+              onClick={()=>setItems(items.filter(x=>x!==id))}
+              style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:8, padding:'4px 8px' }}
+            >
+              Quitar
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      <p>Total: <b>${total} USD</b></p>
+
+      <label style={{display:'block', marginTop:12, opacity:.9}}>Método de pago</label>
+      <select value={method} onChange={e=>setMethod(e.target.value)} style={{width:'100%', padding:10, borderRadius:8, border:'1px solid #1f2937', background:'#0b1220', color:'#fff'}}>
         <option value="transferencia">Transferencia</option>
-        <option value="paypal">PayPal</option>
-        <option value="2checkout">Tarjeta (2Checkout)</option>
+        <option value="paypal">PayPal (próximamente)</option>
+        <option value="2checkout">Tarjeta 2Checkout (próximamente)</option>
       </select>
 
       <div style={{marginTop:16}}>
-        {method==="transferencia" && (<>
-          <p>Sube tu comprobante de pago:</p>
-          <input type="file" className="input" />
-          <div style={{marginTop:10}}><button className="btn">Enviar comprobante</button></div>
-        </>)}
-        {method==="paypal" && (<p>Botón de PayPal (lo activamos luego con tu llave).</p>)}
-        {method==="2checkout" && (<p>Botón de 2Checkout (lo activamos luego).</p>)}
+        {method==="transferencia" && (
+          <>
+            <p>Sube tu comprobante de pago:</p>
+            <input type="file" style={{width:'100%', padding:10, borderRadius:8, border:'1px solid #1f2937', background:'#0b1220', color:'#fff'}} />
+            <div style={{marginTop:10}}><button style={btn}>Enviar comprobante</button></div>
+          </>
+        )}
+        {method!=="transferencia" && <p>Este método se habilitará más adelante.</p>}
+      </div>
+
+      <div style={{marginTop:14}}>
+        <a href="/" style={{...btn, background:'#334155'}}>Seguir comprando</a>
       </div>
     </div>
   );

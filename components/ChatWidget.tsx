@@ -1,8 +1,8 @@
 'use client';
 
 import { useRef, useState } from "react";
-import hints from "@/data/hints-merged.json";
-import ds from "@/data/questions.json";
+import hints from "../data/hints-merged.json";
+import ds from "../data/questions.json";
 
 type Hint = { label: string; help: string };
 

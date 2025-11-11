@@ -1,9 +1,15 @@
 'use client';
+
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-export default function Checkout(){
-  const plan = useSearchParams().get("plan") || "llenado";
+// (opcional) evita prerender estático si quieres
+export const dynamic = "force-dynamic";
+
+function CheckoutInner() {
+  const params = useSearchParams();
+  const plan = params.get("plan") || "llenado";
   const prices: Record<string, number> = { llenado:45, asesoria:35, cita:15 };
   const [method, setMethod] = useState("transferencia");
 
@@ -29,5 +35,13 @@ export default function Checkout(){
         {method==="2checkout" && (<p>Botón de 2Checkout (lo activamos luego).</p>)}
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div style={{padding:20}}>Cargando checkout…</div>}>
+      <CheckoutInner />
+    </Suspense>
   );
 }

@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <small className="muted">No es asesoría legal. Verifica siempre en CEAC.</small>
           </div>
         </footer>
-
+  
         {/* Widgets */}
         <ChatWidget />
         <WhatsAppFloat />

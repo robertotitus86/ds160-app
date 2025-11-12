@@ -9,7 +9,7 @@ type Plan = { id: PlanId; title: string; price: number };
 const PLANS: Plan[] = [
   { id: 'llenado', title: 'Llenado DS-160', price: 45 },
   { id: 'asesoria', title: 'Asesoría Entrevista', price: 35 },
-  { id: 'cita',     title: 'Toma de Cita',       price: 15 },
+  { id: 'cita', title: 'Toma de Cita', price: 15 },
 ];
 
 const styles = {
@@ -20,14 +20,14 @@ const styles = {
     padding: 18,
   } as React.CSSProperties,
   h2: { margin: 0, marginBottom: 8 } as React.CSSProperties,
-  small: { opacity: .8, fontSize: 14 } as React.CSSProperties,
+  small: { opacity: 0.8, fontSize: 14 } as React.CSSProperties,
   btn: {
     background: '#2563eb',
     color: '#fff',
     border: 'none',
     borderRadius: 10,
     padding: '10px 14px',
-    cursor: 'pointer'
+    cursor: 'pointer',
   } as React.CSSProperties,
   btnGhost: {
     background: '#334155',
@@ -35,36 +35,33 @@ const styles = {
     border: 'none',
     borderRadius: 10,
     padding: '8px 12px',
-    cursor: 'pointer'
+    cursor: 'pointer',
   } as React.CSSProperties,
-  muted: { opacity: .7 } as React.CSSProperties,
+  muted: { opacity: 0.7 } as React.CSSProperties,
   card: {
     background: '#0b1220',
     border: '1px solid #0f172a',
     borderRadius: 12,
-    padding: 14
+    padding: 14,
   } as React.CSSProperties,
 };
 
 export default function CheckoutPage() {
-  // --- Carrito (guardado en localStorage: ds160_cart = PlanId[])
   const [cart, setCart] = useState<PlanId[]>([]);
 
-  // Carga inicial del carrito
   useEffect(() => {
     try {
       const raw = localStorage.getItem('ds160_cart');
       if (raw) {
         const arr = JSON.parse(raw) as PlanId[];
-        setCart(arr.filter((x) => ['llenado','asesoria','cita'].includes(x)));
+        setCart(arr.filter((x) => ['llenado', 'asesoria', 'cita'].includes(x)));
       }
     } catch {}
   }, []);
 
-  // total
   const total = useMemo(() => {
     const map = new Map<PlanId, number>();
-    PLANS.forEach(p => map.set(p.id, p.price));
+    PLANS.forEach((p) => map.set(p.id, p.price));
     return cart.reduce((acc, pid) => acc + (map.get(pid) || 0), 0);
   }, [cart]);
 
@@ -74,7 +71,6 @@ export default function CheckoutPage() {
     localStorage.setItem('ds160_cart', JSON.stringify(next));
   }
 
-  // --- Subida de comprobante
   const fileRef = useRef<HTMLInputElement>(null);
   const [sending, setSending] = useState(false);
 
@@ -98,7 +94,6 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!data.ok) throw new Error(data?.error || 'No se pudo crear la orden.');
 
-      // Marcamos cookie 'paid' desde el server con /api/mark-paid
       const mark = await fetch('/api/mark-paid', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -108,7 +103,6 @@ export default function CheckoutPage() {
       if (!mk.ok) throw new Error('No se pudo marcar el pago.');
 
       alert(`¡Gracias! Pago confirmado.\nID de pedido: ${data.orderId}\nAhora podrás acceder al asistente.`);
-      // Deja al usuario seguir a /wizard
       window.location.href = '/wizard';
     } catch (e: any) {
       alert(e?.message || 'Error al enviar el comprobante.');
@@ -117,7 +111,6 @@ export default function CheckoutPage() {
     }
   }
 
-  // --- Render
   return (
     <div style={{ display: 'grid', gap: 16 }}>
       {/* Carrito */}
@@ -130,17 +123,30 @@ export default function CheckoutPage() {
           ) : (
             <div style={{ display: 'grid', gap: 10 }}>
               {cart.map((pid) => {
-                const p = PLANS.find(x => x.id === pid)!;
+                const p = PLANS.find((x) => x.id === pid)!;
                 return (
-                  <div key={pid} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', background:'#0b1220', border:'1px solid #0f172a', borderRadius:10, padding:'10px 12px' }}>
+                  <div
+                    key={pid}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      background: '#0b1220',
+                      border: '1px solid #0f172a',
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                    }}
+                  >
                     <div>
-                      <b>{p.title}</b> — <span style={{ color:'#93c5fd' }}>${p.price} USD</span>
+                      <b>{p.title}</b> — <span style={{ color: '#93c5fd' }}>${p.price} USD</span>
                     </div>
-                    <button onClick={() => removePlan(pid)} style={styles.btnGhost}>Quitar</button>
+                    <button onClick={() => removePlan(pid)} style={styles.btnGhost}>
+                      Quitar
+                    </button>
                   </div>
                 );
               })}
-              <div style={{ textAlign:'right', marginTop:4 }}>
+              <div style={{ textAlign: 'right', marginTop: 4 }}>
                 <b>Total:</b> ${total} USD
               </div>
             </div>
@@ -148,97 +154,62 @@ export default function CheckoutPage() {
         </div>
       </section>
 
-      {/* Métodos de Pago */}
+      {/* Pago */}
       <section style={styles.section}>
         <h3 style={styles.h2}>Sube tu comprobante para continuar</h3>
 
-        {/* Grid de 2 columnas: QR + Instrucciones */}
-        <div style={{ display:'grid', gridTemplateColumns:'minmax(260px, 360px) 1fr', gap:16 }}>
-          {/* Columna izquierda: QR Deuna/Transferencia */}
-          <div style={{ ...styles.card, display:'grid', gap:12 }}>
-            <div style={{ fontWeight:700 }}>Transferencia / Deuna</div>
-            <div style={{ borderRadius:12, overflow:'hidden', border:'1px solid #0f172a', background:'#0b1220', display:'grid', placeItems:'center', padding:10 }}>
-              {/* Ajusta width/height para verlo más pequeño o grande */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 320px) 1fr', gap: 16 }}>
+          <div style={{ ...styles.card, display: 'grid', gap: 12 }}>
+            <div style={{ fontWeight: 700 }}>Transferencia / Deuna</div>
+            <div style={{ textAlign: 'center', fontSize: 14, color: '#93c5fd' }}>Escanea para pagar con Deuna</div>
+
+            <div
+              style={{
+                borderRadius: 12,
+                overflow: 'hidden',
+                border: '1px solid #0f172a',
+                background: '#0b1220',
+                display: 'grid',
+                placeItems: 'center',
+                padding: 8,
+              }}
+            >
               <Image
                 src="/deuna-qr.png"
                 alt="QR Deuna"
-                width={280}
-                height={280}
-                style={{ width:'100%', height:'auto', maxWidth:280 }}
+                width={200}
+                height={200}
+                style={{ width: '100%', height: 'auto', maxWidth: 200 }}
                 priority
               />
             </div>
 
-            <div style={{ fontSize:14, lineHeight:1.5 }}>
-              <div><b>Número de cuenta:</b> 2200449871 <button
-                onClick={() => { navigator.clipboard?.writeText('2200449871'); alert('Número de cuenta copiado'); }}
-                style={{ ...styles.btnGhost, padding:'4px 8px', marginLeft:8 }}
-              >Copiar</button></div>
-              <div><b>Tipo de cuenta:</b> Ahorros</div>
-              <div><b>Banco:</b> Pichincha</div>
-              <div><b>Titular:</b> Roberto Acosta</div>
-            </div>
-          </div>
-
-          {/* Columna derecha: instrucciones + file upload */}
-          <div style={{ display:'grid', gap:12 }}>
-            <div style={styles.card}>
-              <ol style={{ margin:0, paddingLeft:18, lineHeight:1.6 }}>
-                <li>Abre tu app Deuna o banco y escanea el QR o usa el número de cuenta.</li>
-                <li>Coloca el <b>mismo total</b> indicado arriba y confirma.</li>
-                <li>Sube abajo tu comprobante (imagen o PDF) y confirma.</li>
-              </ol>
-            </div>
-
-            <div style={styles.card}>
-              <div style={{ fontWeight:700, marginBottom:10 }}>Comprobante de pago (imagen o PDF)</div>
-              <input ref={fileRef} type="file" accept="image/*,.pdf" />
-              <div style={{ marginTop:12, display:'flex', gap:8, flexWrap:'wrap' }}>
-                <button onClick={submitReceipt} style={styles.btn} disabled={sending || !cart.length}>
-                  {sending ? 'Confirmando...' : 'Confirmar pago y continuar'}
+            <div style={{ fontSize: 14, lineHeight: 1.5 }}>
+              <div>
+                <b>Número de cuenta:</b> 2200449871{' '}
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText('2200449871');
+                    alert('Número de cuenta copiado');
+                  }}
+                  style={{ ...styles.btnGhost, padding: '4px 8px', marginLeft: 8 }}
+                >
+                  Copiar
                 </button>
-                <a href="/" style={{ ...styles.btnGhost, textDecoration:'none', display:'inline-block' }}>Seguir comprando</a>
               </div>
-              <div style={{ ...styles.small, marginTop:8 }}>
-                Al confirmar, generaremos tu <b>ID de pedido</b>, marcaremos tu acceso y podrás completar el asistente.
+              <div>
+                <b>Tipo de cuenta:</b> Ahorros
+              </div>
+              <div>
+                <b>Banco:</b> Pichincha
+              </div>
+              <div>
+                <b>Titular:</b> Roberto Acosta
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Tarjetas de métodos adicionales */}
-        <div style={{ marginTop:16, display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))', gap:12 }}>
-          {/* Transferencia (activo) */}
-          <div style={styles.card}>
-            <div style={{ fontWeight:700, marginBottom:6 }}>Transferencia / Deuna</div>
-            <div style={{ ...styles.small, marginBottom:10 }}>
-              Método disponible. Usa el QR o el número de cuenta y sube tu comprobante.
-            </div>
-            <button style={styles.btn} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              Usar transferencia
-            </button>
-          </div>
-
-          {/* PayPal (Próximamente) */}
-          <div style={{ ...styles.card, opacity:.6 }}>
-            <div style={{ fontWeight:700, marginBottom:6 }}>PayPal</div>
-            <div style={{ ...styles.small, marginBottom:10 }}>Próximamente</div>
-            <button style={{ ...styles.btnGhost, cursor:'not-allowed' }} disabled>Próximamente</button>
-          </div>
-
-          {/* 2Checkout (Próximamente) */}
-          <div style={{ ...styles.card, opacity:.6 }}>
-            <div style={{ fontWeight:700, marginBottom:6 }}>2Checkout (Tarjeta)</div>
-            <div style={{ ...styles.small, marginBottom:10 }}>Próximamente</div>
-            <button style={{ ...styles.btnGhost, cursor:'not-allowed' }} disabled>Próximamente</button>
-          </div>
-        </div>
-      </section>
-
-      {/* Nota legal */}
-      <div style={{ textAlign:'center', opacity:.7, fontSize:13, marginTop:8 }}>
-        © 2025 · DS-160 Asistido — No es asesoría legal. Verifica siempre en CEAC.
-      </div>
-    </div>
-  );
-}
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div style={styles.card}>
+              <ol style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
+                <li>Abre tu app Deuna o banco y escane

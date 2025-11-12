@@ -20,12 +20,10 @@ export async function POST(req: Request) {
 
     const orderId = makeOrderId();
 
-    // 1) Guardar archivo del comprobante
-    const receiptBlob = await put(`ds160/receipts/${orderId}-${file.name}`, file, {
-      access: 'private',
-    });
+    // 1) Guardar archivo del comprobante (sin 'access')
+    const receiptBlob = await put(`ds160/receipts/${orderId}-${file.name}`, file);
 
-    // 2) Guardar JSON de la orden
+    // 2) Guardar JSON de la orden (sin 'access')
     const orderJson = {
       id: orderId,
       plans: planList.split(',').filter(Boolean),
@@ -35,7 +33,6 @@ export async function POST(req: Request) {
     };
 
     await put(`ds160/orders/${orderId}.json`, JSON.stringify(orderJson, null, 2), {
-      access: 'private',
       contentType: 'application/json',
     });
 

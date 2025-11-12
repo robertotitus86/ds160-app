@@ -1,39 +1,37 @@
-import { NextResponse } from 'next/server';
-import { list, put } from '@vercel/blob';
+import { NextResponse } from "next/server";
+import { list, get, put } from "@vercel/blob";
 
-export const runtime = 'edge';
+export const runtime = "edge";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json().catch(() => ({}));
-    const { id, token, action } = body as { id?: string; token?: string; action?: 'approve' | 'reject' };
+    const { id, token } = await req.json();
+    if (token !== process.env.ADMIN_TOKEN) {
+      return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 401 });
+    }
 
-    if (!id || !token)
-      return NextResponse.json({ ok: false, error: 'missing_params' }, { status: 400 });
+    const blobs = await list({ prefix: "ds160/orders/" });
+    const blob = blobs.blobs.find(b => b.pathname.endsWith(`${id}.json`));
+    if (!blob) {
+      return NextResponse.json({ ok: false, error: "Orden no encontrada" }, { status: 404 });
+    }
 
-    if (token !== process.env.ADMIN_TOKEN)
-      return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
+    const order = await (await get(blob.pathname)).json();
 
-    // Buscar el JSON de la orden en el blob storage
-    const key = `ds160/orders/${id}.json`;
-    const { blobs } = await list({ prefix: key, limit: 1 });
+    // Solo aprobar si está pendiente
+    if (order.status === "pending") {
+      order.status = "paid";
+      order.approvedAt = new Date().toISOString();
 
-    if (!blobs.length)
-      return NextResponse.json({ ok: false, error: 'not_found' }, { status: 404 });
+      await put(blob.pathname, JSON.stringify(order, null, 2), {
+        access: "public",
+        contentType: "application/json",
+      });
+    }
 
-    const current = await fetch(blobs[0].url).then((r) => r.json());
-    current.status = action === 'reject' ? 'rejected' : 'approved';
-    current.reviewedAt = new Date().toISOString();
-
-    // Guardar de nuevo la orden actualizada
-    await put(blobs[0].pathname, JSON.stringify(current, null, 2), {
-      access: 'public', // 👈 requerido por @vercel/blob
-      contentType: 'application/json',
-    });
-
-    return NextResponse.json({ ok: true, id, status: current.status });
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message || 'approve_failed' }, { status: 500 });
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ ok: false, error: "Error al aprobar" }, { status: 500 });
   }
 }
-

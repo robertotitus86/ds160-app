@@ -9,7 +9,6 @@ export async function GET(req: Request) {
     const id = searchParams.get('id');
     if (!id) return NextResponse.json({ ok:false, error:'missing_id' }, { status: 400 });
 
-    // lee el JSON de la orden
     const { url } = await get(`ds160/orders/${id}.json`);
     const data = await fetch(url).then(r => r.json());
     return NextResponse.json({ ok:true, status: data?.status ?? 'pending', order: data });

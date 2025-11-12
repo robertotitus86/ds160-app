@@ -7,15 +7,21 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const orderId: string = body?.orderId || '';
 
-    // Cookie "paid" por 3 días
     const res = NextResponse.json({ ok: true, orderId });
     res.cookies.set('paid', 'true', {
-      httpOnly: false, // accesible desde el navegador
+      httpOnly: false,
       sameSite: 'lax',
       secure: true,
-      maxAge: 60 * 60 * 24 * 3, // 3 días
+      maxAge: 60 * 60 * 24 * 3,
       path: '/',
     });
+
+    return res;
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 400 });
+  }
+}
+;
 
     return res;
   } catch (e) {

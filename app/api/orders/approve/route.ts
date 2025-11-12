@@ -11,7 +11,6 @@ export async function POST(req: Request) {
     if (!id || !token) return NextResponse.json({ ok:false, error:'missing_params' }, { status: 400 });
     if (token !== process.env.ADMIN_TOKEN) return NextResponse.json({ ok:false, error:'unauthorized' }, { status: 401 });
 
-    // Lee orden actual
     const { url, pathname } = await get(`ds160/orders/${id}.json`);
     const order = await fetch(url).then(r => r.json());
 

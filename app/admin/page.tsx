@@ -1,370 +1,252 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from "react";
 
-type OrderStatus = 'pending' | 'approved' | 'rejected';
-type Order = {
-  id: string;
-  status: OrderStatus;
-  createdAt?: string;
-  reviewedAt?: string;
-  plans?: string[];
-  receiptUrl?: string;
-};
-
-const styles = {
-  card: {
-    background: '#0f172a',
-    padding: 18,
-    borderRadius: 14,
-    border: '1px solid #111827',
-  } as React.CSSProperties,
-
-  btn: {
-    background: '#2563eb',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 10,
-    padding: '9px 12px',
-    cursor: 'pointer',
-  } as React.CSSProperties,
-
-  btnGhost: {
-    background: '#334155',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 10,
-    padding: '9px 12px',
-    cursor: 'pointer',
-  } as React.CSSProperties,
-
-  badge: (s: OrderStatus) =>
-    ({
-      display: 'inline-block',
-      fontSize: 12,
-      padding: '2px 8px',
-      borderRadius: 999,
-      background: s === 'approved' ? '#16a34a' : s === 'rejected' ? '#dc2626' : '#f59e0b',
-      color: '#fff',
-    } as React.CSSProperties),
-
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse',
-  } as React.CSSProperties,
-
-  th: {
-    textAlign: 'left',
-    padding: '8px 10px',
-    borderBottom: '1px solid #1f2937',
-    color: '#cbd5e1',
-  } as React.CSSProperties,
-
-  td: {
-    padding: '8px 10px',
-    borderBottom: '1px solid #0b1220',
-  } as React.CSSProperties,
-};
+type OrderStatus = "pending" | "paid" | "rejected";
+type StatusResp =
+  | { ok: true; order: { id: string; status: OrderStatus; receiptUrl?: string } }
+  | { ok: false; error?: string };
 
 export default function AdminPage() {
-  const [token, setToken] = useState('');
-  const [tokenOk, setTokenOk] = useState(false);
-
-  const [searchId, setSearchId] = useState('');
-  const [found, setFound] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const [list, setList] = useState<Order[]>([]);
-  const [listLoading, setListLoading] = useState(false);
+  const [token, setToken] = useState("");
+  const [orderId, setOrderId] = useState("");
+  const [status, setStatus] = useState<OrderStatus | null>(null);
+  const [receiptUrl, setReceiptUrl] = useState<string | undefined>(undefined);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const t = localStorage.getItem('admin_token') || '';
-    if (t) {
-      setToken(t);
-      setTokenOk(true);
-      void loadRecent(t);
-    }
+    // Recupera el token para no escribirlo cada vez
+    const saved = localStorage.getItem("ds160_admin_token");
+    if (saved) setToken(saved);
   }, []);
 
-  const hasToken = useMemo(() => token.trim().length > 0, [token]);
+  const saveToken = () => {
+    localStorage.setItem("ds160_admin_token", token);
+    setMessage("Token guardado en este navegador.");
+    setTimeout(() => setMessage(""), 2000);
+  };
 
-  async function saveToken() {
-    if (!hasToken) {
-      alert('Ingresa un token');
+  const fetchStatus = async () => {
+    setMessage("");
+    setStatus(null);
+    setReceiptUrl(undefined);
+    if (!orderId) {
+      setMessage("Debes indicar un Order ID.");
       return;
     }
-    localStorage.setItem('admin_token', token.trim());
-    setTokenOk(true);
-    await loadRecent(token.trim());
-  }
-
-  async function loadRecent(tk = token) {
     try {
-      setListLoading(true);
-      const res = await fetch(`/api/orders/list?limit=25&token=${encodeURIComponent(tk)}`);
-      const data = await res.json();
-      if (!data.ok) throw new Error(data?.error || 'No se pudo listar');
-      setList(data.items as Order[]);
-    } catch (e: any) {
-      alert(e?.message || 'Error listando órdenes');
-    } finally {
-      setListLoading(false);
-    }
-  }
-
-  async function findById() {
-    try {
-      if (!searchId.trim()) {
-        alert('Ingresa un ID');
-        return;
-      }
-      setLoading(true);
-      const res = await fetch(`/api/orders/status?id=${encodeURIComponent(searchId.trim())}`);
-      const data = await res.json();
-      if (!data.ok) throw new Error(data?.error || 'No encontrado');
-      const o = data.order as Order;
-      setFound({
-        id: o.id || searchId.trim(),
-        status: (o.status as OrderStatus) || 'pending',
-        createdAt: o.createdAt,
-        reviewedAt: o.reviewedAt,
-        plans: o.plans || [],
-        receiptUrl: o.receiptUrl,
+      const r = await fetch(`/api/orders/status?orderId=${encodeURIComponent(orderId)}`, {
+        cache: "no-store",
       });
-    } catch (e: any) {
-      alert(e?.message || 'Error buscando orden');
-      setFound(null);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function act(id: string, action: 'approve' | 'reject') {
-    try {
-      if (!tokenOk) {
-        alert('Configura tu token primero');
-        return;
+      const data = (await r.json()) as StatusResp;
+      if (data.ok) {
+        setStatus(data.order.status);
+        setReceiptUrl(data.order.receiptUrl);
+      } else {
+        setMessage(data.error || "No se pudo consultar el estado.");
       }
-      const res = await fetch('/api/orders/approve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, token, action }),
-      });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data?.error || 'No se pudo actualizar');
-
-      alert(`Orden ${id} -> ${data.status.toUpperCase()}`);
-      if (found?.id === id) await findById();
-      await loadRecent(token);
     } catch (e: any) {
-      alert(e?.message || 'Error aprobando/rechazando');
+      setMessage(e?.message || "Error consultando estado.");
     }
-  }
+  };
 
-  function copy(txt?: string) {
-    if (!txt) return;
-    navigator.clipboard?.writeText(txt);
-    alert('Copiado al portapapeles.');
-  }
+  const approve = async () => {
+    if (!token) {
+      setMessage("Escribe tu ADMIN_TOKEN para aprobar.");
+      return;
+    }
+    if (!orderId) {
+      setMessage("Debes indicar un Order ID.");
+      return;
+    }
+    try {
+      const r = await fetch("/api/orders/approve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": token,
+        },
+        body: JSON.stringify({ orderId, action: "approve" }),
+      });
+      const data = (await r.json()) as { ok: boolean; error?: string };
+      if (data.ok) {
+        setMessage("Orden aprobada.");
+        setStatus("paid");
+      } else {
+        setMessage(data.error || "No se pudo aprobar.");
+      }
+    } catch (e: any) {
+      setMessage(e?.message || "Error aprobando.");
+    }
+  };
+
+  const reject = async () => {
+    if (!token) {
+      setMessage("Escribe tu ADMIN_TOKEN para rechazar.");
+      return;
+    }
+    if (!orderId) {
+      setMessage("Debes indicar un Order ID.");
+      return;
+    }
+    try {
+      const r = await fetch("/api/orders/approve", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": token,
+        },
+        body: JSON.stringify({ orderId, action: "reject" }),
+      });
+      const data = (await r.json()) as { ok: boolean; error?: string };
+      if (data.ok) {
+        setMessage("Orden rechazada.");
+        setStatus("rejected");
+      } else {
+        setMessage(data.error || "No se pudo rechazar.");
+      }
+    } catch (e: any) {
+      setMessage(e?.message || "Error rechazando.");
+    }
+  };
+
+  const tagStyle = (s: OrderStatus | null) => {
+    const base: React.CSSProperties = {
+      display: "inline-block",
+      borderRadius: 999,
+      padding: "4px 10px",
+      fontWeight: 700,
+      fontSize: 12,
+      marginLeft: 8,
+      color: "#0b1120",
+    };
+    if (s === "paid") return { ...base, background: "#86efac" };
+    if (s === "pending") return { ...base, background: "#fde68a" };
+    if (s === "rejected") return { ...base, background: "#fca5a5" };
+    return { ...base, background: "#e5e7eb" };
+    };
+
+  const container: React.CSSProperties = {
+    maxWidth: 880,
+    margin: "0 auto",
+    padding: "24px 16px",
+    color: "#e5e7eb",
+  };
+  const card: React.CSSProperties = {
+    background: "#0f172a",
+    border: "1px solid #172554",
+    borderRadius: 16,
+    padding: 20,
+  };
+  const row: React.CSSProperties = { display: "flex", gap: 12, flexWrap: "wrap" };
+  const label: React.CSSProperties = { fontSize: 14, opacity: 0.8 };
+  const input: React.CSSProperties = {
+    background: "#0b1220",
+    border: "1px solid #1f2a44",
+    color: "#e5e7eb",
+    borderRadius: 8,
+    padding: "10px 12px",
+    minWidth: 260,
+  };
+  const btn: React.CSSProperties = {
+    background: "#2563eb",
+    color: "#fff",
+    border: 0,
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontWeight: 700,
+    cursor: "pointer",
+  };
+  const btnGhost: React.CSSProperties = {
+    background: "transparent",
+    border: "1px solid #334155",
+    color: "#e5e7eb",
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontWeight: 600,
+    cursor: "pointer",
+  };
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <section style={styles.card}>
-        <h2 style={{ marginTop: 0 }}>Panel de Administración</h2>
-        <p style={{ marginTop: 0, opacity: 0.85 }}>
-          Ingresa tu <b>ADMIN_TOKEN</b> para listar y gestionar órdenes. Este panel consume
-          <code> /api/orders/list </code> y <code> /api/orders/approve</code>.
+    <div style={container}>
+      <div style={card}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Panel Admin – DS-160</h2>
+        <p style={{ opacity: 0.8, marginTop: 0 }}>
+          Revisa el estado de un pedido por su <b>Order ID</b>, y aprueba/rechaza el pago.
         </p>
 
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <input
-            type="password"
-            value={token}
-            onChange={(e) => setToken(e.target.value)}
-            placeholder="Pegue aquí su ADMIN_TOKEN"
-            style={{
-              flex: '1 1 320px',
-              minWidth: 260,
-              padding: 10,
-              borderRadius: 8,
-              border: '1px solid #1f2937',
-              background: '#0b1220',
-              color: '#fff',
-            }}
-          />
-          <button onClick={saveToken} style={styles.btn}>
-            Usar token
-          </button>
-          <button
-            onClick={() => {
-              localStorage.removeItem('admin_token');
-              setToken('');
-              setTokenOk(false);
-            }}
-            style={styles.btnGhost}
-          >
-            Quitar token
-          </button>
-        </div>
-      </section>
+        <div style={{ height: 16 }} />
 
-      {/* Buscar por ID */}
-      <section style={styles.card}>
-        <h3 style={{ marginTop: 0 }}>Buscar por ID de pedido</h3>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <input
-            type="text"
-            value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
-            placeholder="Ej: DS160-20251112-101403"
-            style={{
-              flex: '1 1 320px',
-              minWidth: 260,
-              padding: 10,
-              borderRadius: 8,
-              border: '1px solid #1f2937',
-              background: '#0b1220',
-              color: '#fff',
-            }}
-          />
-          <button onClick={findById} style={styles.btn} disabled={loading}>
-            {loading ? 'Buscando…' : 'Buscar'}
-          </button>
+        <div style={row}>
+          <div>
+            <div style={label}>ADMIN_TOKEN</div>
+            <input
+              style={input}
+              type="password"
+              placeholder="Escribe tu token de admin"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+            />
+          </div>
+          <button style={btnGhost} onClick={saveToken}>Guardar token</button>
         </div>
 
-        {found && (
-          <div
-            style={{
-              marginTop: 14,
-              padding: 12,
-              border: '1px solid #1f2937',
-              borderRadius: 10,
-              background: '#0b1220',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
-              <div>
-                <div>
-                  <b>ID:</b> {found.id}
-                </div>
-                <div>
-                  <b>Estado:</b> <span style={styles.badge(found.status)}>{found.status}</span>
-                </div>
-                {found.createdAt && (
-                  <div>
-                    <b>Creada:</b> {new Date(found.createdAt).toLocaleString()}
-                  </div>
-                )}
-                {found.reviewedAt && (
-                  <div>
-                    <b>Revisada:</b> {new Date(found.reviewedAt).toLocaleString()}
-                  </div>
-                )}
-                {found.plans?.length ? (
-                  <div>
-                    <b>Planes:</b> {found.plans.join(', ')}
-                  </div>
-                ) : null}
-                {found.receiptUrl && (
-                  <div style={{ marginTop: 6 }}>
-                    <b>Comprobante:</b>{' '}
-                    <button onClick={() => window.open(found.receiptUrl!, '_blank')} style={styles.btnGhost}>
-                      Ver
-                    </button>
-                    <button onClick={() => copy(found.receiptUrl)} style={{ ...styles.btnGhost, marginLeft: 8 }}>
-                      Copiar URL
-                    </button>
-                  </div>
-                )}
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => act(found.id, 'approve')} style={styles.btn}>
-                  Aprobar
-                </button>
-                <button onClick={() => act(found.id, 'reject')} style={styles.btnGhost}>
-                  Rechazar
-                </button>
-              </div>
+        <div style={{ height: 20 }} />
+
+        <div style={row}>
+          <div>
+            <div style={label}>Order ID</div>
+            <input
+              style={input}
+              placeholder="DS160-YYYYMMDD-HHMMSS"
+              value={orderId}
+              onChange={(e) => setOrderId(e.target.value)}
+            />
+          </div>
+          <button style={btnGhost} onClick={fetchStatus}>Consultar estado</button>
+        </div>
+
+        <div style={{ height: 14 }} />
+
+        {status && (
+          <div style={{ opacity: 0.9 }}>
+            Estado actual: <b>{status.toUpperCase()}</b>
+            <span style={tagStyle(status)}>{status.toUpperCase()}</span>
+          </div>
+        )}
+
+        {receiptUrl && (
+          <>
+            <div style={{ height: 10 }} />
+            <div style={{ opacity: 0.85 }}>
+              Comprobante:{" "}
+              <a href={receiptUrl} target="_blank" rel="noreferrer" style={{ color: "#93c5fd" }}>
+                abrir
+              </a>
             </div>
-          </div>
+          </>
         )}
-      </section>
 
-      {/* Recientes */}
-      <section style={styles.card}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ marginTop: 0 }}>Órdenes recientes</h3>
-          <button onClick={() => loadRecent()} style={styles.btnGhost} disabled={!tokenOk || listLoading}>
-            {listLoading ? 'Actualizando…' : 'Actualizar'}
-          </button>
+        <div style={{ height: 20 }} />
+
+        <div style={row}>
+          <button style={btn} onClick={approve}>Aprobar</button>
+          <button style={btnGhost} onClick={reject}>Rechazar</button>
         </div>
 
-        {!tokenOk ? (
-          <p style={{ opacity: 0.8 }}>Ingresa tu token para ver el listado.</p>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>ID</th>
-                  <th style={styles.th}>Estado</th>
-                  <th style={styles.th}>Creada</th>
-                  <th style={styles.th}>Revisada</th>
-                  <th style={styles.th}>Planes</th>
-                  <th style={styles.th}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {list.map((o) => (
-                  <tr key={o.id}>
-                    <td style={styles.td}>
-                      <a
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSearchId(o.id);
-                          setFound(o);
-                        }}
-                        style={{ color: '#93c5fd' }}
-                      >
-                        {o.id}
-                      </a>
-                    </td>
-                    <td style={styles.td}>
-                      <span style={styles.badge(o.status)}>{o.status}</span>
-                    </td>
-                    <td style={styles.td}>{o.createdAt ? new Date(o.createdAt).toLocaleString() : '-'}</td>
-                    <td style={styles.td}>{o.reviewedAt ? new Date(o.reviewedAt).toLocaleString() : '-'}</td>
-                    <td style={styles.td}>{o.plans?.join(', ') || '-'}</td>
-                    <td style={styles.td}>
-                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        <button onClick={() => act(o.id, 'approve')} style={styles.btn}>
-                          Aprobar
-                        </button>
-                        <button onClick={() => act(o.id, 'reject')} style={styles.btnGhost}>
-                          Rechazar
-                        </button>
-                        {o.receiptUrl && (
-                          <button onClick={() => window.open(o.receiptUrl!, '_blank')} style={styles.btnGhost}>
-                            Ver comprobante
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {list.length === 0 && (
-                  <tr>
-                    <td colSpan={6} style={{ ...styles.td, opacity: 0.7 }}>
-                      Sin resultados.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        {message && (
+          <>
+            <div style={{ height: 12 }} />
+            <div style={{ opacity: 0.85 }}>{message}</div>
+          </>
         )}
-      </section>
+
+        <div style={{ height: 20 }} />
+        <div style={{ opacity: 0.6, fontSize: 12 }}>
+          Tip: Si vas a aprobar varios pedidos, guarda tu <b>ADMIN_TOKEN</b> con “Guardar token”
+          y no tendrás que volver a pegarlo.
+        </div>
+      </div>
     </div>
   );
 }

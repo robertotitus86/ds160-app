@@ -1,277 +1,286 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-type PlanId = 'llenado' | 'asesoria' | 'cita';
-type Plan = { id: PlanId; title: string; price: number };
+type OrderStatus = "pending" | "paid" | "rejected";
+type CreateResp =
+  | { ok: true; orderId: string; receiptUrl: string }
+  | { ok: false; error?: string };
 
-const PLANS: Plan[] = [
-  { id: 'llenado', title: 'Llenado DS-160', price: 45 },
-  { id: 'asesoria', title: 'Asesoría Entrevista', price: 35 },
-  { id: 'cita', title: 'Toma de Cita', price: 15 },
-];
+type StatusResp =
+  | { ok: true; order: { id: string; status: OrderStatus; receiptUrl?: string } }
+  | { ok: false; error?: string };
 
 const styles = {
-  section: {
-    background: '#0f1629',
-    border: '1px solid #0b1220',
-    borderRadius: 14,
-    padding: 18,
-  } as React.CSSProperties,
-  h2: { margin: 0, marginBottom: 8 } as React.CSSProperties,
-  small: { opacity: 0.8, fontSize: 14 } as React.CSSProperties,
-  btn: {
-    background: '#2563eb',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 10,
-    padding: '10px 14px',
-    cursor: 'pointer',
-  } as React.CSSProperties,
-  btnGhost: {
-    background: '#334155',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 10,
-    padding: '8px 12px',
-    cursor: 'pointer',
-  } as React.CSSProperties,
-  muted: { opacity: 0.7 } as React.CSSProperties,
   card: {
-    background: '#0b1220',
-    border: '1px solid #0f172a',
-    borderRadius: 12,
-    padding: 14,
-  } as React.CSSProperties,
+    background: "#0f172a",
+    border: "1px solid #172554",
+    borderRadius: 16,
+    padding: 20,
+    color: "#e5e7eb",
+  },
+  h2: { fontSize: 20, fontWeight: 700, marginBottom: 10 },
+  hint: { opacity: 0.85, fontSize: 14 },
+  row: { display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" as const },
+  btn: {
+    background: "#2563eb",
+    color: "#fff",
+    border: 0,
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontWeight: 700,
+    cursor: "pointer",
+  },
+  btnGhost: {
+    background: "transparent",
+    border: "1px solid #334155",
+    color: "#e5e7eb",
+    borderRadius: 10,
+    padding: "10px 14px",
+    fontWeight: 600,
+    cursor: "pointer",
+  },
+  muted: { opacity: 0.7 },
+  badge: (bg: string) => ({
+    display: "inline-block",
+    padding: "4px 10px",
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 700,
+    background: bg,
+    color: "#0b1120",
+  }),
 };
 
-export default function CheckoutPage() {
-  const [cart, setCart] = useState<PlanId[]>([]);
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('ds160_cart');
-      if (raw) {
-        const arr = JSON.parse(raw) as PlanId[];
-        setCart(arr.filter((x) => ['llenado', 'asesoria', 'cita'].includes(x)));
+function getPlansFromUrlOrLocal(searchParams: URLSearchParams): string[] {
+  const fromQuery = searchParams.get("plans");
+  if (fromQuery) {
+    return fromQuery
+      .split(",")
+      .map((x) => x.trim())
+      .filter(Boolean);
+  }
+  try {
+    const stored = localStorage.getItem("ds160_cart");
+    if (stored) {
+      const parsed = JSON.parse(stored) as string[] | { id: string }[];
+      if (Array.isArray(parsed)) {
+        if (parsed.length && typeof parsed[0] === "string") return parsed as string[];
+        if (parsed.length && typeof (parsed[0] as any).id === "string")
+          return (parsed as any[]).map((p) => p.id);
       }
-    } catch {}
+    }
+  } catch {}
+  return [];
+}
+
+export default function CheckoutPage() {
+  const sp = useSearchParams();
+  const [plans, setPlans] = useState<string[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [status, setStatus] = useState<OrderStatus | null>(null);
+  const [message, setMessage] = useState<string>("");
+
+  const pollTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Inicializa planes y restablece orden previa si existe
+  useEffect(() => {
+    const p = getPlansFromUrlOrLocal(sp as unknown as URLSearchParams);
+    setPlans(p);
+
+    const saved = localStorage.getItem("ds160_order");
+    if (saved) {
+      try {
+        const { orderId: savedId } = JSON.parse(saved);
+        if (savedId) {
+          setOrderId(savedId);
+          setStatus("pending");
+        }
+      } catch {}
+    }
+  }, [sp]);
+
+  // Polling a /api/orders/status cuando haya orderId y status!=paid/rejected
+  const startPolling = useCallback((id: string) => {
+    if (pollTimer.current) clearInterval(pollTimer.current);
+    pollTimer.current = setInterval(async () => {
+      try {
+        const r = await fetch(`/api/orders/status?orderId=${encodeURIComponent(id)}`, {
+          cache: "no-store",
+        });
+        const data = (await r.json()) as StatusResp;
+        if (data.ok) {
+          const st = data.order.status;
+          setStatus(st);
+          if (st === "paid") {
+            setMessage("¡Pago aprobado! Ya puedes continuar.");
+            if (pollTimer.current) clearInterval(pollTimer.current);
+          } else if (st === "rejected") {
+            setMessage("El pago fue revisado y rechazado. Vuelve a subir un comprobante válido.");
+            if (pollTimer.current) clearInterval(pollTimer.current);
+          } else {
+            setMessage("Comprobante en revisión. Te avisaremos cuando esté aprobado…");
+          }
+        } else {
+          setMessage("No se pudo consultar el estado. Intentando de nuevo…");
+        }
+      } catch {
+        setMessage("No se pudo consultar el estado. Intentando de nuevo…");
+      }
+    }, 5000);
   }, []);
 
-  const total = useMemo(() => {
-    const map = new Map<PlanId, number>();
-    PLANS.forEach((p) => map.set(p.id, p.price));
-    return cart.reduce((acc, pid) => acc + (map.get(pid) || 0), 0);
-  }, [cart]);
-
-  function removePlan(p: PlanId) {
-    const next = cart.filter((x) => x !== p);
-    setCart(next);
-    localStorage.setItem('ds160_cart', JSON.stringify(next));
-  }
-
-  const fileRef = useRef<HTMLInputElement>(null);
-  const [sending, setSending] = useState(false);
-
-  async function submitReceipt() {
-    if (!cart.length) {
-      alert('Agrega al menos un servicio antes de continuar.');
-      return;
+  // Si ya tenemos orderId pendiente al entrar a la página, arrancar polling
+  useEffect(() => {
+    if (orderId && (!status || status === "pending")) {
+      startPolling(orderId);
     }
-    const file = fileRef.current?.files?.[0];
+    return () => {
+      if (pollTimer.current) clearInterval(pollTimer.current);
+    };
+  }, [orderId, status, startPolling]);
+
+  const handleSubmit = async () => {
     if (!file) {
-      alert('Sube tu comprobante de pago (imagen o PDF).');
+      setMessage("Adjunta el comprobante (imagen o PDF).");
       return;
     }
-    try {
-      setSending(true);
-      const form = new FormData();
-      form.append('receipt', file);
-      form.append('plans', cart.join(','));
-
-      const res = await fetch('/api/orders/create', { method: 'POST', body: form });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data?.error || 'No se pudo crear la orden.');
-
-      const mark = await fetch('/api/mark-paid', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: data.orderId }),
-      });
-      const mk = await mark.json();
-      if (!mk.ok) throw new Error('No se pudo marcar el pago.');
-
-      alert(`¡Gracias! Pago confirmado.\nID de pedido: ${data.orderId}\nAhora podrás acceder al asistente.`);
-      window.location.href = '/wizard';
-    } catch (e: any) {
-      alert(e?.message || 'Error al enviar el comprobante.');
-    } finally {
-      setSending(false);
+    if (!plans.length) {
+      setMessage("No hay servicios seleccionados.");
+      return;
     }
-  }
+
+    setSubmitting(true);
+    setMessage("");
+    try {
+      const fd = new FormData();
+      fd.append("receipt", file);
+      fd.append("plans", plans.join(","));
+
+      const res = await fetch("/api/orders/create", { method: "POST", body: fd });
+      const data = (await res.json()) as CreateResp;
+
+      if (!data.ok) {
+        setMessage(data.error || "No se pudo crear la orden.");
+        setSubmitting(false);
+        return;
+      }
+
+      // Orden creada: estado siempre PENDING
+      setOrderId(data.orderId);
+      setStatus("pending");
+      localStorage.setItem("ds160_order", JSON.stringify({ orderId: data.orderId }));
+      setMessage("Comprobante cargado. Queda EN REVISIÓN. Te avisaremos al aprobarse.");
+
+      // Arranca el polling hasta que el admin apruebe (paid) o rechace
+      startPolling(data.orderId);
+    } catch (e: any) {
+      setMessage(e?.message || "Error al enviar el comprobante.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const continuarDisabled = useMemo(() => status !== "paid", [status]);
 
   return (
-    <div style={{ display: 'grid', gap: 16 }}>
-      {/* Carrito */}
-      <section style={styles.section}>
+    <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px" }}>
+      <div style={styles.card}>
         <h2 style={styles.h2}>Checkout</h2>
-        <div>
-          <div style={{ fontWeight: 700, marginBottom: 8 }}>Servicios</div>
-          {cart.length === 0 ? (
-            <p style={{ ...styles.muted, marginTop: 8 }}>No has seleccionado servicios todavía.</p>
-          ) : (
-            <div style={{ display: 'grid', gap: 10 }}>
-              {cart.map((pid) => {
-                const p = PLANS.find((x) => x.id === pid)!;
-                return (
-                  <div
-                    key={pid}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      background: '#0b1220',
-                      border: '1px solid #0f172a',
-                      borderRadius: 10,
-                      padding: '10px 12px',
-                    }}
-                  >
-                    <div>
-                      <b>{p.title}</b> — <span style={{ color: '#93c5fd' }}>${p.price} USD</span>
-                    </div>
-                    <button onClick={() => removePlan(pid)} style={styles.btnGhost}>
-                      Quitar
-                    </button>
-                  </div>
-                );
-              })}
-              <div style={{ textAlign: 'right', marginTop: 4 }}>
-                <b>Total:</b> ${total} USD
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
 
-      {/* Pago */}
-      <section style={styles.section}>
-        <h3 style={styles.h2}>Sube tu comprobante para continuar</h3>
+        {plans.length ? (
+          <p style={styles.hint}>
+            Servicios seleccionados: <b>{plans.join(", ")}</b>
+          </p>
+        ) : (
+          <p style={{ ...styles.hint, color: "#fca5a5" }}>
+            No hay servicios seleccionados.
+          </p>
+        )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 320px) 1fr', gap: 16 }}>
-          <div style={{ ...styles.card, display: 'grid', gap: 12 }}>
-            <div style={{ fontWeight: 700 }}>Transferencia / Deuna</div>
-            <div style={{ textAlign: 'center', fontSize: 14, color: '#93c5fd' }}>Escanea para pagar con Deuna</div>
+        <div style={{ height: 12 }} />
 
-            <div
-              style={{
-                borderRadius: 12,
-                overflow: 'hidden',
-                border: '1px solid #0f172a',
-                background: '#0b1220',
-                display: 'grid',
-                placeItems: 'center',
-                padding: 8,
-              }}
-            >
-              <Image
-                src="/deuna-qr.png"
-                alt="QR Deuna"
-                width={200}
-                height={200}
-                style={{ width: '100%', height: 'auto', maxWidth: 200 }}
-                priority
-              />
-            </div>
-
-            <div style={{ fontSize: 14, lineHeight: 1.5 }}>
-              <div>
-                <b>Número de cuenta:</b> 2200449871{' '}
-                <button
-                  onClick={() => {
-                    navigator.clipboard?.writeText('2200449871');
-                    alert('Número de cuenta copiado');
-                  }}
-                  style={{ ...styles.btnGhost, padding: '4px 8px', marginLeft: 8 }}
-                >
-                  Copiar
-                </button>
-              </div>
-              <div>
-                <b>Tipo de cuenta:</b> Ahorros
-              </div>
-              <div>
-                <b>Banco:</b> Pichincha
-              </div>
-              <div>
-                <b>Titular:</b> Roberto Acosta
-              </div>
-            </div>
+        <div style={styles.row}>
+          <div>
+            <div style={{ marginBottom: 8, fontWeight: 700 }}>Comprobante de pago (imagen o PDF)</div>
+            <input
+              type="file"
+              accept="image/*,.pdf"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
           </div>
 
-          <div style={{ display: 'grid', gap: 12 }}>
-            <div style={styles.card}>
-              <ol style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-                <li>Abre tu app Deuna o banco y escanea el QR o usa el número de cuenta.</li>
-                <li>Coloca el <b>mismo total</b> indicado arriba y confirma.</li>
-                <li>Sube abajo tu comprobante (imagen o PDF) y confirma.</li>
-              </ol>
-            </div>
-
-            <div style={styles.card}>
-              <div style={{ fontWeight: 700, marginBottom: 10 }}>Comprobante de pago (imagen o PDF)</div>
-              <input ref={fileRef} type="file" accept="image/*,.pdf" />
-              <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <button onClick={submitReceipt} style={styles.btn} disabled={sending || !cart.length}>
-                  {sending ? 'Confirmando...' : 'Confirmar pago y continuar'}
-                </button>
-                <a href="/" style={{ ...styles.btnGhost, textDecoration: 'none', display: 'inline-block' }}>
-                  Seguir comprando
-                </a>
-              </div>
-              <div style={{ ...styles.small, marginTop: 8 }}>
-                Al confirmar, generaremos tu <b>ID de pedido</b>, marcaremos tu acceso y podrás completar el asistente.
-              </div>
-            </div>
-          </div>
+          <button
+            onClick={handleSubmit}
+            style={styles.btn}
+            disabled={submitting}
+          >
+            {submitting ? "Enviando..." : "Subir y generar orden"}
+          </button>
         </div>
 
-        {/* Otros métodos */}
-        <div
-          style={{
-            marginTop: 16,
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 12,
-          }}
-        >
-          <div style={styles.card}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>Transferencia / Deuna</div>
-            <div style={{ ...styles.small, marginBottom: 10 }}>
-              Método disponible. Usa el QR o el número de cuenta y sube tu comprobante.
+        <div style={{ height: 12 }} />
+
+        {orderId && (
+          <div style={styles.hint}>
+            <div>
+              <b>ID de pedido:</b> {orderId}{" "}
+              {status === "paid" && <span style={styles.badge("#86efac")}>APROBADO</span>}
+              {status === "pending" && <span style={styles.badge("#fde68a")}>EN REVISIÓN</span>}
+              {status === "rejected" && <span style={styles.badge("#fca5a5")}>RECHAZADO</span>}
             </div>
-            <button style={styles.btn} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              Usar transferencia
-            </button>
           </div>
+        )}
 
-          <div style={{ ...styles.card, opacity: 0.6 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>PayPal</div>
-            <div style={{ ...styles.small, marginBottom: 10 }}>Próximamente</div>
-            <button style={{ ...styles.btnGhost, cursor: 'not-allowed' }} disabled>
-              Próximamente
-            </button>
-          </div>
+        {message && (
+          <>
+            <div style={{ height: 8 }} />
+            <div style={styles.hint}>{message}</div>
+          </>
+        )}
 
-          <div style={{ ...styles.card, opacity: 0.6 }}>
-            <div style={{ fontWeight: 700, marginBottom: 6 }}>2Checkout (Tarjeta)</div>
-            <div style={{ ...styles.small, marginBottom: 10 }}>Próximamente</div>
-            <button style={{ ...styles.btnGhost, cursor: 'not-allowed' }} disabled>
-              Próximamente
-            </button>
-          </div>
+        <div style={{ height: 16 }} />
+
+        <div style={styles.row}>
+          <button
+            style={{
+              ...(continuarDisabled ? styles.btnGhost : styles.btn),
+              opacity: continuarDisabled ? 0.6 : 1,
+              cursor: continuarDisabled ? "not-allowed" : "pointer",
+            }}
+            disabled={continuarDisabled}
+            onClick={() => {
+              // Aquí envía a tu ruta del asistente / formulario
+              window.location.href = "/wizard";
+            }}
+            title={
+              continuarDisabled
+                ? "Aún no aprobado. Espera a que validemos tu comprobante."
+                : "Continuar al asistente"
+            }
+          >
+            {continuarDisabled ? "Esperando aprobación…" : "Ir al formulario"}
+          </button>
+
+          <button
+            style={styles.btnGhost}
+            onClick={() => {
+              // Volver a tienda / inicio
+              window.location.href = "/";
+            }}
+          >
+            Seguir comprando
+          </button>
         </div>
-      </section>
+
+        <div style={{ height: 8 }} />
+        <div style={styles.muted}>Al confirmar, generamos un ID de pedido. El acceso al asistente se habilita solo cuando el pago esté <b>APROBADO</b>.</div>
+      </div>
     </div>
   );
 }
+

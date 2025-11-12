@@ -1,56 +1,46 @@
-import { NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { NextResponse } from "next/server";
+import { put } from "@vercel/blob";
 
-export const runtime = 'nodejs'; // necesario para multipart/form-data
-
-function makeOrderId() {
-  const ts = new Date();
-  return `DS160-${ts.getFullYear()}${String(ts.getMonth() + 1).padStart(2, '0')}${String(ts.getDate()).padStart(2, '0')}-${String(ts.getHours()).padStart(2, '0')}${String(ts.getMinutes()).padStart(2, '0')}${String(ts.getSeconds()).padStart(2, '0')}`;
-}
+export const runtime = "edge";
 
 export async function POST(req: Request) {
   try {
-    const form = await req.formData();
-    const file = form.get('receipt') as File | null;
-    const planList = (form.get('plans') as string | null) || '';
+    const formData = await req.formData();
+    const plan = formData.get("plan")?.toString();
+    const file = formData.get("file") as File;
 
-    if (!file || file.size === 0) {
-      return NextResponse.json({ ok: false, error: 'No file' }, { status: 400 });
+    if (!plan || !file) {
+      return NextResponse.json({ ok: false, error: "Faltan datos" }, { status: 400 });
     }
 
-    const orderId = makeOrderId();
+    const orderId = `DS160-${Date.now()}`;
+    const buffer = Buffer.from(await file.arrayBuffer());
 
-    // 1) Guardar archivo del comprobante (3er argumento con options y access requerido)
-    const receiptBlob = await put(
-      `ds160/receipts/${orderId}-${file.name}`,
-      file,
-      { access: 'public' } // <— requerido por la versión actual
-    );
+    // 1️⃣ Subir comprobante al Blob Storage
+    const receiptBlob = await put(`ds160/receipts/${orderId}-${file.name}`, buffer, {
+      access: "public",
+      contentType: file.type || "image/jpeg",
+    });
 
-    // 2) Guardar JSON de la orden (también con access y contentType)
+    // 2️⃣ Crear la orden como "pendiente"
     const orderJson = {
       id: orderId,
-      plans: planList.split(',').filter(Boolean),
-      status: 'pending' as 'pending' | 'approved' | 'rejected',
+      plan,
       createdAt: new Date().toISOString(),
+      status: "pending", // 👈 Ahora no se confirma automáticamente
       receiptUrl: receiptBlob.url,
     };
 
-    await put(
-      `ds160/orders/${orderId}.json`,
-      JSON.stringify(orderJson, null, 2),
-      {
-        access: 'public',            // <— requerido
-        contentType: 'application/json',
-      }
-    );
-
-    return NextResponse.json({
-      ok: true,
-      orderId,
-      receiptUrl: receiptBlob.url,
+    // 3️⃣ Guardar el JSON de la orden
+    const orderFile = `ds160/orders/${orderId}.json`;
+    await put(orderFile, JSON.stringify(orderJson, null, 2), {
+      access: "public",
+      contentType: "application/json",
     });
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message || 'upload_failed' }, { status: 500 });
+
+    return NextResponse.json({ ok: true, orderId, receiptUrl: receiptBlob.url });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json({ ok: false, error: "Error interno" }, { status: 500 });
   }
 }

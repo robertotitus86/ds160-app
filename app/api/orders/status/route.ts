@@ -21,3 +21,4 @@ export async function GET(req: Request) {
   const order = await (await get(blob.pathname)).json();
   return NextResponse.json({ ok: true, order });
 }
+

@@ -1,20 +1,28 @@
 import { NextResponse } from "next/server";
-import { list } from "@vercel/blob";
+import { list, head } from "@vercel/blob";
 
 export const runtime = "edge";
 
 export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const orderId = searchParams.get("orderId");
+
+  if (!orderId) {
+    return NextResponse.json({ ok: false, error: "Falta orderId." });
+  }
+
   try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("orderId") || searchParams.get("id");
-    if (!id) return NextResponse.json({ ok: false, error: "missing_orderId" }, { status: 400 });
+    const result = await list({ prefix: `ds160/orders/${orderId}` });
+    if (result.blobs.length === 0) {
+      return NextResponse.json({ ok: false, error: "Orden no encontrada." });
+    }
 
-    const { blobs } = await list({ prefix: `ds160/orders/${id}.json`, limit: 1 });
-    if (!blobs.length) return NextResponse.json({ ok: false, error: "not_found" }, { status: 404 });
+    const fileUrl = result.blobs[0].url;
+    const resp = await fetch(fileUrl);
+    const json = await resp.json();
 
-    const order = await fetch(blobs[0].url).then((r) => r.json());
-    return NextResponse.json({ ok: true, order });
-  } catch (e: any) {
-    return NextResponse.json({ ok: false, error: e?.message || "status_failed" }, { status: 500 });
+    return NextResponse.json({ ok: true, order: json });
+  } catch (err: any) {
+    return NextResponse.json({ ok: false, error: err.message });
   }
 }

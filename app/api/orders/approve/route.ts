@@ -21,9 +21,8 @@ export async function POST(req: Request) {
     current.status = action === 'reject' ? 'rejected' : 'approved';
     current.reviewedAt = new Date().toISOString();
 
-    // Guardar de vuelta
+    // Guardar de vuelta (sin 'access' para evitar error de tipos)
     await put(blobs[0].pathname, JSON.stringify(current, null, 2), {
-      access: 'private',
       contentType: 'application/json',
     });
 

@@ -212,4 +212,66 @@ export default function CheckoutPage() {
           <div style={{ display: 'grid', gap: 12 }}>
             <div style={styles.card}>
               <ol style={{ margin: 0, paddingLeft: 18, lineHeight: 1.6 }}>
-                <li>Abre tu app Deuna o banco y escane
+                <li>Abre tu app Deuna o banco y escanea el QR o usa el número de cuenta.</li>
+                <li>Coloca el <b>mismo total</b> indicado arriba y confirma.</li>
+                <li>Sube abajo tu comprobante (imagen o PDF) y confirma.</li>
+              </ol>
+            </div>
+
+            <div style={styles.card}>
+              <div style={{ fontWeight: 700, marginBottom: 10 }}>Comprobante de pago (imagen o PDF)</div>
+              <input ref={fileRef} type="file" accept="image/*,.pdf" />
+              <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button onClick={submitReceipt} style={styles.btn} disabled={sending || !cart.length}>
+                  {sending ? 'Confirmando...' : 'Confirmar pago y continuar'}
+                </button>
+                <a href="/" style={{ ...styles.btnGhost, textDecoration: 'none', display: 'inline-block' }}>
+                  Seguir comprando
+                </a>
+              </div>
+              <div style={{ ...styles.small, marginTop: 8 }}>
+                Al confirmar, generaremos tu <b>ID de pedido</b>, marcaremos tu acceso y podrás completar el asistente.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Otros métodos */}
+        <div
+          style={{
+            marginTop: 16,
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 12,
+          }}
+        >
+          <div style={styles.card}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>Transferencia / Deuna</div>
+            <div style={{ ...styles.small, marginBottom: 10 }}>
+              Método disponible. Usa el QR o el número de cuenta y sube tu comprobante.
+            </div>
+            <button style={styles.btn} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              Usar transferencia
+            </button>
+          </div>
+
+          <div style={{ ...styles.card, opacity: 0.6 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>PayPal</div>
+            <div style={{ ...styles.small, marginBottom: 10 }}>Próximamente</div>
+            <button style={{ ...styles.btnGhost, cursor: 'not-allowed' }} disabled>
+              Próximamente
+            </button>
+          </div>
+
+          <div style={{ ...styles.card, opacity: 0.6 }}>
+            <div style={{ fontWeight: 700, marginBottom: 6 }}>2Checkout (Tarjeta)</div>
+            <div style={{ ...styles.small, marginBottom: 10 }}>Próximamente</div>
+            <button style={{ ...styles.btnGhost, cursor: 'not-allowed' }} disabled>
+              Próximamente
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

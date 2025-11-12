@@ -20,10 +20,14 @@ export async function POST(req: Request) {
 
     const orderId = makeOrderId();
 
-    // 1) Guardar archivo del comprobante (sin 'access')
-    const receiptBlob = await put(`ds160/receipts/${orderId}-${file.name}`, file);
+    // 1) Guardar archivo del comprobante (3er argumento con options y access requerido)
+    const receiptBlob = await put(
+      `ds160/receipts/${orderId}-${file.name}`,
+      file,
+      { access: 'public' } // <— requerido por la versión actual
+    );
 
-    // 2) Guardar JSON de la orden (sin 'access')
+    // 2) Guardar JSON de la orden (también con access y contentType)
     const orderJson = {
       id: orderId,
       plans: planList.split(',').filter(Boolean),
@@ -32,9 +36,14 @@ export async function POST(req: Request) {
       receiptUrl: receiptBlob.url,
     };
 
-    await put(`ds160/orders/${orderId}.json`, JSON.stringify(orderJson, null, 2), {
-      contentType: 'application/json',
-    });
+    await put(
+      `ds160/orders/${orderId}.json`,
+      JSON.stringify(orderJson, null, 2),
+      {
+        access: 'public',            // <— requerido
+        contentType: 'application/json',
+      }
+    );
 
     return NextResponse.json({
       ok: true,

@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { put } from '@vercel/blob';
 
-export const runtime = 'nodejs'; // Necesario para multipart/form-data
+export const runtime = 'nodejs';
 
 function makeOrderId() {
   const ts = new Date();
@@ -19,12 +19,10 @@ export async function POST(req: Request) {
 
     const orderId = makeOrderId();
 
-    // 1) Guardar archivo del comprobante
     const receiptBlob = await put(`ds160/receipts/${orderId}-${file.name}`, file, {
       access: 'private',
     });
 
-    // 2) Guardar JSON de la orden
     const orderJson = {
       id: orderId,
       plans: planList.split(',').filter(Boolean),
@@ -33,7 +31,7 @@ export async function POST(req: Request) {
       receiptUrl: receiptBlob.url,
     };
 
-    const jsonBlob = await put(`ds160/orders/${orderId}.json`, JSON.stringify(orderJson, null, 2), {
+    await put(`ds160/orders/${orderId}.json`, JSON.stringify(orderJson, null, 2), {
       access: 'private',
       contentType: 'application/json',
     });
@@ -42,7 +40,6 @@ export async function POST(req: Request) {
       ok: true,
       orderId,
       receiptUrl: receiptBlob.url,
-      orderJsonUrl: jsonBlob.url,
     });
   } catch (e:any) {
     return NextResponse.json({ ok: false, error: e?.message || 'upload_failed' }, { status: 500 });

@@ -1,286 +1,204 @@
-"use client";
+'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 
-type OrderStatus = "pending" | "paid" | "rejected";
-type CreateResp =
-  | { ok: true; orderId: string; receiptUrl: string }
-  | { ok: false; error?: string };
-
-type StatusResp =
-  | { ok: true; order: { id: string; status: OrderStatus; receiptUrl?: string } }
-  | { ok: false; error?: string };
-
-const styles = {
-  card: {
-    background: "#0f172a",
-    border: "1px solid #172554",
-    borderRadius: 16,
-    padding: 20,
-    color: "#e5e7eb",
-  },
-  h2: { fontSize: 20, fontWeight: 700, marginBottom: 10 },
-  hint: { opacity: 0.85, fontSize: 14 },
-  row: { display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" as const },
-  btn: {
-    background: "#2563eb",
-    color: "#fff",
-    border: 0,
-    borderRadius: 10,
-    padding: "10px 14px",
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  btnGhost: {
-    background: "transparent",
-    border: "1px solid #334155",
-    color: "#e5e7eb",
-    borderRadius: 10,
-    padding: "10px 14px",
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  muted: { opacity: 0.7 },
-  badge: (bg: string) => ({
-    display: "inline-block",
-    padding: "4px 10px",
-    borderRadius: 999,
-    fontSize: 12,
-    fontWeight: 700,
-    background: bg,
-    color: "#0b1120",
-  }),
+const PRICES: Record<string, number> = { llenado:45, asesoria:35, cita:15 };
+const TITLES: Record<string, string> = {
+  llenado: "Llenado DS-160",
+  asesoria: "Asesoría Entrevista",
+  cita: "Toma de Cita",
 };
 
-function getPlansFromUrlOrLocal(searchParams: URLSearchParams): string[] {
-  const fromQuery = searchParams.get("plans");
-  if (fromQuery) {
-    return fromQuery
-      .split(",")
-      .map((x) => x.trim())
-      .filter(Boolean);
+export const dynamic = "force-dynamic";
+
+function CheckoutInner() {
+  const params = useSearchParams();
+  const router = useRouter();
+  const one = params.get("plan");
+  const many = params.get("plans");
+  const fromURL = useMemo(
+    () => (many ? many.split(",").filter(Boolean) : (one ? [one] : [])),
+    [one, many]
+  );
+
+  const [items, setItems] = useState<string[]>([]);
+  const [method, setMethod] = useState("transferencia");
+  const [marking, setMarking] = useState(false);
+
+  useEffect(() => {
+    if (fromURL.length) { setItems(fromURL); return; }
+    try { const raw = localStorage.getItem("ds160_cart"); if (raw) setItems(JSON.parse(raw)); } catch {}
+  }, [fromURL.join(",")]);
+
+  const total = items.reduce((acc, id) => acc + (PRICES[id] || 0), 0);
+
+  const card: React.CSSProperties = { background:'#0f172a', padding:18, borderRadius:14, border:'1px solid #111827' };
+  const btn:  React.CSSProperties = { background:'#2563eb', color:'#fff', border:'none', borderRadius:10, padding:'10px 14px', textDecoration:'none' as const, cursor:'pointer' };
+  const soft: React.CSSProperties = { background:'#0b1220', border:'1px solid #1f2937', borderRadius:12 };
+
+  // Utilidad: generar ID de orden
+  function makeOrderId() {
+    const ts = new Date();
+    return `DS160-${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}-${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}`;
   }
-  try {
-    const stored = localStorage.getItem("ds160_cart");
-    if (stored) {
-      const parsed = JSON.parse(stored) as string[] | { id: string }[];
-      if (Array.isArray(parsed)) {
-        if (parsed.length && typeof parsed[0] === "string") return parsed as string[];
-        if (parsed.length && typeof (parsed[0] as any).id === "string")
-          return (parsed as any[]).map((p) => p.id);
-      }
-    }
-  } catch {}
-  return [];
-}
 
-export default function CheckoutPage() {
-  const sp = useSearchParams();
-  const [plans, setPlans] = useState<string[]>([]);
-  const [file, setFile] = useState<File | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [status, setStatus] = useState<OrderStatus | null>(null);
-  const [message, setMessage] = useState<string>("");
-
-  const pollTimer = useRef<NodeJS.Timeout | null>(null);
-
-  // Inicializa planes y restablece orden previa si existe
-  useEffect(() => {
-    const p = getPlansFromUrlOrLocal(sp as unknown as URLSearchParams);
-    setPlans(p);
-
-    const saved = localStorage.getItem("ds160_order");
-    if (saved) {
-      try {
-        const { orderId: savedId } = JSON.parse(saved);
-        if (savedId) {
-          setOrderId(savedId);
-          setStatus("pending");
-        }
-      } catch {}
-    }
-  }, [sp]);
-
-  // Polling a /api/orders/status cuando haya orderId y status!=paid/rejected
-  const startPolling = useCallback((id: string) => {
-    if (pollTimer.current) clearInterval(pollTimer.current);
-    pollTimer.current = setInterval(async () => {
-      try {
-        const r = await fetch(`/api/orders/status?orderId=${encodeURIComponent(id)}`, {
-          cache: "no-store",
-        });
-        const data = (await r.json()) as StatusResp;
-        if (data.ok) {
-          const st = data.order.status;
-          setStatus(st);
-          if (st === "paid") {
-            setMessage("¡Pago aprobado! Ya puedes continuar.");
-            if (pollTimer.current) clearInterval(pollTimer.current);
-          } else if (st === "rejected") {
-            setMessage("El pago fue revisado y rechazado. Vuelve a subir un comprobante válido.");
-            if (pollTimer.current) clearInterval(pollTimer.current);
-          } else {
-            setMessage("Comprobante en revisión. Te avisaremos cuando esté aprobado…");
-          }
-        } else {
-          setMessage("No se pudo consultar el estado. Intentando de nuevo…");
-        }
-      } catch {
-        setMessage("No se pudo consultar el estado. Intentando de nuevo…");
-      }
-    }, 5000);
-  }, []);
-
-  // Si ya tenemos orderId pendiente al entrar a la página, arrancar polling
-  useEffect(() => {
-    if (orderId && (!status || status === "pending")) {
-      startPolling(orderId);
-    }
-    return () => {
-      if (pollTimer.current) clearInterval(pollTimer.current);
-    };
-  }, [orderId, status, startPolling]);
-
-  const handleSubmit = async () => {
-    if (!file) {
-      setMessage("Adjunta el comprobante (imagen o PDF).");
-      return;
-    }
-    if (!plans.length) {
-      setMessage("No hay servicios seleccionados.");
-      return;
-    }
-
-    setSubmitting(true);
-    setMessage("");
+  // Marcar pago (cookie "paid") y llevar al wizard
+  async function markPaidAndGo() {
     try {
-      const fd = new FormData();
-      fd.append("receipt", file);
-      fd.append("plans", plans.join(","));
-
-      const res = await fetch("/api/orders/create", { method: "POST", body: fd });
-      const data = (await res.json()) as CreateResp;
-
-      if (!data.ok) {
-        setMessage(data.error || "No se pudo crear la orden.");
-        setSubmitting(false);
-        return;
-      }
-
-      // Orden creada: estado siempre PENDING
-      setOrderId(data.orderId);
-      setStatus("pending");
-      localStorage.setItem("ds160_order", JSON.stringify({ orderId: data.orderId }));
-      setMessage("Comprobante cargado. Queda EN REVISIÓN. Te avisaremos al aprobarse.");
-
-      // Arranca el polling hasta que el admin apruebe (paid) o rechace
-      startPolling(data.orderId);
-    } catch (e: any) {
-      setMessage(e?.message || "Error al enviar el comprobante.");
+      setMarking(true);
+      const orderId = makeOrderId();
+      // Guarda orden y carrito por referencia
+      localStorage.setItem('order_id', orderId);
+      localStorage.setItem('ds160_cart', JSON.stringify(items));
+      // Marca pago en cookie
+      const res = await fetch('/api/mark-paid', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ orderId })
+      });
+      if (!res.ok) throw new Error('No se pudo marcar el pago.');
+      // Avisa y redirige al wizard
+      alert(`¡Gracias! Pago confirmado.\nID de pedido: ${orderId}\nAhora podrás acceder al asistente.`);
+      router.push('/wizard');
+    } catch (e:any) {
+      alert(e?.message || 'Error al confirmar pago.');
     } finally {
-      setSubmitting(false);
+      setMarking(false);
     }
-  };
+  }
 
-  const continuarDisabled = useMemo(() => status !== "paid", [status]);
+  // Transferencia: copiar dato
+  const copy = (text: string) => navigator.clipboard?.writeText(text);
+
+  if (items.length === 0) {
+    return (
+      <div style={card}>
+        <h2>Checkout</h2>
+        <p>No hay servicios seleccionados.</p>
+        <a href="/" style={btn}>Volver a servicios</a>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px" }}>
-      <div style={styles.card}>
-        <h2 style={styles.h2}>Checkout</h2>
+    <div style={{display:'grid', gap:16}}>
+      {/* Resumen */}
+      <section style={card}>
+        <h2 style={{marginTop:0}}>Checkout</h2>
+        <h3 style={{marginTop:0}}>Servicios</h3>
+        <ul style={{margin:'6px 0 12px 18px'}}>
+          {items.map((id) => (
+            <li key={id} style={{display:'flex', alignItems:'center', gap:8}}>
+              <span>{TITLES[id] || id}</span>
+              <span>—</span>
+              <b>${PRICES[id]} USD</b>
+              <button
+                onClick={()=>setItems(items.filter(x=>x!==id))}
+                style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:8, padding:'4px 8px', cursor:'pointer' }}
+              >
+                Quitar
+              </button>
+            </li>
+          ))}
+        </ul>
+        <p>Total: <b>${total} USD</b></p>
+      </section>
 
-        {plans.length ? (
-          <p style={styles.hint}>
-            Servicios seleccionados: <b>{plans.join(", ")}</b>
-          </p>
-        ) : (
-          <p style={{ ...styles.hint, color: "#fca5a5" }}>
-            No hay servicios seleccionados.
-          </p>
-        )}
-
-        <div style={{ height: 12 }} />
-
-        <div style={styles.row}>
-          <div>
-            <div style={{ marginBottom: 8, fontWeight: 700 }}>Comprobante de pago (imagen o PDF)</div>
-            <input
-              type="file"
-              accept="image/*,.pdf"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+      {/* Deuna (QR) */}
+      <section style={{...card, display:'grid', gap:12}}>
+        <h3 style={{margin:0}}>Paga con Deuna (QR)</h3>
+        <div style={{display:'grid', gap:16, gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', alignItems:'center'}}>
+          <div style={{...soft, padding:14, display:'grid', placeItems:'center'}}>
+            <img
+              src="/deuna-qr.png"
+              alt="QR Deuna"
+              style={{ width:"220px", height:"auto", borderRadius:"12px", boxShadow:"0 8px 30px rgba(0,0,0,.35)" }}
             />
           </div>
-
-          <button
-            onClick={handleSubmit}
-            style={styles.btn}
-            disabled={submitting}
-          >
-            {submitting ? "Enviando..." : "Subir y generar orden"}
-          </button>
+          <div style={{display:'grid', gap:12}}>
+            <p style={{margin:0, opacity:.9}}>
+              1) Abre tu app Deuna<br/>
+              2) Escanea el código<br/>
+              3) Coloca el <b>mismo total</b> indicado arriba y confirma
+            </p>
+            <small style={{opacity:.7}}>
+              Después del pago, confirma abajo con el botón <b>“Ya pagué”</b>.
+            </small>
+          </div>
         </div>
+      </section>
 
-        <div style={{ height: 12 }} />
+      {/* Otros métodos */}
+      <section style={card}>
+        <h3 style={{marginTop:0}}>Otros métodos</h3>
 
-        {orderId && (
-          <div style={styles.hint}>
-            <div>
-              <b>ID de pedido:</b> {orderId}{" "}
-              {status === "paid" && <span style={styles.badge("#86efac")}>APROBADO</span>}
-              {status === "pending" && <span style={styles.badge("#fde68a")}>EN REVISIÓN</span>}
-              {status === "rejected" && <span style={styles.badge("#fca5a5")}>RECHAZADO</span>}
+        <label style={{display:'block', marginTop:12, opacity:.9}}>Método de pago</label>
+        <select
+          value={method}
+          onChange={e=>setMethod(e.target.value)}
+          style={{width:'100%', padding:10, borderRadius:8, border:'1px solid #1f2937', background:'#0b1220', color:'#fff'}}
+        >
+          <option value="transferencia">Transferencia</option>
+          <option value="paypal">PayPal (próximamente)</option>
+          <option value="2checkout">Tarjeta 2Checkout (próximamente)</option>
+        </select>
+
+        {method==="transferencia" && (
+          <div style={{...soft, padding:14, marginTop:12, display:'grid', gap:12}}>
+            <div style={{opacity:.8, fontSize:13}}>Datos para transferencia</div>
+            <div style={{display:'grid', gap:6}}>
+              <div><b>Número de cuenta:</b> 2200449871
+                <button
+                  onClick={()=>copy("2200449871")}
+                  style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:6, padding:'4px 8px', cursor:'pointer' }}
+                >
+                  Copiar
+                </button>
+              </div>
+              <div><b>Tipo de cuenta:</b> Ahorros</div>
+              <div><b>Banco:</b> Pichincha</div>
+              <div><b>Titular:</b> Roberto Acosta</div>
+            </div>
+
+            <div style={{display:'grid', gap:10}}>
+              <div>
+                <p style={{margin:'8px 0'}}>Sube tu comprobante (opcional):</p>
+                <input
+                  type="file"
+                  style={{
+                    width:'100%', padding:10, borderRadius:8, border:'1px solid #1f2937',
+                    background:'#0b1220', color:'#fff'
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}
 
-        {message && (
-          <>
-            <div style={{ height: 8 }} />
-            <div style={styles.hint}>{message}</div>
-          </>
-        )}
+        {method!=="transferencia" && <p style={{marginTop:16}}>Este método se habilitará más adelante.</p>}
 
-        <div style={{ height: 16 }} />
+        <div style={{marginTop:14, display:'flex', gap:10, flexWrap:'wrap'}}>
+          <a href="/" style={{...btn, background:'#334155'}}>Seguir comprando</a>
 
-        <div style={styles.row}>
-          <button
-            style={{
-              ...(continuarDisabled ? styles.btnGhost : styles.btn),
-              opacity: continuarDisabled ? 0.6 : 1,
-              cursor: continuarDisabled ? "not-allowed" : "pointer",
-            }}
-            disabled={continuarDisabled}
-            onClick={() => {
-              // Aquí envía a tu ruta del asistente / formulario
-              window.location.href = "/wizard";
-            }}
-            title={
-              continuarDisabled
-                ? "Aún no aprobado. Espera a que validemos tu comprobante."
-                : "Continuar al asistente"
-            }
-          >
-            {continuarDisabled ? "Esperando aprobación…" : "Ir al formulario"}
-          </button>
-
-          <button
-            style={styles.btnGhost}
-            onClick={() => {
-              // Volver a tienda / inicio
-              window.location.href = "/";
-            }}
-          >
-            Seguir comprando
+          {/* BOTÓN CLAVE: Marca pago y libera wizard */}
+          <button onClick={markPaidAndGo} style={btn} disabled={marking}>
+            {marking ? 'Confirmando…' : 'Ya pagué, acceder al asistente'}
           </button>
         </div>
 
-        <div style={{ height: 8 }} />
-        <div style={styles.muted}>Al confirmar, generamos un ID de pedido. El acceso al asistente se habilita solo cuando el pago esté <b>APROBADO</b>.</div>
-      </div>
+        <small style={{opacity:.7, display:'block', marginTop:10}}>
+          Al confirmar, generaremos tu <b>ID de pedido</b>, marcaremos tu acceso y podrás completar el asistente.
+        </small>
+      </section>
     </div>
   );
 }
 
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div style={{padding:20}}>Cargando checkout…</div>}>
+      <CheckoutInner />
+    </Suspense>
+  );
+}

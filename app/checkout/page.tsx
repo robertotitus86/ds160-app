@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useMemo, useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
-const PRICES: Record<string, number> = { llenado:45, asesoria:35, cita:15 };
-const TITLES: Record<string, string> = {
+type PlanId = 'llenado' | 'asesoria' | 'cita';
+const PRICES: Record<PlanId, number> = { llenado:45, asesoria:35, cita:15 };
+const TITLES: Record<PlanId, string> = {
   llenado: "Llenado DS-160",
   asesoria: "Asesoría Entrevista",
   cita: "Toma de Cita",
@@ -15,61 +16,87 @@ export const dynamic = "force-dynamic";
 function CheckoutInner() {
   const params = useSearchParams();
   const router = useRouter();
+
   const one = params.get("plan");
   const many = params.get("plans");
-  const fromURL = useMemo(
-    () => (many ? many.split(",").filter(Boolean) : (one ? [one] : [])),
-    [one, many]
-  );
+  const fromURL = useMemo(() => (many ? many.split(",").filter(Boolean) : (one ? [one] : [])), [one, many]);
 
   const [items, setItems] = useState<string[]>([]);
   const [method, setMethod] = useState("transferencia");
-  const [marking, setMarking] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [status, setStatus] = useState<'idle'|'pending'|'approved'|'rejected'>('idle');
+
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (fromURL.length) { setItems(fromURL); return; }
     try { const raw = localStorage.getItem("ds160_cart"); if (raw) setItems(JSON.parse(raw)); } catch {}
   }, [fromURL.join(",")]);
 
-  const total = items.reduce((acc, id) => acc + (PRICES[id] || 0), 0);
+  const total = items.reduce((acc, id) => acc + (PRICES[id as PlanId] || 0), 0);
 
   const card: React.CSSProperties = { background:'#0f172a', padding:18, borderRadius:14, border:'1px solid #111827' };
   const btn:  React.CSSProperties = { background:'#2563eb', color:'#fff', border:'none', borderRadius:10, padding:'10px 14px', textDecoration:'none' as const, cursor:'pointer' };
   const soft: React.CSSProperties = { background:'#0b1220', border:'1px solid #1f2937', borderRadius:12 };
 
-  // Utilidad: generar ID de orden
-  function makeOrderId() {
-    const ts = new Date();
-    return `DS160-${ts.getFullYear()}${String(ts.getMonth()+1).padStart(2,'0')}${String(ts.getDate()).padStart(2,'0')}-${String(ts.getHours()).padStart(2,'0')}${String(ts.getMinutes()).padStart(2,'0')}${String(ts.getSeconds()).padStart(2,'0')}`;
-  }
+  function copy(text: string) { navigator.clipboard?.writeText(text); }
 
-  // Marcar pago (cookie "paid") y llevar al wizard
-  async function markPaidAndGo() {
+  async function handleUpload() {
     try {
-      setMarking(true);
-      const orderId = makeOrderId();
-      // Guarda orden y carrito por referencia
-      localStorage.setItem('order_id', orderId);
-      localStorage.setItem('ds160_cart', JSON.stringify(items));
-      // Marca pago en cookie
-      const res = await fetch('/api/mark-paid', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ orderId })
-      });
-      if (!res.ok) throw new Error('No se pudo marcar el pago.');
-      // Avisa y redirige al wizard
-      alert(`¡Gracias! Pago confirmado.\nID de pedido: ${orderId}\nAhora podrás acceder al asistente.`);
-      router.push('/wizard');
+      if (!fileRef.current?.files || fileRef.current.files.length === 0) {
+        alert('Por favor, sube tu comprobante.');
+        return;
+      }
+      const file = fileRef.current.files[0];
+      setUploading(true);
+
+      const fd = new FormData();
+      fd.append('receipt', file);
+      fd.append('plans', items.join(','));
+
+      const res = await fetch('/api/orders/create', { method:'POST', body: fd });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data?.error || 'No se pudo subir el comprobante');
+
+      setOrderId(data.orderId);
+      localStorage.setItem('order_id', data.orderId);
+      setStatus('pending');
+
+      alert(`Comprobante recibido.\nTu ID de pedido: ${data.orderId}\nQuedará en revisión. Cuando esté aprobado, podrás acceder al asistente.`);
     } catch (e:any) {
-      alert(e?.message || 'Error al confirmar pago.');
+      alert(e?.message || 'Error subiendo el comprobante');
     } finally {
-      setMarking(false);
+      setUploading(false);
     }
   }
 
-  // Transferencia: copiar dato
-  const copy = (text: string) => navigator.clipboard?.writeText(text);
+  async function checkStatus() {
+    try {
+      const id = orderId || localStorage.getItem('order_id');
+      if (!id) { alert('Aún no se ha generado un ID de pedido. Sube tu comprobante primero.'); return; }
+      const res = await fetch(`/api/orders/status?id=${encodeURIComponent(id)}`);
+      const data = await res.json();
+      if (!data.ok) throw new Error(data?.error || 'No se pudo consultar');
+
+      const st = (data.status as 'pending'|'approved'|'rejected') || 'pending';
+      setStatus(st);
+
+      if (st === 'approved') {
+        // marca cookie paid=true
+        const m = await fetch('/api/mark-paid', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ orderId: id }) });
+        if (!m.ok) throw new Error('No se pudo confirmar acceso.');
+        alert(`¡Gracias! Pago verificado.\nID de pedido: ${id}\nAhora podrás acceder al asistente.`);
+        router.push('/wizard');
+      } else if (st === 'rejected') {
+        alert('Tu comprobante fue rechazado. Por favor, vuelve a subirlo o contáctanos por WhatsApp.');
+      } else {
+        alert('Tu comprobante sigue en revisión. Intenta más tarde.');
+      }
+    } catch (e:any) {
+      alert(e?.message || 'Error verificando estado');
+    }
+  }
 
   if (items.length === 0) {
     return (
@@ -90,9 +117,9 @@ function CheckoutInner() {
         <ul style={{margin:'6px 0 12px 18px'}}>
           {items.map((id) => (
             <li key={id} style={{display:'flex', alignItems:'center', gap:8}}>
-              <span>{TITLES[id] || id}</span>
+              <span>{TITLES[id as PlanId] || id}</span>
               <span>—</span>
-              <b>${PRICES[id]} USD</b>
+              <b>${PRICES[id as PlanId]} USD</b>
               <button
                 onClick={()=>setItems(items.filter(x=>x!==id))}
                 style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:8, padding:'4px 8px', cursor:'pointer' }}
@@ -105,91 +132,50 @@ function CheckoutInner() {
         <p>Total: <b>${total} USD</b></p>
       </section>
 
-      {/* Deuna (QR) */}
+      {/* Pago por transferencia + Deuna */}
       <section style={{...card, display:'grid', gap:12}}>
-        <h3 style={{margin:0}}>Paga con Deuna (QR)</h3>
-        <div style={{display:'grid', gap:16, gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))', alignItems:'center'}}>
-          <div style={{...soft, padding:14, display:'grid', placeItems:'center'}}>
-            <img
-              src="/deuna-qr.png"
-              alt="QR Deuna"
-              style={{ width:"220px", height:"auto", borderRadius:"12px", boxShadow:"0 8px 30px rgba(0,0,0,.35)" }}
-            />
+        <h3 style={{margin:0}}>Sube tu comprobante para continuar</h3>
+
+        <div style={{...soft, padding:14}}>
+          <div style={{display:'grid', gap:8}}>
+            <div style={{opacity:.8, fontSize:13}}>Datos para transferencia</div>
+            <div><b>Número de cuenta:</b> 2200449871 <button onClick={()=>copy("2200449871")} style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:6, padding:'4px 8px', cursor:'pointer' }}>Copiar</button></div>
+            <div><b>Tipo de cuenta:</b> Ahorros</div>
+            <div><b>Banco:</b> Pichincha</div>
+            <div><b>Titular:</b> Roberto Acosta</div>
           </div>
-          <div style={{display:'grid', gap:12}}>
-            <p style={{margin:0, opacity:.9}}>
-              1) Abre tu app Deuna<br/>
-              2) Escanea el código<br/>
-              3) Coloca el <b>mismo total</b> indicado arriba y confirma
-            </p>
-            <small style={{opacity:.7}}>
-              Después del pago, confirma abajo con el botón <b>“Ya pagué”</b>.
+        </div>
+
+        <div style={{display:'grid', gap:10}}>
+          <label style={{opacity:.9}}>Comprobante de pago (imagen o PDF)</label>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,.pdf"
+            required
+            style={{width:'100%', padding:10, borderRadius:8, border:'1px solid #1f2937', background:'#0b1220', color:'#fff'}}
+          />
+          <div style={{display:'flex', gap:10, flexWrap:'wrap'}}>
+            <button onClick={handleUpload} style={btn} disabled={uploading}>
+              {uploading ? 'Enviando...' : 'Enviar comprobante'}
+            </button>
+            <button onClick={checkStatus} style={{...btn, background:'#334155'}}>
+              Verificar acceso
+            </button>
+          </div>
+
+          {orderId && (
+            <small style={{opacity:.8}}>
+              Tu ID de pedido: <b>{orderId}</b> — Estado: <b>{status === 'idle' ? 'pendiente' : status}</b><br/>
+              Comparte este ID al soporte si lo necesitas.
             </small>
-          </div>
+          )}
         </div>
       </section>
 
-      {/* Otros métodos */}
       <section style={card}>
-        <h3 style={{marginTop:0}}>Otros métodos</h3>
-
-        <label style={{display:'block', marginTop:12, opacity:.9}}>Método de pago</label>
-        <select
-          value={method}
-          onChange={e=>setMethod(e.target.value)}
-          style={{width:'100%', padding:10, borderRadius:8, border:'1px solid #1f2937', background:'#0b1220', color:'#fff'}}
-        >
-          <option value="transferencia">Transferencia</option>
-          <option value="paypal">PayPal (próximamente)</option>
-          <option value="2checkout">Tarjeta 2Checkout (próximamente)</option>
-        </select>
-
-        {method==="transferencia" && (
-          <div style={{...soft, padding:14, marginTop:12, display:'grid', gap:12}}>
-            <div style={{opacity:.8, fontSize:13}}>Datos para transferencia</div>
-            <div style={{display:'grid', gap:6}}>
-              <div><b>Número de cuenta:</b> 2200449871
-                <button
-                  onClick={()=>copy("2200449871")}
-                  style={{ marginLeft:8, background:'#334155', color:'#fff', border:'none', borderRadius:6, padding:'4px 8px', cursor:'pointer' }}
-                >
-                  Copiar
-                </button>
-              </div>
-              <div><b>Tipo de cuenta:</b> Ahorros</div>
-              <div><b>Banco:</b> Pichincha</div>
-              <div><b>Titular:</b> Roberto Acosta</div>
-            </div>
-
-            <div style={{display:'grid', gap:10}}>
-              <div>
-                <p style={{margin:'8px 0'}}>Sube tu comprobante (opcional):</p>
-                <input
-                  type="file"
-                  style={{
-                    width:'100%', padding:10, borderRadius:8, border:'1px solid #1f2937',
-                    background:'#0b1220', color:'#fff'
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {method!=="transferencia" && <p style={{marginTop:16}}>Este método se habilitará más adelante.</p>}
-
-        <div style={{marginTop:14, display:'flex', gap:10, flexWrap:'wrap'}}>
-          <a href="/" style={{...btn, background:'#334155'}}>Seguir comprando</a>
-
-          {/* BOTÓN CLAVE: Marca pago y libera wizard */}
-          <button onClick={markPaidAndGo} style={btn} disabled={marking}>
-            {marking ? 'Confirmando…' : 'Ya pagué, acceder al asistente'}
-          </button>
-        </div>
-
-        <small style={{opacity:.7, display:'block', marginTop:10}}>
-          Al confirmar, generaremos tu <b>ID de pedido</b>, marcaremos tu acceso y podrás completar el asistente.
-        </small>
+        <h4 style={{margin:'0 0 8px'}}>¿Pagaste con Deuna (QR)?</h4>
+        <p style={{marginTop:0}}>Sube también el comprobante generado por tu app para validarlo.</p>
       </section>
     </div>
   );
@@ -202,3 +188,4 @@ export default function CheckoutPage() {
     </Suspense>
   );
 }
+

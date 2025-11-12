@@ -9,15 +9,15 @@ export async function POST(req: Request) {
 
     const res = NextResponse.json({ ok: true, orderId });
     res.cookies.set('paid', 'true', {
-      httpOnly: false,      // el wizard sólo necesita leerla en el navegador
+      httpOnly: false,
       sameSite: 'lax',
       secure: true,
-      maxAge: 60 * 60 * 24 * 3, // 3 días
-      path: '/',
+      maxAge: 60 * 60 * 24 * 3,
+      path: '/'
     });
 
     return res;
-  } catch (e) {
+  } catch {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 }

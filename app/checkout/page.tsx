@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
 const PRICES: Record<string, number> = { llenado: 45, asesoria: 35, cita: 15 };
 const TITLES: Record<string, string> = {
@@ -52,11 +52,11 @@ function CheckoutInner() {
   const [items, setItems] = useState<string[]>([]);
   const total = items.reduce((acc, id) => acc + (PRICES[id] || 0), 0);
 
-  // errores y éxito
+  // errores / éxito
   const [errors, setErrors] = useState<string[]>([]);
-  const [successMsg, setSuccessMsg] = useState<string>('');
+  const [successMsg, setSuccessMsg] = useState('');
 
-  // método (por defecto Deuna)
+  // métodos
   const [method, setMethod] = useState<Method>('deuna');
 
   // Deuna
@@ -83,15 +83,15 @@ function CheckoutInner() {
   }, [fromURL.join(',')]);
 
   // utils
+  function copy(text: string) { navigator.clipboard?.writeText(text); }
   function makeOrderId() {
     const ts = new Date();
     return `DS160-${ts.getFullYear()}${String(ts.getMonth() + 1).padStart(2, '0')}${String(ts.getDate()).padStart(2, '0')}-${String(
       ts.getHours()
     ).padStart(2, '0')}${String(ts.getMinutes()).padStart(2, '0')}${String(ts.getSeconds()).padStart(2, '0')}`;
   }
-  function copy(text: string) { navigator.clipboard?.writeText(text); }
 
-  // VALIDACIÓN (solo para Deuna/Transferencia; los otros están deshabilitados)
+  // VALIDACIÓN (solo Deuna/Transferencia)
   function validate(): string[] {
     const out: string[] = [];
     if (!items.length) out.push('No hay servicios en el carrito.');
@@ -125,12 +125,11 @@ function CheckoutInner() {
 
       const orderId = makeOrderId();
 
-      // Guardamos meta local para que tú lo veas si necesitas
       const payload = {
         order_id: orderId,
         items,
         total,
-        method,
+        method: method as 'deuna' | 'transferencia',
         deuna_ref: deunaRef || null,
         deuna_file_name: deunaFile?.name || null,
         trans_ref: transRef || null,
@@ -141,7 +140,6 @@ function CheckoutInner() {
       localStorage.setItem('ds160_cart', JSON.stringify(items));
       localStorage.setItem('payment_meta', JSON.stringify(payload));
 
-      // Enviar a API de “pendiente” (queda log en Vercel; luego podrás enviar a email/DB)
       await fetch('/api/pending-payment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,7 +151,6 @@ function CheckoutInner() {
 Nuestro equipo revisará y te habilitará el acceso al asistente. 
 Te notificaremos por WhatsApp o email.`
       );
-      // Importante: NO seteamos cookie de pago. El middleware seguirá bloqueando /wizard hasta que apruebes.
     } catch (e: any) {
       setErrors([e?.message || 'Error al enviar la solicitud. Intenta nuevamente.']);
     } finally {
@@ -209,7 +206,7 @@ Te notificaremos por WhatsApp o email.`
         <p>Total: <b>${total} USD</b></p>
       </section>
 
-      {/* Tabs de método (PayPal y Tarjeta deshabilitados con “Próximamente”) */}
+      {/* Tabs método */}
       <section style={css.card}>
         <h3 style={{ marginTop: 0 }}>Elige cómo pagaste</h3>
         <div style={css.tabs}>

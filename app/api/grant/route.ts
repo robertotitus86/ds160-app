@@ -8,9 +8,16 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const token = url.searchParams.get('token') || '';
-    if (!token) return NextResponse.json({ ok: false, error: 'missing_token' }, { status: 400 });
+    if (!token) {
+      return NextResponse.json(
+        { ok: false, error: 'missing_token' },
+        { status: 400 }
+      );
+    }
 
-    const secret = new TextEncoder().encode(process.env.ADMIN_SECRET || 'insecure');
+    const secret = new TextEncoder().encode(
+      process.env.ADMIN_SECRET || 'insecure'
+    );
     await jwtVerify(token, secret);
 
     cookies().set('paid', 'true', {
@@ -24,7 +31,9 @@ export async function GET(req: Request) {
     return NextResponse.redirect(new URL('/wizard', url));
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ ok: false, error: 'invalid_or_expired_token' }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: 'invalid_or_expired_token' },
+      { status: 400 }
+    );
   }
 }
-

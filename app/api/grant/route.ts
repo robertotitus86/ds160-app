@@ -27,3 +27,4 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: 'invalid_or_expired_token' }, { status: 400 });
   }
 }
+

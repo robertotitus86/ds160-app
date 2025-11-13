@@ -4,7 +4,6 @@ import type { NextRequest } from 'next/server';
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Solo protegemos el wizard
   if (!pathname.startsWith('/wizard')) return NextResponse.next();
 
   const paid = req.cookies.get('paid')?.value === 'true';
@@ -17,5 +16,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/wizard']
+  matcher: ['/wizard'],
 };

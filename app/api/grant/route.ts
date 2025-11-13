@@ -11,22 +11,17 @@ export async function GET(req: Request) {
     if (!token) return NextResponse.json({ ok: false, error: 'missing_token' }, { status: 400 });
 
     const secret = new TextEncoder().encode(process.env.ADMIN_SECRET || 'insecure');
-    const { payload } = await jwtVerify(token, secret);
+    await jwtVerify(token, secret);
 
-    // Si el token es válido, seteamos cookie paid=true por 3 días y redirigimos al wizard
-    const res = NextResponse.redirect(new URL('/wizard', url));
     cookies().set('paid', 'true', {
       httpOnly: false,
       sameSite: 'lax',
       secure: true,
-      maxAge: 60 * 60 * 24 * 3,
+      maxAge: 60 * 60 * 24 * 3, // 3 días
       path: '/',
     });
 
-    // Opcional: podrías loggear la orden aprobada
-    console.log('[GRANTED]', payload);
-
-    return res;
+    return NextResponse.redirect(new URL('/wizard', url));
   } catch (e) {
     console.error(e);
     return NextResponse.json({ ok: false, error: 'invalid_or_expired_token' }, { status: 400 });

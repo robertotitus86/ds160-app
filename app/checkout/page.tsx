@@ -1,11 +1,6 @@
 "use client";
 
-import React, {
-  Suspense,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 const PRICES: Record<string, number> = {
@@ -335,41 +330,88 @@ function CheckoutInner() {
           <div
             style={{
               display: "grid",
-              gap: 16, // más separación entre filas
+              gap: 22,
               gridTemplateColumns: "repeat(2,minmax(0,1fr))",
             }}
           >
-            <div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
               <label style={css.label}>Nombre</label>
               <input
-                style={css.input}
+                style={{
+                  ...css.input,
+                  maxWidth: 320,
+                  padding: "6px 10px",
+                  fontSize: 13,
+                }}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ej.: Roberto"
               />
             </div>
-            <div>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
               <label style={css.label}>Apellido</label>
               <input
-                style={css.input}
+                style={{
+                  ...css.input,
+                  maxWidth: 320,
+                  padding: "6px 10px",
+                  fontSize: 13,
+                }}
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Ej.: Acosta"
               />
             </div>
-            <div>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
               <label style={css.label}>WhatsApp / Celular</label>
               <input
-                style={css.input}
+                style={{
+                  ...css.input,
+                  maxWidth: 320,
+                  padding: "6px 10px",
+                  fontSize: 13,
+                }}
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Ej.: +593 987 846 751"
               />
             </div>
-            <div>
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
               <label style={css.label}>Correo electrónico</label>
               <input
-                style={css.input}
+                style={{
+                  ...css.input,
+                  maxWidth: 320,
+                  padding: "6px 10px",
+                  fontSize: 13,
+                }}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Ej.: ejemplo@gmail.com"
@@ -584,5 +626,88 @@ function CheckoutInner() {
                 <input
                   style={css.input}
                   value={transRef}
-                  onChange
+                  onChange={(e) => setTransRef(e.target.value)}
+                  placeholder="Ej.: referencia / código de la transferencia"
+                />
+              </div>
+
+              <div>
+                <div style={css.label}>
+                  Adjuntar comprobante (opcional si ingresaste referencia)
+                </div>
+                <input
+                  type="file"
+                  style={css.input}
+                  onChange={(e) =>
+                    setTransFile(e.target.files?.[0] || null)
+                  }
+                />
+                {transFile && (
+                  <small style={{ opacity: 0.75 }}>
+                    Archivo: {transFile.name}
+                  </small>
+                )}
+              </div>
+
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 13,
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={transConfirm}
+                  onChange={(e) => setTransConfirm(e.target.checked)}
+                />
+                Confirmo que realicé la transferencia por el total indicado
+              </label>
+
+              <small style={{ opacity: 0.75 }}>
+                Al enviar, tu pago quedará <b>pendiente de revisión</b>. Te
+                habilitaremos el acceso cuando sea aprobado.
+              </small>
+            </div>
+          </section>
+        )}
+
+        {/* BOTÓN FINAL */}
+        <section style={css.card}>
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 10,
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <div style={{ fontSize: 13, opacity: 0.8, maxWidth: 420 }}>
+              Al continuar, enviaremos tu pago a revisión. Te contactaremos
+              usando los datos que ingresaste para habilitar el acceso al
+              asistente DS-160 y continuar tu proceso.
+            </div>
+            <button
+              style={css.btn}
+              onClick={sendForReview}
+              disabled={sending}
+            >
+              {sending ? "Enviando..." : "Enviar pago para revisión"}
+            </button>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 20 }}>Cargando checkout…</div>}>
+      <CheckoutInner />
+    </Suspense>
+  );
+}
 

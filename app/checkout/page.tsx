@@ -2,6 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import React from 'react';
 
 const PRICES: Record<string, number> = {
   llenado: 45,
@@ -75,7 +76,7 @@ const css = {
     color: '#ecfdf5',
     padding: '10px 12px',
     borderRadius: 10,
-  } as React.CSS_PROPERTIES,
+  } as React.CSSProperties,
   tabs: {
     display: 'flex',
     gap: 10,
@@ -103,13 +104,12 @@ const css = {
     padding: '2px 6px',
     fontSize: 10,
     fontWeight: 700,
-  },
+  } as React.CSSProperties,
 };
 
 function CheckoutInner() {
   const params = useSearchParams();
 
-  // carrito desde URL
   const one = params.get('plan');
   const many = params.get('plans');
   const fromURL = useMemo(
@@ -156,7 +156,6 @@ function CheckoutInner() {
     } catch {}
   }, [fromURL.join(',')]);
 
-  // utils
   function copy(text: string) {
     navigator.clipboard?.writeText(text);
   }
@@ -174,7 +173,6 @@ function CheckoutInner() {
     ).padStart(2, '0')}`;
   }
 
-  // VALIDACIÓN
   function validate(): string[] {
     const out: string[] = [];
     if (!items.length) out.push('No hay servicios en el carrito.');
@@ -608,3 +606,4 @@ export default function CheckoutPage() {
     </Suspense>
   );
 }
+

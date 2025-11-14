@@ -1,127 +1,341 @@
 "use client";
-import React, { useState } from "react";
-import Image from "next/image";
+
+import React, {
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { useSearchParams } from "next/navigation";
+
+const PRICES: Record<string, number> = {
+  llenado: 45,
+  asesoria: 35,
+  cita: 15,
+};
+
+const TITLES: Record<string, string> = {
+  llenado: "Llenado DS-160",
+  asesoria: "Asesoría Entrevista",
+  cita: "Toma de Cita",
+};
+
+type Method = "deuna" | "transferencia" | "paypal_soon" | "card_soon";
 
 const css = {
   wrapper: {
     display: "flex",
     justifyContent: "center",
     width: "100%",
-  },
+  } as React.CSSProperties,
   inner: {
     width: "100%",
     maxWidth: 900,
     display: "grid",
-    gap: 20,
-  },
+    gap: 18,
+  } as React.CSSProperties,
   card: {
     background: "#0f172a",
-    padding: 20,
+    padding: 18,
     borderRadius: 14,
     border: "1px solid #1e293b",
-  },
+  } as React.CSSProperties,
   label: {
     fontSize: 13,
     opacity: 0.8,
     display: "block",
     marginBottom: 4,
-  },
+  } as React.CSSProperties,
   input: {
     width: "100%",
-    padding: "10px 12px",
+    padding: "8px 10px",
     background: "#020617",
     border: "1px solid #1e293b",
     borderRadius: 10,
-    color: "white",
+    color: "#e5e7eb",
     outline: "none",
-  },
-  button: {
+    fontSize: 14,
+  } as React.CSSProperties,
+  btn: {
     background: "#2563eb",
-    padding: "10px 16px",
-    borderRadius: 10,
-    color: "white",
+    color: "#fff",
     border: "none",
+    borderRadius: 10,
+    padding: "10px 14px",
     cursor: "pointer",
     fontWeight: 600,
-  },
+  } as React.CSSProperties,
+  ghost: {
+    background: "#334155",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    padding: "10px 14px",
+    cursor: "pointer",
+    fontWeight: 500,
+  } as React.CSSProperties,
   error: {
     background: "#7f1d1d",
-    padding: 14,
-    color: "white",
+    border: "1px solid #b91c1c",
+    padding: 12,
+    color: "#fee2e2",
     borderRadius: 10,
-  },
+  } as React.CSSProperties,
   ok: {
     background: "#14532d",
-    padding: 14,
-    color: "white",
+    border: "1px solid #16a34a",
+    padding: 12,
+    color: "#dcfce7",
     borderRadius: 10,
+  } as React.CSSProperties,
+  tabs: {
+    display: "flex",
+    flexWrap: "wrap" as const,
+    gap: 10,
+  } as React.CSSProperties,
+  tab(active: boolean, disabled?: boolean): React.CSSProperties {
+    return {
+      position: "relative",
+      background: active ? "#2563eb" : "#334155",
+      color: disabled ? "rgba(255,255,255,.5)" : "#fff",
+      border: "none",
+      borderRadius: 10,
+      padding: "8px 12px",
+      cursor: disabled ? "not-allowed" : "pointer",
+      opacity: disabled ? 0.7 : 1,
+      fontSize: 13,
+      fontWeight: 500,
+    };
   },
+  soonBadge: {
+    position: "absolute" as const,
+    top: -8,
+    right: -8,
+    padding: "2px 6px",
+    borderRadius: 8,
+    background: "#f59e0b",
+    color: "#111827",
+    fontSize: 10,
+    fontWeight: 700,
+  } as React.CSSProperties,
 };
 
-export default function CheckoutPage() {
+function CheckoutInner() {
+  const params = useSearchParams();
+
+  const one = params.get("plan");
+  const many = params.get("plans");
+  const fromURL = useMemo(
+    () => (many ? many.split(",").filter(Boolean) : one ? [one] : []),
+    [one, many]
+  );
+
+  const [items, setItems] = useState<string[]>([]);
+  const total = items.reduce((acc, id) => acc + (PRICES[id] || 0), 0);
+
+  // Contacto
   const [name, setName] = useState("");
-  const [last, setLast] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
-  const [mail, setMail] = useState("");
-  const [method, setMethod] = useState("deuna");
-  const [slip, setSlip] = useState<File | null>(null);
+  const [email, setEmail] = useState("");
+
+  // Método de pago
+  const [method, setMethod] = useState<Method>("deuna");
+
+  // Deuna
+  const [deunaChecked, setDeunaChecked] = useState(false);
+  const [deunaRef, setDeunaRef] = useState("");
+  const [deunaFile, setDeunaFile] = useState<File | null>(null);
+
+  // Transferencia
+  const [transRef, setTransRef] = useState("");
+  const [transFile, setTransFile] = useState<File | null>(null);
+  const [transConfirm, setTransConfirm] = useState(false);
+
   const [errors, setErrors] = useState<string[]>([]);
-  const [ok, setOk] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const [sending, setSending] = useState(false);
 
-  const validate = () => {
-    const e = [];
-    if (!name.trim()) e.push("Ingresa tu nombre.");
-    if (!last.trim()) e.push("Ingresa tu apellido.");
-    if (!phone.trim()) e.push("Ingresa tu número de WhatsApp.");
-    if (!mail.trim() || !mail.includes("@")) e.push("Correo inválido.");
-    if (method === "transferencia" && !slip)
-      e.push("Debes subir el comprobante de pago.");
-    return e;
-  };
-
-  const payNow = () => {
-    const e = validate();
-    setErrors(e);
-    if (e.length === 0) {
-      setOk(
-        "Gracias. Tu pago está en revisión.\nTe enviaremos acceso al asistente una vez aprobado."
-      );
+  // Cargar carrito
+  useEffect(() => {
+    if (fromURL.length) {
+      setItems(fromURL);
+      return;
     }
-  };
+    try {
+      const raw = localStorage.getItem("ds160_cart");
+      if (raw) setItems(JSON.parse(raw));
+    } catch {
+      /* ignore */
+    }
+  }, [fromURL.join(",")]);
+
+  function copy(text: string) {
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    }
+  }
+
+  function makeOrderId() {
+    const ts = new Date();
+    return `DS160-${ts.getFullYear()}${String(
+      ts.getMonth() + 1
+    ).padStart(2, "0")}${String(ts.getDate()).padStart(2, "0")}-${String(
+      ts.getHours()
+    ).padStart(2, "0")}${String(ts.getMinutes()).padStart(2, "0")}${String(
+      ts.getSeconds()
+    ).padStart(2, "0")}`;
+  }
+
+  function validate(): string[] {
+    const out: string[] = [];
+
+    if (!items.length) out.push("No hay servicios en el carrito.");
+    if (!total || total <= 0) out.push("El total no es válido.");
+
+    if (!name.trim()) out.push("Ingresa tu nombre.");
+    if (!lastName.trim()) out.push("Ingresa tu apellido.");
+    if (!phone.trim()) out.push("Ingresa tu número de WhatsApp o celular.");
+    if (!email.trim()) out.push("Ingresa tu correo electrónico.");
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      out.push("El correo electrónico no tiene un formato válido.");
+    }
+
+    if (method === "deuna") {
+      if (!deunaChecked) out.push("Marca que confirmas tu pago con Deuna (QR).");
+      if (!deunaRef && !deunaFile) {
+        out.push(
+          "En Deuna ingresa una referencia o adjunta el comprobante de pago."
+        );
+      }
+    }
+
+    if (method === "transferencia") {
+      if (!transConfirm)
+        out.push("Confirma que realizaste la transferencia por el total.");
+      if (!transRef && !transFile) {
+        out.push(
+          "En Transferencia pega la referencia del banco o adjunta el comprobante."
+        );
+      }
+    }
+
+    return out;
+  }
+
+  async function sendForReview() {
+    const v = validate();
+    if (v.length) {
+      setErrors(v);
+      setSuccessMsg("");
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
+
+    try {
+      setSending(true);
+      setErrors([]);
+      setSuccessMsg("");
+
+      const orderId = makeOrderId();
+
+      const payload = {
+        order_id: orderId,
+        items,
+        total,
+        method,
+        contact: {
+          name: name.trim(),
+          lastName: lastName.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+        },
+        deuna_ref: deunaRef || null,
+        deuna_file_name: deunaFile?.name || null,
+        trans_ref: transRef || null,
+        trans_file_name: transFile?.name || null,
+        ts: new Date().toISOString(),
+      };
+
+      if (typeof window !== "undefined") {
+        localStorage.setItem("order_id", orderId);
+        localStorage.setItem("ds160_cart", JSON.stringify(items));
+        localStorage.setItem("payment_meta", JSON.stringify(payload));
+      }
+
+      await fetch("/api/pending-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      setSuccessMsg(
+        `✅ Recibimos tu solicitud (#${orderId}).\n` +
+          `Revisaremos el pago y te habilitaremos el acceso al asistente DS-160.\n` +
+          `Te contactaremos al WhatsApp ${phone.trim()} o al correo ${email.trim()}.`
+      );
+    } catch (e: any) {
+      setErrors([
+        e?.message || "Error al enviar la solicitud. Intenta nuevamente.",
+      ]);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  if (!items.length) {
+    return (
+      <div style={css.wrapper}>
+        <div style={css.inner}>
+          <div style={css.card}>
+            <h2>Checkout</h2>
+            <p>No hay servicios seleccionados.</p>
+            <a href="/" style={css.btn}>
+              Volver a servicios
+            </a>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={css.wrapper}>
       <div style={css.inner}>
-        {/* -------------------- ERRORES Y MENSAJES -------------------- */}
+        {/* MENSAJES */}
         {errors.length > 0 && (
           <div style={css.error}>
             <b>Revisa antes de continuar:</b>
-            <ul>
-              {errors.map((x, i) => (
-                <li key={i}>{x}</li>
+            <ul style={{ margin: "6px 0 0 18px" }}>
+              {errors.map((e, i) => (
+                <li key={i}>{e}</li>
               ))}
             </ul>
           </div>
         )}
 
-        {ok && (
+        {successMsg && (
           <div style={css.ok}>
-            <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>{ok}</pre>
+            <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+              {successMsg}
+            </pre>
           </div>
         )}
 
-        {/* -------------------- DATOS DE CONTACTO -------------------- */}
+        {/* DATOS DE CONTACTO */}
         <section style={css.card}>
-          <h2>Tus datos de contacto</h2>
-          <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 16 }}>
-            Usaremos estos datos para enviarte acceso al asistente y coordinar tu
-            proceso DS-160.
+          <h2 style={{ marginTop: 0 }}>Tus datos de contacto</h2>
+          <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 14 }}>
+            Usaremos estos datos para enviarte acceso al asistente y coordinar
+            tu proceso DS-160.
           </p>
 
           <div
             style={{
               display: "grid",
-              gap: 12,
+              gap: 16, // más separación entre filas
               gridTemplateColumns: "repeat(2,minmax(0,1fr))",
             }}
           >
@@ -134,17 +348,15 @@ export default function CheckoutPage() {
                 placeholder="Ej.: Roberto"
               />
             </div>
-
             <div>
               <label style={css.label}>Apellido</label>
               <input
                 style={css.input}
-                value={last}
-                onChange={(e) => setLast(e.target.value)}
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
                 placeholder="Ej.: Acosta"
               />
             </div>
-
             <div>
               <label style={css.label}>WhatsApp / Celular</label>
               <input
@@ -154,92 +366,223 @@ export default function CheckoutPage() {
                 placeholder="Ej.: +593 987 846 751"
               />
             </div>
-
             <div>
               <label style={css.label}>Correo electrónico</label>
               <input
                 style={css.input}
-                value={mail}
-                onChange={(e) => setMail(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Ej.: ejemplo@gmail.com"
               />
             </div>
           </div>
         </section>
 
-        {/* -------------------- RESUMEN -------------------- */}
+        {/* RESUMEN */}
         <section style={css.card}>
-          <h3>Resumen de tu compra</h3>
-          <p>Llenado DS-160 — <b>$45 USD</b></p>
-          <p>Total: <b>$45 USD</b></p>
+          <h3 style={{ marginTop: 0 }}>Resumen de tu compra</h3>
+          <ul style={{ margin: "6px 0 12px 18px" }}>
+            {items.map((id) => (
+              <li
+                key={id}
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
+              >
+                <span>{TITLES[id] || id}</span>
+                <span>—</span>
+                <b>${PRICES[id]} USD</b>
+                <button
+                  onClick={() => setItems(items.filter((x) => x !== id))}
+                  style={{
+                    marginLeft: 8,
+                    background: "#334155",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "4px 8px",
+                    cursor: "pointer",
+                    fontSize: 12,
+                  }}
+                >
+                  Quitar
+                </button>
+              </li>
+            ))}
+          </ul>
+          <p>
+            Total: <b>${total} USD</b>
+          </p>
         </section>
 
-        {/* -------------------- MÉTODOS DE PAGO -------------------- */}
+        {/* MÉTODO DE PAGO */}
         <section style={css.card}>
-          <h3>Método de pago</h3>
+          <h3 style={{ marginTop: 0 }}>Elige cómo pagaste</h3>
+          <div style={css.tabs}>
+            <button
+              style={css.tab(method === "deuna")}
+              onClick={() => setMethod("deuna")}
+            >
+              Deuna (QR)
+            </button>
+            <button
+              style={css.tab(method === "transferencia")}
+              onClick={() => setMethod("transferencia")}
+            >
+              Transferencia
+            </button>
 
-          <select
-            value={method}
-            onChange={(e) => setMethod(e.target.value)}
-            style={{
-              ...css.input,
-              cursor: "pointer",
-              marginBottom: 18,
-            }}
-          >
-            <option value="deuna">Deuna (QR)</option>
-            <option value="transferencia">Transferencia bancaria</option>
-            <option value="paypal">PayPal (Próximamente)</option>
-            <option value="tarjeta">Tarjeta (Próximamente)</option>
-          </select>
+            <div style={{ position: "relative" }}>
+              <button style={css.tab(false, true)} aria-disabled>
+                PayPal
+              </button>
+              <span style={css.soonBadge}>Próximamente</span>
+            </div>
 
-          {/* DEUNA */}
-          {method === "deuna" && (
-            <div>
-              <Image
-                src="/qr-deuna.png"
-                width={270}
-                height={270}
-                alt="QR Deuna"
+            <div style={{ position: "relative" }}>
+              <button style={css.tab(false, true)} aria-disabled>
+                Tarjeta (2Checkout)
+              </button>
+              <span style={css.soonBadge}>Próximamente</span>
+            </div>
+          </div>
+        </section>
+
+        {/* DEUNA */}
+        {method === "deuna" && (
+          <section style={css.card}>
+            <h3 style={{ marginTop: 0 }}>Pago con Deuna (QR)</h3>
+            <div
+              style={{
+                display: "grid",
+                gap: 16,
+                gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
+                alignItems: "center",
+              }}
+            >
+              <div
                 style={{
-                  borderRadius: 12,
-                  border: "1px solid #1e293b",
-                  display: "block",
-                  margin: "0 auto",
+                  background: "#020617",
+                  border: "1px solid #1f2937",
+                  borderRadius: 14,
+                  padding: 14,
+                  display: "grid",
+                  placeItems: "center",
                 }}
-              />
+              >
+                {/* Usa tu archivo de imagen deuna-qr.png */}
+                <img
+                  src="/deuna-qr.png"
+                  alt="QR Deuna"
+                  style={{
+                    width: 190,
+                    height: "auto",
+                    borderRadius: 12,
+                    boxShadow: "0 10px 30px rgba(0,0,0,.45)",
+                  }}
+                />
+              </div>
+              <div style={{ display: "grid", gap: 10 }}>
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    fontSize: 13,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={deunaChecked}
+                    onChange={(e) => setDeunaChecked(e.target.checked)}
+                  />
+                  Confirmo que pagué con Deuna (QR) por el total indicado
+                </label>
+
+                <div>
+                  <div style={css.label}>Referencia (recomendado)</div>
+                  <input
+                    style={css.input}
+                    value={deunaRef}
+                    onChange={(e) => setDeunaRef(e.target.value)}
+                    placeholder="Ej.: referencia / código en la app Deuna"
+                  />
+                </div>
+
+                <div>
+                  <div style={css.label}>
+                    Adjuntar comprobante (opcional si ingresaste referencia)
+                  </div>
+                  <input
+                    type="file"
+                    style={css.input}
+                    onChange={(e) =>
+                      setDeunaFile(e.target.files?.[0] || null)
+                    }
+                  />
+                  {deunaFile && (
+                    <small style={{ opacity: 0.75 }}>
+                      Archivo: {deunaFile.name}
+                    </small>
+                  )}
+                </div>
+
+                <small style={{ opacity: 0.75 }}>
+                  Al enviar, tu pago quedará <b>pendiente de revisión</b>. Te
+                  habilitaremos el acceso cuando sea aprobado.
+                </small>
+              </div>
             </div>
-          )}
+          </section>
+        )}
 
-          {/* TRANSFERENCIA */}
-          {method === "transferencia" && (
-            <div>
-              <p><b>Número de cuenta:</b> 2200449871</p>
-              <p><b>Tipo:</b> Ahorros</p>
-              <p><b>Banco:</b> Pichincha</p>
-              <p><b>Titular:</b> Roberto Acosta</p>
+        {/* TRANSFERENCIA */}
+        {method === "transferencia" && (
+          <section style={css.card}>
+            <h3 style={{ marginTop: 0 }}>Transferencia bancaria</h3>
+            <div
+              style={{
+                background: "#020617",
+                borderRadius: 14,
+                border: "1px solid #1f2937",
+                padding: 14,
+                display: "grid",
+                gap: 10,
+              }}
+            >
+              <div style={{ fontSize: 13, opacity: 0.85 }}>
+                Datos para transferencia
+              </div>
+              <div>
+                <b>Número de cuenta:</b> 2200449871{" "}
+                <button
+                  onClick={() => copy("2200449871")}
+                  style={{
+                    marginLeft: 6,
+                    background: "#334155",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "3px 8px",
+                    cursor: "pointer",
+                    fontSize: 11,
+                  }}
+                >
+                  Copiar
+                </button>
+              </div>
+              <div>
+                <b>Tipo de cuenta:</b> Ahorros
+              </div>
+              <div>
+                <b>Banco:</b> Pichincha
+              </div>
+              <div>
+                <b>Titular:</b> Roberto Acosta
+              </div>
 
-              <label style={css.label}>Sube tu comprobante</label>
-              <input
-                type="file"
-                style={css.input}
-                onChange={(e) => setSlip(e.target.files?.[0] || null)}
-              />
-            </div>
-          )}
-
-          {/* PRÓXIMAMENTE */}
-          {(method === "paypal" || method === "tarjeta") && (
-            <p style={{ opacity: 0.6 }}>Este método estará disponible pronto.</p>
-          )}
-        </section>
-
-        {/* -------------------- BOTÓN -------------------- */}
-        <button style={css.button} onClick={payNow}>
-          Ya pagué, acceder al asistente
-        </button>
-      </div>
-    </div>
-  );
-}
+              <div>
+                <div style={css.label}>Referencia (o concepto del banco)</div>
+                <input
+                  style={css.input}
+                  value={transRef}
+                  onChange
 

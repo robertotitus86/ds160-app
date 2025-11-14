@@ -18,10 +18,14 @@ type Payload = {
   total: number;
   method: "deuna" | "transferencia";
   contact: Contact;
+  // Deuna
   deuna_ref?: string | null;
   deuna_file_name?: string | null;
+  deuna_file_url?: string | null; // 🔹 URL pública del comprobante (opcional)
+  // Transferencia
   trans_ref?: string | null;
   trans_file_name?: string | null;
+  trans_file_url?: string | null; // 🔹 URL pública del comprobante (opcional)
   ts: string;
 };
 
@@ -81,6 +85,7 @@ export async function POST(req: Request) {
     lines.push(`<p><b>WhatsApp:</b> ${contact.phone}</p>`);
     lines.push(`<p><b>Email:</b> ${contact.email}</p>`);
 
+    // Detalle Deuna
     if (body.method === "deuna") {
       lines.push("<h3>Deuna (QR)</h3>");
       lines.push(`<p><b>Referencia:</b> ${body.deuna_ref || "-"}</p>`);
@@ -89,8 +94,18 @@ export async function POST(req: Request) {
           body.deuna_file_name || "(no adjunto, revisar referencia)"
         }</p>`
       );
+
+      if (body.deuna_file_url) {
+        lines.push(
+          `<p><a href="${body.deuna_file_url}" target="_blank" rel="noreferrer" style="color:#60a5fa">Ver comprobante</a></p>`
+        );
+        lines.push(
+          `<p><img src="${body.deuna_file_url}" alt="Comprobante Deuna" style="max-width:280px;border-radius:8px;margin-top:8px"/></p>`
+        );
+      }
     }
 
+    // Detalle Transferencia
     if (body.method === "transferencia") {
       lines.push("<h3>Transferencia</h3>");
       lines.push(`<p><b>Referencia:</b> ${body.trans_ref || "-"}</p>`);
@@ -99,6 +114,15 @@ export async function POST(req: Request) {
           body.trans_file_name || "(no adjunto, revisar referencia)"
         }</p>`
       );
+
+      if (body.trans_file_url) {
+        lines.push(
+          `<p><a href="${body.trans_file_url}" target="_blank" rel="noreferrer" style="color:#60a5fa">Ver comprobante</a></p>`
+        );
+        lines.push(
+          `<p><img src="${body.trans_file_url}" alt="Comprobante transferencia" style="max-width:280px;border-radius:8px;margin-top:8px"/></p>`
+        );
+      }
     }
 
     const html = `
@@ -116,7 +140,7 @@ export async function POST(req: Request) {
         </p>
         <p style="opacity:.7;font-size:12px">El enlace expira en 7 días. Este correo fue generado por DS-160 Asistido.</p>
       </div>
-    `;
+    ”
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const to = process.env.NOTIFY_TO || "nanotiendaec@gmail.com";
@@ -126,7 +150,7 @@ export async function POST(req: Request) {
       to,
       subject: `Pago pendiente: ${body.order_id} ($${body.total} USD)`,
       html,
-      // para poder responder directo al cliente desde el correo
+      // Para que puedas responder directo al cliente
       replyTo: contact.email || undefined,
     });
 
@@ -141,3 +165,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

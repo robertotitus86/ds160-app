@@ -21,11 +21,11 @@ type Payload = {
   // Deuna
   deuna_ref?: string | null;
   deuna_file_name?: string | null;
-  deuna_file_url?: string | null; // 🔹 URL pública del comprobante (opcional)
+  deuna_file_url?: string | null; // URL pública del comprobante (opcional)
   // Transferencia
   trans_ref?: string | null;
   trans_file_name?: string | null;
-  trans_file_url?: string | null; // 🔹 URL pública del comprobante (opcional)
+  trans_file_url?: string | null; // URL pública del comprobante (opcional)
   ts: string;
 };
 
@@ -140,7 +140,7 @@ export async function POST(req: Request) {
         </p>
         <p style="opacity:.7;font-size:12px">El enlace expira en 7 días. Este correo fue generado por DS-160 Asistido.</p>
       </div>
-    ”
+    `;
 
     const resend = new Resend(process.env.RESEND_API_KEY);
     const to = process.env.NOTIFY_TO || "nanotiendaec@gmail.com";
@@ -148,7 +148,8 @@ export async function POST(req: Request) {
     await resend.emails.send({
       from: "DS-160 Asistido <onboarding@resend.dev>",
       to,
-      subject: `Pago pendiente: ${body.order_id} ($${body.total} USD)`,
+      subject:
+        "Pago pendiente: " + body.order_id + " ($" + body.total + " USD)",
       html,
       // Para que puedas responder directo al cliente
       replyTo: contact.email || undefined,
@@ -165,4 +166,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

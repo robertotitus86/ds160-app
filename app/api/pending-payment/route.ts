@@ -12,20 +12,20 @@ type Contact = {
   email: string;
 };
 
+type Method = "deuna" | "transferencia";
+
 type Payload = {
   order_id: string;
   items: string[];
   total: number;
-  method: "deuna" | "transferencia";
+  method: Method;
   contact: Contact;
-  // Deuna
   deuna_ref?: string | null;
   deuna_file_name?: string | null;
-  deuna_file_url?: string | null; // URL pública del comprobante (opcional)
-  // Transferencia
+  deuna_file_url?: string | null;
   trans_ref?: string | null;
   trans_file_name?: string | null;
-  trans_file_url?: string | null; // URL pública del comprobante (opcional)
+  trans_file_url?: string | null;
   ts: string;
 };
 
@@ -44,7 +44,6 @@ export async function POST(req: Request) {
       process.env.ADMIN_SECRET || "insecure"
     );
 
-    // Token para aprobar la orden
     const token = await new SignJWT({
       order_id: body.order_id,
       total: body.total,
@@ -85,42 +84,42 @@ export async function POST(req: Request) {
     lines.push(`<p><b>WhatsApp:</b> ${contact.phone}</p>`);
     lines.push(`<p><b>Email:</b> ${contact.email}</p>`);
 
-    // Detalle Deuna
     if (body.method === "deuna") {
       lines.push("<h3>Deuna (QR)</h3>");
       lines.push(`<p><b>Referencia:</b> ${body.deuna_ref || "-"}</p>`);
-      lines.push(
-        `<p><b>Comprobante:</b> ${
-          body.deuna_file_name || "(no adjunto, revisar referencia)"
-        }</p>`
-      );
-
       if (body.deuna_file_url) {
         lines.push(
-          `<p><a href="${body.deuna_file_url}" target="_blank" rel="noreferrer" style="color:#60a5fa">Ver comprobante</a></p>`
+          `<p><b>Comprobante:</b> <a href="${body.deuna_file_url}" target="_blank" rel="noopener noreferrer">Ver comprobante</a></p>`
         );
         lines.push(
           `<p><img src="${body.deuna_file_url}" alt="Comprobante Deuna" style="max-width:280px;border-radius:8px;margin-top:8px"/></p>`
         );
+      } else {
+        lines.push(
+          `<p><b>Comprobante:</b> ${
+            body.deuna_file_name ||
+            "(no adjunto, revisar referencia o pedir imagen al cliente)"
+          }</p>`
+        );
       }
     }
 
-    // Detalle Transferencia
     if (body.method === "transferencia") {
       lines.push("<h3>Transferencia</h3>");
       lines.push(`<p><b>Referencia:</b> ${body.trans_ref || "-"}</p>`);
-      lines.push(
-        `<p><b>Comprobante:</b> ${
-          body.trans_file_name || "(no adjunto, revisar referencia)"
-        }</p>`
-      );
-
       if (body.trans_file_url) {
         lines.push(
-          `<p><a href="${body.trans_file_url}" target="_blank" rel="noreferrer" style="color:#60a5fa">Ver comprobante</a></p>`
+          `<p><b>Comprobante:</b> <a href="${body.trans_file_url}" target="_blank" rel="noopener noreferrer">Ver comprobante</a></p>`
         );
         lines.push(
           `<p><img src="${body.trans_file_url}" alt="Comprobante transferencia" style="max-width:280px;border-radius:8px;margin-top:8px"/></p>`
+        );
+      } else {
+        lines.push(
+          `<p><b>Comprobante:</b> ${
+            body.trans_file_name ||
+            "(no adjunto, revisar referencia o pedir imagen al cliente)"
+          }</p>`
         );
       }
     }
@@ -151,7 +150,6 @@ export async function POST(req: Request) {
       subject:
         "Pago pendiente: " + body.order_id + " ($" + body.total + " USD)",
       html,
-      // Para que puedas responder directo al cliente
       replyTo: contact.email || undefined,
     });
 

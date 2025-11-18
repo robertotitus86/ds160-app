@@ -1,6 +1,11 @@
 "use client";
 
-import React, { Suspense, useEffect, useMemo, useState } from "react";
+import React, {
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { useSearchParams } from "next/navigation";
 
 const PRICES: Record<string, number> = {
@@ -114,6 +119,25 @@ const css = {
     fontWeight: 700,
   } as React.CSSProperties,
 };
+
+async function uploadProof(file: File | null): Promise<string | null> {
+  if (!file) return null;
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const res = await fetch("/api/upload-proof", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (data.url as string) || null;
+  } catch {
+    return null;
+  }
+}
 
 function CheckoutInner() {
   const params = useSearchParams();
@@ -236,6 +260,12 @@ function CheckoutInner() {
 
       const orderId = makeOrderId();
 
+      // Subir comprobantes (si existen) y obtener URL
+      const deunaUrl =
+        method === "deuna" ? await uploadProof(deunaFile) : null;
+      const transUrl =
+        method === "transferencia" ? await uploadProof(transFile) : null;
+
       const payload = {
         order_id: orderId,
         items,
@@ -249,8 +279,10 @@ function CheckoutInner() {
         },
         deuna_ref: deunaRef || null,
         deuna_file_name: deunaFile?.name || null,
+        deuna_file_url: deunaUrl,
         trans_ref: transRef || null,
         trans_file_name: transFile?.name || null,
+        trans_file_url: transUrl,
         ts: new Date().toISOString(),
       };
 
@@ -488,226 +520,4 @@ function CheckoutInner() {
           </div>
         </section>
 
-        {/* DEUNA */}
-        {method === "deuna" && (
-          <section style={css.card}>
-            <h3 style={{ marginTop: 0 }}>Pago con Deuna (QR)</h3>
-            <div
-              style={{
-                display: "grid",
-                gap: 16,
-                gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-                alignItems: "center",
-              }}
-            >
-              <div
-                style={{
-                  background: "#020617",
-                  border: "1px solid #1f2937",
-                  borderRadius: 14,
-                  padding: 14,
-                  display: "grid",
-                  placeItems: "center",
-                }}
-              >
-                {/* Usa tu archivo de imagen deuna-qr.png */}
-                <img
-                  src="/deuna-qr.png"
-                  alt="QR Deuna"
-                  style={{
-                    width: 190,
-                    height: "auto",
-                    borderRadius: 12,
-                    boxShadow: "0 10px 30px rgba(0,0,0,.45)",
-                  }}
-                />
-              </div>
-              <div style={{ display: "grid", gap: 10 }}>
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    fontSize: 13,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={deunaChecked}
-                    onChange={(e) => setDeunaChecked(e.target.checked)}
-                  />
-                  Confirmo que pagué con Deuna (QR) por el total indicado
-                </label>
-
-                <div>
-                  <div style={css.label}>Referencia (recomendado)</div>
-                  <input
-                    style={css.input}
-                    value={deunaRef}
-                    onChange={(e) => setDeunaRef(e.target.value)}
-                    placeholder="Ej.: referencia / código en la app Deuna"
-                  />
-                </div>
-
-                <div>
-                  <div style={css.label}>
-                    Adjuntar comprobante (opcional si ingresaste referencia)
-                  </div>
-                  <input
-                    type="file"
-                    style={css.input}
-                    onChange={(e) =>
-                      setDeunaFile(e.target.files?.[0] || null)
-                    }
-                  />
-                  {deunaFile && (
-                    <small style={{ opacity: 0.75 }}>
-                      Archivo: {deunaFile.name}
-                    </small>
-                  )}
-                </div>
-
-                <small style={{ opacity: 0.75 }}>
-                  Al enviar, tu pago quedará <b>pendiente de revisión</b>. Te
-                  habilitaremos el acceso cuando sea aprobado.
-                </small>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* TRANSFERENCIA */}
-        {method === "transferencia" && (
-          <section style={css.card}>
-            <h3 style={{ marginTop: 0 }}>Transferencia bancaria</h3>
-            <div
-              style={{
-                background: "#020617",
-                borderRadius: 14,
-                border: "1px solid #1f2937",
-                padding: 14,
-                display: "grid",
-                gap: 10,
-              }}
-            >
-              <div style={{ fontSize: 13, opacity: 0.85 }}>
-                Datos para transferencia
-              </div>
-              <div>
-                <b>Número de cuenta:</b> 2200449871{" "}
-                <button
-                  onClick={() => copy("2200449871")}
-                  style={{
-                    marginLeft: 6,
-                    background: "#334155",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 8,
-                    padding: "3px 8px",
-                    cursor: "pointer",
-                    fontSize: 11,
-                  }}
-                >
-                  Copiar
-                </button>
-              </div>
-              <div>
-                <b>Tipo de cuenta:</b> Ahorros
-              </div>
-              <div>
-                <b>Banco:</b> Pichincha
-              </div>
-              <div>
-                <b>Titular:</b> Roberto Acosta
-              </div>
-
-              <div>
-                <div style={css.label}>Referencia (o concepto del banco)</div>
-                <input
-                  style={css.input}
-                  value={transRef}
-                  onChange={(e) => setTransRef(e.target.value)}
-                  placeholder="Ej.: referencia / código de la transferencia"
-                />
-              </div>
-
-              <div>
-                <div style={css.label}>
-                  Adjuntar comprobante (opcional si ingresaste referencia)
-                </div>
-                <input
-                  type="file"
-                  style={css.input}
-                  onChange={(e) =>
-                    setTransFile(e.target.files?.[0] || null)
-                  }
-                />
-                {transFile && (
-                  <small style={{ opacity: 0.75 }}>
-                    Archivo: {transFile.name}
-                  </small>
-                )}
-              </div>
-
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  fontSize: 13,
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={transConfirm}
-                  onChange={(e) => setTransConfirm(e.target.checked)}
-                />
-                Confirmo que realicé la transferencia por el total indicado
-              </label>
-
-              <small style={{ opacity: 0.75 }}>
-                Al enviar, tu pago quedará <b>pendiente de revisión</b>. Te
-                habilitaremos el acceso cuando sea aprobado.
-              </small>
-            </div>
-          </section>
-        )}
-
-        {/* BOTÓN FINAL */}
-        <section style={css.card}>
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 10,
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <div style={{ fontSize: 13, opacity: 0.8, maxWidth: 420 }}>
-              Al continuar, enviaremos tu pago a revisión. Te contactaremos
-              usando los datos que ingresaste para habilitar el acceso al
-              asistente DS-160 y continuar tu proceso.
-            </div>
-            <button
-              style={css.btn}
-              onClick={sendForReview}
-              disabled={sending}
-            >
-              {sending ? "Enviando..." : "Enviar pago para revisión"}
-            </button>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-export default function CheckoutPage() {
-  return (
-    <Suspense fallback={<div style={{ padding: 20 }}>Cargando checkout…</div>}>
-      <CheckoutInner />
-    </Suspense>
-  );
-}
-
+        {/* DE

@@ -44,6 +44,7 @@ export async function POST(req: Request) {
       process.env.ADMIN_SECRET || "insecure"
     );
 
+    // Token para aprobar la orden
     const token = await new SignJWT({
       order_id: body.order_id,
       total: body.total,
@@ -80,19 +81,19 @@ export async function POST(req: Request) {
     );
     lines.push("<hr/>");
     lines.push("<h3>Datos del cliente</h3>");
-    lines.push(`<p><b>Nombre:</b> ${contact.name} ${contact.lastName}</p>`);
+    lines.push(
+      `<p><b>Nombre:</b> ${contact.name} ${contact.lastName}</p>`
+    );
     lines.push(`<p><b>WhatsApp:</b> ${contact.phone}</p>`);
     lines.push(`<p><b>Email:</b> ${contact.email}</p>`);
 
+    // Detalle Deuna
     if (body.method === "deuna") {
       lines.push("<h3>Deuna (QR)</h3>");
       lines.push(`<p><b>Referencia:</b> ${body.deuna_ref || "-"}</p>`);
       if (body.deuna_file_url) {
         lines.push(
           `<p><b>Comprobante:</b> <a href="${body.deuna_file_url}" target="_blank" rel="noopener noreferrer">Ver comprobante</a></p>`
-        );
-        lines.push(
-          `<p><img src="${body.deuna_file_url}" alt="Comprobante Deuna" style="max-width:280px;border-radius:8px;margin-top:8px"/></p>`
         );
       } else {
         lines.push(
@@ -104,15 +105,13 @@ export async function POST(req: Request) {
       }
     }
 
+    // Detalle Transferencia
     if (body.method === "transferencia") {
       lines.push("<h3>Transferencia</h3>");
       lines.push(`<p><b>Referencia:</b> ${body.trans_ref || "-"}</p>`);
       if (body.trans_file_url) {
         lines.push(
           `<p><b>Comprobante:</b> <a href="${body.trans_file_url}" target="_blank" rel="noopener noreferrer">Ver comprobante</a></p>`
-        );
-        lines.push(
-          `<p><img src="${body.trans_file_url}" alt="Comprobante transferencia" style="max-width:280px;border-radius:8px;margin-top:8px"/></p>`
         );
       } else {
         lines.push(
@@ -148,9 +147,14 @@ export async function POST(req: Request) {
       from: "DS-160 Asistido <onboarding@resend.dev>",
       to,
       subject:
-        "Pago pendiente: " + body.order_id + " ($" + body.total + " USD)",
+        "Pago pendiente: " +
+        body.order_id +
+        " ($" +
+        body.total +
+        " USD)",
       html,
-      replyTo: contact.email || undefined,
+      // Para que puedas responder directo al cliente
+      reply_to: contact.email || undefined,
     });
 
     console.log("[PENDING_PAYMENT]", body);

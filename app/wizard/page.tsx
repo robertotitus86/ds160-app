@@ -102,7 +102,12 @@ const styles = {
     borderRadius: 14,
     border: '1px solid #111827',
   },
-  row: { display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))' },
+  // ⬇️ 3 columnas proporcionales por defecto
+  row: {
+    display: 'grid',
+    gap: 16,
+    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+  },
   label: { fontSize: 13, opacity: 0.9 },
   input: {
     width: '100%',
@@ -214,10 +219,16 @@ export default function WizardPage() {
 
   // Cargar / Guardar
   useEffect(() => {
-    try { const raw = localStorage.getItem(STORAGE_KEY); if (raw) setData(JSON.parse(raw)); } catch {}
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) setData(JSON.parse(raw));
+    } catch {}
   }, []);
+
   useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch {}
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {}
   }, [data]);
 
   // Helpers inputs
@@ -297,7 +308,10 @@ export default function WizardPage() {
 
   function next() {
     const errors = validateCurrentStep();
-    if (errors.length) { alert('Revisa:\n\n' + errors.join('\n')); return; }
+    if (errors.length) {
+      alert('Revisa:\n\n' + errors.join('\n'));
+      return;
+    }
     const idx = steps.findIndex((s) => s.key === step);
     if (idx < steps.length - 1) setStep(steps[idx + 1].key);
   }
@@ -344,14 +358,22 @@ export default function WizardPage() {
       const v = (data as any)[k] ?? '';
       rows.push([label, String(v).replace(/\n/g, ' ')]);
     });
-    return rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    return rows
+      .map((r) =>
+        r
+          .map((c) => `"${c.replace(/"/g, '""')}"`)
+          .join(',')
+      )
+      .join('\n');
   }
 
   function downloadCSV() {
     const blob = new Blob([toCSV()], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'ds160-respuestas.csv'; a.click();
+    a.href = url;
+    a.download = 'ds160-respuestas.csv';
+    a.click();
     URL.revokeObjectURL(url);
   }
 
@@ -382,7 +404,11 @@ export default function WizardPage() {
       <section style={styles.card}>
         <div style={styles.stepper}>
           {steps.map((s) => (
-            <div key={s.key} style={styles.pill(s.key === step)} onClick={() => setStep(s.key)}>
+            <div
+              key={s.key}
+              style={styles.pill(s.key === step)}
+              onClick={() => setStep(s.key)}
+            >
               {s.title}
             </div>
           ))}
@@ -401,19 +427,31 @@ export default function WizardPage() {
             <div style={styles.row}>
               <div>
                 <div style={styles.label}>Primer nombre *</div>
-                <input style={styles.input} value={data.primerNombre}
-                  onChange={(e) => set('primerNombre', e.target.value)} placeholder="Como aparece en el pasaporte"/>
+                <input
+                  style={styles.input}
+                  value={data.primerNombre}
+                  onChange={(e) => set('primerNombre', e.target.value)}
+                  placeholder="Como aparece en el pasaporte"
+                />
                 <div style={styles.help}>En DS-160: Given Name.</div>
               </div>
               <div>
                 <div style={styles.label}>Segundo nombre</div>
-                <input style={styles.input} value={data.segundoNombre}
-                  onChange={(e) => set('segundoNombre', e.target.value)} placeholder="Si no tiene, deje en blanco"/>
+                <input
+                  style={styles.input}
+                  value={data.segundoNombre}
+                  onChange={(e) => set('segundoNombre', e.target.value)}
+                  placeholder="Si no tiene, deje en blanco"
+                />
               </div>
               <div>
                 <div style={styles.label}>Apellidos *</div>
-                <input style={styles.input} value={data.apellidos}
-                  onChange={(e) => set('apellidos', e.target.value)} placeholder="Como aparece en el pasaporte"/>
+                <input
+                  style={styles.input}
+                  value={data.apellidos}
+                  onChange={(e) => set('apellidos', e.target.value)}
+                  placeholder="Como aparece en el pasaporte"
+                />
                 <div style={styles.help}>En DS-160: Surname.</div>
               </div>
             </div>
@@ -421,38 +459,64 @@ export default function WizardPage() {
             <div style={styles.row}>
               <div>
                 <div style={styles.label}>Fecha de nacimiento *</div>
-                <input type="date" style={styles.input} value={data.fechaNacimiento}
-                  onChange={(e) => set('fechaNacimiento', e.target.value)}/>
+                <input
+                  type="date"
+                  style={styles.input}
+                  value={data.fechaNacimiento}
+                  onChange={(e) => set('fechaNacimiento', e.target.value)}
+                />
               </div>
               <div>
                 <div style={styles.label}>Lugar de nacimiento</div>
-                <input style={styles.input} value={data.lugarNacimiento}
-                  onChange={(e) => set('lugarNacimiento', e.target.value)} placeholder="Ciudad y país"/>
+                <input
+                  style={styles.input}
+                  value={data.lugarNacimiento}
+                  onChange={(e) => set('lugarNacimiento', e.target.value)}
+                  placeholder="Ciudad y país"
+                />
               </div>
               <div>
                 <div style={styles.label}>Nacionalidad *</div>
-                <input style={styles.input} value={data.nacionalidad}
-                  onChange={(e) => set('nacionalidad', e.target.value)} placeholder="Ej.: Ecuatoriana"/>
-                <div style={styles.help}>DS-160: Country/Region of Origin (Nationality).</div>
+                <input
+                  style={styles.input}
+                  value={data.nacionalidad}
+                  onChange={(e) => set('nacionalidad', e.target.value)}
+                  placeholder="Ej.: Ecuatoriana"
+                />
+                <div style={styles.help}>
+                  DS-160: Country/Region of Origin (Nationality).
+                </div>
               </div>
             </div>
 
-            <div style={styles.row}>
+            {/* fila de 2 columnas: estado civil / género */}
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Estado civil *</div>
-                <select style={styles.input} value={data.estadoCivil}
-                  onChange={(e) => set('estadoCivil', e.target.value)}>
+                <select
+                  style={styles.input}
+                  value={data.estadoCivil}
+                  onChange={(e) => set('estadoCivil', e.target.value)}
+                >
                   <option value="">Seleccione…</option>
-                  <option>Soltero(a)</option><option>Casado(a)</option>
-                  <option>Divorciado(a)</option><option>Viudo(a)</option><option>Unión libre</option>
+                  <option>Soltero(a)</option>
+                  <option>Casado(a)</option>
+                  <option>Divorciado(a)</option>
+                  <option>Viudo(a)</option>
+                  <option>Unión libre</option>
                 </select>
               </div>
               <div>
                 <div style={styles.label}>Género *</div>
-                <select style={styles.input} value={data.genero}
-                  onChange={(e) => set('genero', e.target.value)}>
+                <select
+                  style={styles.input}
+                  value={data.genero}
+                  onChange={(e) => set('genero', e.target.value)}
+                >
                   <option value="">Seleccione…</option>
-                  <option>Masculino</option><option>Femenino</option><option>Otro / Prefiero no decir</option>
+                  <option>Masculino</option>
+                  <option>Femenino</option>
+                  <option>Otro / Prefiero no decir</option>
                 </select>
               </div>
             </div>
@@ -462,30 +526,48 @@ export default function WizardPage() {
         {/* 2) PASAPORTE */}
         {step === 'pasaporte' && (
           <div style={{ display: 'grid', gap: 16 }}>
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Nro. de pasaporte *</div>
-                <input style={styles.input} value={data.nroPasaporte}
-                  onChange={(e) => set('nroPasaporte', e.target.value.toUpperCase())} placeholder="Ej.: P1234567"/>
+                <input
+                  style={styles.input}
+                  value={data.nroPasaporte}
+                  onChange={(e) => set('nroPasaporte', e.target.value.toUpperCase())}
+                  placeholder="Ej.: P1234567"
+                />
                 <div style={styles.help}>Tal como aparece en el documento.</div>
               </div>
               <div>
                 <div style={styles.label}>País de emisión *</div>
-                <input style={styles.input} value={data.paisEmision}
-                  onChange={(e) => set('paisEmision', e.target.value)} placeholder="Ej.: Ecuador"/>
+                <input
+                  style={styles.input}
+                  value={data.paisEmision}
+                  onChange={(e) => set('paisEmision', e.target.value)}
+                  placeholder="Ej.: Ecuador"
+                />
               </div>
             </div>
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Fecha de emisión *</div>
-                <input type="date" style={styles.input} value={data.fechaEmision}
-                  onChange={(e) => set('fechaEmision', e.target.value)}/>
+                <input
+                  type="date"
+                  style={styles.input}
+                  value={data.fechaEmision}
+                  onChange={(e) => set('fechaEmision', e.target.value)}
+                />
               </div>
               <div>
                 <div style={styles.label}>Fecha de expiración *</div>
-                <input type="date" style={styles.input} value={data.fechaExpiracion}
-                  onChange={(e) => set('fechaExpiracion', e.target.value)}/>
-                <div style={styles.help}>Asegúrese de que tenga más de 6 meses de vigencia.</div>
+                <input
+                  type="date"
+                  style={styles.input}
+                  value={data.fechaExpiracion}
+                  onChange={(e) => set('fechaExpiracion', e.target.value)}
+                />
+                <div style={styles.help}>
+                  Asegúrese de que tenga más de 6 meses de vigencia.
+                </div>
               </div>
             </div>
           </div>
@@ -494,39 +576,62 @@ export default function WizardPage() {
         {/* 3) CONTACTO */}
         {step === 'contacto' && (
           <div style={{ display: 'grid', gap: 16 }}>
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Email *</div>
-                <input type="email" style={styles.input} value={data.email}
-                  onChange={(e) => set('email', e.target.value)} placeholder="nombre@correo.com"/>
+                <input
+                  type="email"
+                  style={styles.input}
+                  value={data.email}
+                  onChange={(e) => set('email', e.target.value)}
+                  placeholder="nombre@correo.com"
+                />
               </div>
               <div>
                 <div style={styles.label}>Teléfono (con código país) *</div>
-                <input style={styles.input} value={data.telefono}
-                  onChange={(e) => set('telefono', e.target.value)} placeholder="Ej.: +593 987 846 751"/>
+                <input
+                  style={styles.input}
+                  value={data.telefono}
+                  onChange={(e) => set('telefono', e.target.value)}
+                  placeholder="Ej.: +593 987 846 751"
+                />
               </div>
             </div>
 
-            <div style={styles.row}>
+            {/* fila de 4 columnas */}
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Dirección *</div>
-                <input style={styles.input} value={data.direccion}
-                  onChange={(e) => set('direccion', e.target.value)} placeholder="Calle, número, referencia"/>
+                <input
+                  style={styles.input}
+                  value={data.direccion}
+                  onChange={(e) => set('direccion', e.target.value)}
+                  placeholder="Calle, número, referencia"
+                />
               </div>
               <div>
                 <div style={styles.label}>Ciudad *</div>
-                <input style={styles.input} value={data.ciudad}
-                  onChange={(e) => set('ciudad', e.target.value)}/>
+                <input
+                  style={styles.input}
+                  value={data.ciudad}
+                  onChange={(e) => set('ciudad', e.target.value)}
+                />
               </div>
               <div>
                 <div style={styles.label}>Provincia / Estado</div>
-                <input style={styles.input} value={data.provincia}
-                  onChange={(e) => set('provincia', e.target.value)}/>
+                <input
+                  style={styles.input}
+                  value={data.provincia}
+                  onChange={(e) => set('provincia', e.target.value)}
+                />
               </div>
               <div>
                 <div style={styles.label}>País de residencia *</div>
-                <input style={styles.input} value={data.paisResidencia}
-                  onChange={(e) => set('paisResidencia', e.target.value)}/>
+                <input
+                  style={styles.input}
+                  value={data.paisResidencia}
+                  onChange={(e) => set('paisResidencia', e.target.value)}
+                />
               </div>
             </div>
           </div>
@@ -535,38 +640,60 @@ export default function WizardPage() {
         {/* 4) VIAJE */}
         {step === 'viaje' && (
           <div style={{ display: 'grid', gap: 16 }}>
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Propósito del viaje *</div>
-                <select style={styles.input} value={data.propositoViaje}
-                  onChange={(e) => set('propositoViaje', e.target.value)}>
+                <select
+                  style={styles.input}
+                  value={data.propositoViaje}
+                  onChange={(e) => set('propositoViaje', e.target.value)}
+                >
                   <option value="">Seleccione…</option>
-                  <option>Turismo</option><option>Negocios</option><option>Tratamiento médico</option><option>Otro</option>
+                  <option>Turismo</option>
+                  <option>Negocios</option>
+                  <option>Tratamiento médico</option>
+                  <option>Otro</option>
                 </select>
                 <div style={styles.help}>DS-160: Primary Purpose of Travel.</div>
               </div>
               <div>
                 <div style={styles.label}>Embajada/Consulado *</div>
-                <input style={styles.input} value={data.ciudadEmbajada}
-                  onChange={(e) => set('ciudadEmbajada', e.target.value)} placeholder="Ej.: Quito, Guayaquil, Bogotá…"/>
+                <input
+                  style={styles.input}
+                  value={data.ciudadEmbajada}
+                  onChange={(e) => set('ciudadEmbajada', e.target.value)}
+                  placeholder="Ej.: Quito, Guayaquil, Bogotá…"
+                />
               </div>
             </div>
 
             <div style={styles.row}>
               <div>
                 <div style={styles.label}>Fecha tentativa de viaje</div>
-                <input type="date" style={styles.input} value={data.fechaTentativa}
-                  onChange={(e) => set('fechaTentativa', e.target.value)}/>
+                <input
+                  type="date"
+                  style={styles.input}
+                  value={data.fechaTentativa}
+                  onChange={(e) => set('fechaTentativa', e.target.value)}
+                />
               </div>
               <div>
                 <div style={styles.label}>Dirección en EE.UU.</div>
-                <input style={styles.input} value={data.direccionEnEEUU}
-                  onChange={(e) => set('direccionEnEEUU', e.target.value)} placeholder="Hotel o residencia (si aplica)"/>
+                <input
+                  style={styles.input}
+                  value={data.direccionEnEEUU}
+                  onChange={(e) => set('direccionEnEEUU', e.target.value)}
+                  placeholder="Hotel o residencia (si aplica)"
+                />
               </div>
               <div>
                 <div style={styles.label}>Contacto en EE.UU.</div>
-                <input style={styles.input} value={data.contactoEnEEUU}
-                  onChange={(e) => set('contactoEnEEUU', e.target.value)} placeholder="Persona/empresa, teléfono o email"/>
+                <input
+                  style={styles.input}
+                  value={data.contactoEnEEUU}
+                  onChange={(e) => set('contactoEnEEUU', e.target.value)}
+                  placeholder="Persona/empresa, teléfono o email"
+                />
               </div>
             </div>
           </div>
@@ -575,83 +702,128 @@ export default function WizardPage() {
         {/* 5) EMPLEO Y EDUCACIÓN */}
         {step === 'empleo' && (
           <div style={{ display: 'grid', gap: 18 }}>
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Situación laboral actual *</div>
-                <select style={styles.input} value={data.situacionLaboral}
-                  onChange={(e) => set('situacionLaboral', e.target.value)}>
+                <select
+                  style={styles.input}
+                  value={data.situacionLaboral}
+                  onChange={(e) => set('situacionLaboral', e.target.value)}
+                >
                   <option value="">Seleccione…</option>
-                  <option>Empleado</option><option>Independiente</option><option>Estudiante</option><option>Desempleado</option><option>Jubilado</option>
+                  <option>Empleado</option>
+                  <option>Independiente</option>
+                  <option>Estudiante</option>
+                  <option>Desempleado</option>
+                  <option>Jubilado</option>
                 </select>
                 <div style={styles.help}>DS-160: Present Work/Education/Training.</div>
               </div>
               <div>
                 <div style={styles.label}>Ocupación / Actividad *</div>
-                <input style={styles.input} value={data.ocupacion}
-                  onChange={(e) => set('ocupacion', e.target.value)} placeholder="Ej.: Contador, Comerciante, Estudiante"/>
+                <input
+                  style={styles.input}
+                  value={data.ocupacion}
+                  onChange={(e) => set('ocupacion', e.target.value)}
+                  placeholder="Ej.: Contador, Comerciante, Estudiante"
+                />
               </div>
             </div>
 
-            {['Empleado','Independiente'].includes(data.situacionLaboral) && (
+            {isActiveWorker && (
               <>
                 <h4>Información laboral</h4>
                 <div style={styles.row}>
                   <div>
                     <div style={styles.label}>Empresa / Negocio *</div>
-                    <input style={styles.input} value={data.empresa}
-                      onChange={(e) => set('empresa', e.target.value)} placeholder="Nombre de la empresa o negocio"/>
+                    <input
+                      style={styles.input}
+                      value={data.empresa}
+                      onChange={(e) => set('empresa', e.target.value)}
+                      placeholder="Nombre de la empresa o negocio"
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>Cargo</div>
-                    <input style={styles.input} value={data.cargo}
-                      onChange={(e) => set('cargo', e.target.value)} placeholder="Ej.: Analista, Gerente"/>
+                    <input
+                      style={styles.input}
+                      value={data.cargo}
+                      onChange={(e) => set('cargo', e.target.value)}
+                      placeholder="Ej.: Analista, Gerente"
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>Teléfono empresa</div>
-                    <input style={styles.input} value={data.empresaTelefono}
-                      onChange={(e) => set('empresaTelefono', e.target.value)} placeholder="Incluye código país"/>
+                    <input
+                      style={styles.input}
+                      value={data.empresaTelefono}
+                      onChange={(e) => set('empresaTelefono', e.target.value)}
+                      placeholder="Incluye código país"
+                    />
                   </div>
                 </div>
                 <div style={styles.row}>
                   <div>
                     <div style={styles.label}>Dirección empresa</div>
-                    <input style={styles.input} value={data.empresaDireccion}
-                      onChange={(e) => set('empresaDireccion', e.target.value)} placeholder="Calle y número"/>
+                    <input
+                      style={styles.input}
+                      value={data.empresaDireccion}
+                      onChange={(e) => set('empresaDireccion', e.target.value)}
+                      placeholder="Calle y número"
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>Ciudad</div>
-                    <input style={styles.input} value={data.empresaCiudad}
-                      onChange={(e) => set('empresaCiudad', e.target.value)}/>
+                    <input
+                      style={styles.input}
+                      value={data.empresaCiudad}
+                      onChange={(e) => set('empresaCiudad', e.target.value)}
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>País</div>
-                    <input style={styles.input} value={data.empresaPais}
-                      onChange={(e) => set('empresaPais', e.target.value)}/>
+                    <input
+                      style={styles.input}
+                      value={data.empresaPais}
+                      onChange={(e) => set('empresaPais', e.target.value)}
+                    />
                   </div>
                 </div>
-                <div style={styles.row}>
+                <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
                   <div>
                     <div style={styles.label}>Fecha de inicio *</div>
-                    <input type="date" style={styles.input} value={data.fechaInicioTrabajo}
-                      onChange={(e) => set('fechaInicioTrabajo', e.target.value)}/>
+                    <input
+                      type="date"
+                      style={styles.input}
+                      value={data.fechaInicioTrabajo}
+                      onChange={(e) => set('fechaInicioTrabajo', e.target.value)}
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>Salario mensual (USD) — opcional</div>
-                    <input style={styles.input} value={data.salarioMensualUSD}
-                      onChange={(e) => set('salarioMensualUSD', e.target.value)} placeholder="Ej.: 900"/>
+                    <input
+                      style={styles.input}
+                      value={data.salarioMensualUSD}
+                      onChange={(e) => set('salarioMensualUSD', e.target.value)}
+                      placeholder="Ej.: 900"
+                    />
                   </div>
                 </div>
               </>
             )}
 
-            {data.situacionLaboral === 'Estudiante' && (
+            {isStudent && (
               <>
                 <h4>Información de estudios</h4>
                 <div style={styles.row}>
                   <div>
                     <div style={styles.label}>Institución *</div>
-                    <input style={styles.input} value={data.institucion}
-                      onChange={(e) => set('institucion', e.target.value)} placeholder="Colegio / Universidad"/>
+                    <input
+                      style={styles.input}
+                      value={data.institucion}
+                      onChange={(e) => set('institucion', e.target.value)}
+                      placeholder="Colegio / Universidad"
+                    />
                   </div>
                 </div>
               </>
@@ -659,32 +831,50 @@ export default function WizardPage() {
 
             {/* Educación general */}
             <h4>Educación</h4>
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Nivel educativo alcanzado *</div>
-                <select style={styles.input} value={data.nivelEducacion}
-                  onChange={(e) => set('nivelEducacion', e.target.value)}>
+                <select
+                  style={styles.input}
+                  value={data.nivelEducacion}
+                  onChange={(e) => set('nivelEducacion', e.target.value)}
+                >
                   <option value="">Seleccione…</option>
-                  <option>Secundaria</option><option>Técnico / Tecnológico</option>
-                  <option>Universitario</option><option>Posgrado</option><option>Otro</option>
+                  <option>Secundaria</option>
+                  <option>Técnico / Tecnológico</option>
+                  <option>Universitario</option>
+                  <option>Posgrado</option>
+                  <option>Otro</option>
                 </select>
               </div>
               <div>
                 <div style={styles.label}>Institución</div>
-                <input style={styles.input} value={data.institucion}
-                  onChange={(e) => set('institucion', e.target.value)} placeholder="Colegio / Universidad"/>
+                <input
+                  style={styles.input}
+                  value={data.institucion}
+                  onChange={(e) => set('institucion', e.target.value)}
+                  placeholder="Colegio / Universidad"
+                />
               </div>
             </div>
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>Año de inicio</div>
-                <input style={styles.input} value={data.anioInicioEstudio}
-                  onChange={(e) => set('anioInicioEstudio', e.target.value)} placeholder="YYYY"/>
+                <input
+                  style={styles.input}
+                  value={data.anioInicioEstudio}
+                  onChange={(e) => set('anioInicioEstudio', e.target.value)}
+                  placeholder="YYYY"
+                />
               </div>
               <div>
                 <div style={styles.label}>Año de finalización</div>
-                <input style={styles.input} value={data.anioFinEstudio}
-                  onChange={(e) => set('anioFinEstudio', e.target.value)} placeholder="YYYY"/>
+                <input
+                  style={styles.input}
+                  value={data.anioFinEstudio}
+                  onChange={(e) => set('anioFinEstudio', e.target.value)}
+                  placeholder="YYYY"
+                />
               </div>
             </div>
           </div>
@@ -696,23 +886,38 @@ export default function WizardPage() {
             <div style={styles.row}>
               <div>
                 <div style={styles.label}>¿Ha estado antes en EE.UU.? *</div>
-                <select style={styles.input} value={data.estuvoEnEEUU}
-                  onChange={(e) => set('estuvoEnEEUU', e.target.value)}>
-                  <option value="">Seleccione…</option><option>Sí</option><option>No</option>
+                <select
+                  style={styles.input}
+                  value={data.estuvoEnEEUU}
+                  onChange={(e) => set('estuvoEnEEUU', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>Sí</option>
+                  <option>No</option>
                 </select>
-                <div style={styles.help}>Incluye turismo, estudio, trabajo, tránsito, etc.</div>
+                <div style={styles.help}>
+                  Incluye turismo, estudio, trabajo, tránsito, etc.
+                </div>
               </div>
               {data.estuvoEnEEUU === 'Sí' && (
                 <>
                   <div>
                     <div style={styles.label}>Última fecha de entrada</div>
-                    <input type="date" style={styles.input} value={data.ultimaFechaEntrada}
-                      onChange={(e) => set('ultimaFechaEntrada', e.target.value)}/>
+                    <input
+                      type="date"
+                      style={styles.input}
+                      value={data.ultimaFechaEntrada}
+                      onChange={(e) => set('ultimaFechaEntrada', e.target.value)}
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>Duración última estadía (días)</div>
-                    <input style={styles.input} value={data.ultimaDuracionDias}
-                      onChange={(e) => set('ultimaDuracionDias', e.target.value)} placeholder="Ej.: 14"/>
+                    <input
+                      style={styles.input}
+                      value={data.ultimaDuracionDias}
+                      onChange={(e) => set('ultimaDuracionDias', e.target.value)}
+                      placeholder="Ej.: 14"
+                    />
                   </div>
                 </>
               )}
@@ -721,22 +926,34 @@ export default function WizardPage() {
             <div style={styles.row}>
               <div>
                 <div style={styles.label}>¿Tuvo visa de EE.UU.? *</div>
-                <select style={styles.input} value={data.tuvoVisaUSA}
-                  onChange={(e) => set('tuvoVisaUSA', e.target.value)}>
-                  <option value="">Seleccione…</option><option>Sí</option><option>No</option>
+                <select
+                  style={styles.input}
+                  value={data.tuvoVisaUSA}
+                  onChange={(e) => set('tuvoVisaUSA', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>Sí</option>
+                  <option>No</option>
                 </select>
               </div>
               {data.tuvoVisaUSA === 'Sí' && (
                 <>
                   <div>
                     <div style={styles.label}>Tipo de visa</div>
-                    <input style={styles.input} value={data.tipoVisaUSA}
-                      onChange={(e) => set('tipoVisaUSA', e.target.value)} placeholder="Ej.: B1/B2, F1, etc."/>
+                    <input
+                      style={styles.input}
+                      value={data.tipoVisaUSA}
+                      onChange={(e) => set('tipoVisaUSA', e.target.value)}
+                      placeholder="Ej.: B1/B2, F1, etc."
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>Número de visa</div>
-                    <input style={styles.input} value={data.numeroVisaUSA}
-                      onChange={(e) => set('numeroVisaUSA', e.target.value)}/>
+                    <input
+                      style={styles.input}
+                      value={data.numeroVisaUSA}
+                      onChange={(e) => set('numeroVisaUSA', e.target.value)}
+                    />
                   </div>
                 </>
               )}
@@ -745,9 +962,14 @@ export default function WizardPage() {
             <div style={styles.row}>
               <div>
                 <div style={styles.label}>¿Le han rechazado una visa de EE.UU.? *</div>
-                <select style={styles.input} value={data.fueRechazadoVisa}
-                  onChange={(e) => set('fueRechazadoVisa', e.target.value)}>
-                  <option value="">Seleccione…</option><option>Sí</option><option>No</option>
+                <select
+                  style={styles.input}
+                  value={data.fueRechazadoVisa}
+                  onChange={(e) => set('fueRechazadoVisa', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>Sí</option>
+                  <option>No</option>
                 </select>
               </div>
             </div>
@@ -755,16 +977,23 @@ export default function WizardPage() {
             {data.fueRechazadoVisa === 'Sí' && (
               <div>
                 <div style={styles.label}>Explique brevemente</div>
-                <textarea style={styles.textarea} value={data.detalleRechazoVisa}
-                  onChange={(e) => set('detalleRechazoVisa', e.target.value)} placeholder="Año, consulado, motivo si lo recuerda…"/>
+                <textarea
+                  style={styles.textarea}
+                  value={data.detalleRechazoVisa}
+                  onChange={(e) => set('detalleRechazoVisa', e.target.value)}
+                  placeholder="Año, consulado, motivo si lo recuerda…"
+                />
               </div>
             )}
 
             <div>
               <div style={styles.label}>Otros viajes (últimos 5 años)</div>
-              <textarea style={styles.textarea} value={data.otrosViajesUltimos5}
+              <textarea
+                style={styles.textarea}
+                value={data.otrosViajesUltimos5}
                 onChange={(e) => set('otrosViajesUltimos5', e.target.value)}
-                placeholder="País — Fecha (ej.: Perú — 2023-05; Colombia — 2022-10)…"/>
+                placeholder="País — Fecha (ej.: Perú — 2023-05; Colombia — 2022-10)…"
+              />
             </div>
           </div>
         )}
@@ -775,70 +1004,108 @@ export default function WizardPage() {
             <div style={styles.row}>
               <div>
                 <div style={styles.label}>¿Tiene cónyuge? *</div>
-                <select style={styles.input} value={data.tieneConyuge}
-                  onChange={(e) => set('tieneConyuge', e.target.value)}>
-                  <option value="">Seleccione…</option><option>Sí</option><option>No</option>
+                <select
+                  style={styles.input}
+                  value={data.tieneConyuge}
+                  onChange={(e) => set('tieneConyuge', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>Sí</option>
+                  <option>No</option>
                 </select>
               </div>
               {data.tieneConyuge === 'Sí' && (
                 <>
                   <div>
                     <div style={styles.label}>Nombre del cónyuge *</div>
-                    <input style={styles.input} value={data.nombreConyuge}
-                      onChange={(e) => set('nombreConyuge', e.target.value)}/>
+                    <input
+                      style={styles.input}
+                      value={data.nombreConyuge}
+                      onChange={(e) => set('nombreConyuge', e.target.value)}
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>Fecha de nacimiento *</div>
-                    <input type="date" style={styles.input} value={data.fechaNacConyuge}
-                      onChange={(e) => set('fechaNacConyuge', e.target.value)}/>
+                    <input
+                      type="date"
+                      style={styles.input}
+                      value={data.fechaNacConyuge}
+                      onChange={(e) => set('fechaNacConyuge', e.target.value)}
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>Nacionalidad</div>
-                    <input style={styles.input} value={data.nacionalidadConyuge}
-                      onChange={(e) => set('nacionalidadConyuge', e.target.value)}/>
+                    <input
+                      style={styles.input}
+                      value={data.nacionalidadConyuge}
+                      onChange={(e) => set('nacionalidadConyuge', e.target.value)}
+                    />
                   </div>
                   <div>
                     <div style={styles.label}>¿Vive en EE.UU.?</div>
-                    <select style={styles.input} value={data.viveEnEEUUConyuge}
-                      onChange={(e) => set('viveEnEEUUConyuge', e.target.value)}>
-                      <option value="">Seleccione…</option><option>Sí</option><option>No</option>
+                    <select
+                      style={styles.input}
+                      value={data.viveEnEEUUConyuge}
+                      onChange={(e) => set('viveEnEEUUConyuge', e.target.value)}
+                    >
+                      <option value="">Seleccione…</option>
+                      <option>Sí</option>
+                      <option>No</option>
                     </select>
                   </div>
                 </>
               )}
             </div>
 
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>¿Su padre vive? *</div>
-                <select style={styles.input} value={data.padreVive}
-                  onChange={(e) => set('padreVive', e.target.value)}>
-                  <option value="">Seleccione…</option><option>Sí</option><option>No</option>
+                <select
+                  style={styles.input}
+                  value={data.padreVive}
+                  onChange={(e) => set('padreVive', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>Sí</option>
+                  <option>No</option>
                 </select>
               </div>
               <div>
                 <div style={styles.label}>¿Su madre vive? *</div>
-                <select style={styles.input} value={data.madreVive}
-                  onChange={(e) => set('madreVive', e.target.value)}>
-                  <option value="">Seleccione…</option><option>Sí</option><option>No</option>
+                <select
+                  style={styles.input}
+                  value={data.madreVive}
+                  onChange={(e) => set('madreVive', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>Sí</option>
+                  <option>No</option>
                 </select>
               </div>
             </div>
 
             <div>
               <div style={styles.label}>¿Tiene familiares en EE.UU.? *</div>
-              <select style={styles.input} value={data.familiaEEUU}
-                onChange={(e) => set('familiaEEUU', e.target.value)}>
-                <option value="">Seleccione…</option><option>Sí</option><option>No</option>
+              <select
+                style={styles.input}
+                value={data.familiaEEUU}
+                onChange={(e) => set('familiaEEUU', e.target.value)}
+              >
+                <option value="">Seleccione…</option>
+                <option>Sí</option>
+                <option>No</option>
               </select>
             </div>
 
             {data.familiaEEUU === 'Sí' && (
               <div>
                 <div style={styles.label}>Detalle familiares en EE.UU.</div>
-                <textarea style={styles.textarea} value={data.detalleFamiliaEEUU}
+                <textarea
+                  style={styles.textarea}
+                  value={data.detalleFamiliaEEUU}
                   onChange={(e) => set('detalleFamiliaEEUU', e.target.value)}
-                  placeholder="Parentesco, ciudad y estado, estatus migratorio si lo conoce…"/>
+                  placeholder="Parentesco, ciudad y estado, estatus migratorio si lo conoce…"
+                />
               </div>
             )}
           </div>
@@ -847,59 +1114,91 @@ export default function WizardPage() {
         {/* 8) SEGURIDAD */}
         {step === 'seguridad' && (
           <div style={{ display: 'grid', gap: 16 }}>
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>¿Ha sido arrestado o condenado? *</div>
-                <select style={styles.input} value={data.arrestado}
-                  onChange={(e) => set('arrestado', e.target.value)}>
-                  <option value="">Seleccione…</option><option>No</option><option>Sí</option>
+                <select
+                  style={styles.input}
+                  value={data.arrestado}
+                  onChange={(e) => set('arrestado', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>No</option>
+                  <option>Sí</option>
                 </select>
               </div>
               <div>
                 <div style={styles.label}>¿Ha violado leyes migratorias de EE.UU.? *</div>
-                <select style={styles.input} value={data.violacionMigratoria}
-                  onChange={(e) => set('violacionMigratoria', e.target.value)}>
-                  <option value="">Seleccione…</option><option>No</option><option>Sí</option>
+                <select
+                  style={styles.input}
+                  value={data.violacionMigratoria}
+                  onChange={(e) => set('violacionMigratoria', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>No</option>
+                  <option>Sí</option>
                 </select>
               </div>
             </div>
 
-            <div style={styles.row}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
               <div>
                 <div style={styles.label}>¿Ha estado involucrado en tráfico de personas? *</div>
-                <select style={styles.input} value={data.traficoPersonas}
-                  onChange={(e) => set('traficoPersonas', e.target.value)}>
-                  <option value="">Seleccione…</option><option>No</option><option>Sí</option>
+                <select
+                  style={styles.input}
+                  value={data.traficoPersonas}
+                  onChange={(e) => set('traficoPersonas', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>No</option>
+                  <option>Sí</option>
                 </select>
               </div>
               <div>
                 <div style={styles.label}>¿Padece condiciones de salud pública relevantes? *</div>
-                <select style={styles.input} value={data.enfermedadesPublicaSalud}
-                  onChange={(e) => set('enfermedadesPublicaSalud', e.target.value)}>
-                  <option value="">Seleccione…</option><option>No</option><option>Sí</option>
+                <select
+                  style={styles.input}
+                  value={data.enfermedadesPublicaSalud}
+                  onChange={(e) => set('enfermedadesPublicaSalud', e.target.value)}
+                >
+                  <option value="">Seleccione…</option>
+                  <option>No</option>
+                  <option>Sí</option>
                 </select>
               </div>
             </div>
 
             <div>
               <div style={styles.label}>Comentarios (opcional)</div>
-              <textarea style={styles.textarea} value={data.comentariosSeguridad}
+              <textarea
+                style={styles.textarea}
+                value={data.comentariosSeguridad}
                 onChange={(e) => set('comentariosSeguridad', e.target.value)}
-                placeholder="Explique si marcó alguna respuesta 'Sí'."/>
+                placeholder="Explique si marcó alguna respuesta 'Sí'."
+              />
             </div>
 
             <small style={styles.help}>
-              Estas preguntas reflejan el bloque de seguridad del DS-160. Responda con honestidad. Esta plataforma no es asesoría legal.
+              Estas preguntas reflejan el bloque de seguridad del DS-160. Responda con honestidad. Esta
+              plataforma no es asesoría legal.
             </small>
           </div>
         )}
 
         {/* Navegación */}
         <div style={{ ...styles.actions, marginTop: 16 }}>
-          <button onClick={prev} style={styles.ghost} disabled={step === 'personales'}>
+          <button
+            onClick={prev}
+            style={styles.ghost}
+            disabled={step === 'personales'}
+          >
             ← Anterior
           </button>
-          <button onClick={next} style={styles.btn} disabled={step === 'seguridad'}>
+          <button
+            onClick={next}
+            style={styles.btn}
+            disabled={step === 'seguridad'}
+          >
             Siguiente →
           </button>
         </div>
@@ -912,9 +1211,15 @@ export default function WizardPage() {
           Al terminar, puedes enviarnos tus respuestas para que completemos tu DS-160 en el portal oficial.
         </p>
         <div style={styles.actions}>
-          <button onClick={openWhatsApp} style={styles.btn}>Enviar por WhatsApp</button>
-          <button onClick={openMailto} style={styles.ghost}>Enviar por Email</button>
-          <button onClick={downloadCSV} style={styles.ghost}>Descargar CSV</button>
+          <button onClick={openWhatsApp} style={styles.btn}>
+            Enviar por WhatsApp
+          </button>
+          <button onClick={openMailto} style={styles.ghost}>
+            Enviar por Email
+          </button>
+          <button onClick={downloadCSV} style={styles.ghost}>
+            Descargar CSV
+          </button>
           <button
             onClick={() => {
               localStorage.removeItem(STORAGE_KEY);

@@ -27,6 +27,9 @@ const css = {
     display: "flex",
     justifyContent: "center",
     width: "100%",
+    background: "#f3f4f6",           // fondo general claro
+    minHeight: "100vh",
+    padding: "24px 0",
   } as React.CSSProperties,
   inner: {
     width: "100%",
@@ -35,80 +38,61 @@ const css = {
     gap: 18,
   } as React.CSSProperties,
   card: {
-    background: "#111827",          // antes #0f172a → un poco más claro
+    background: "#ffffff",           // tarjetas blancas
     padding: 18,
     borderRadius: 14,
-    border: "1px solid #1f2937",    // borde un poco más visible
+    border: "1px solid #e5e7eb",     // borde gris claro
+    boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
   } as React.CSSProperties,
   label: {
     fontSize: 13,
     opacity: 0.9,
+    color: "#111827",
     display: "block",
     marginBottom: 4,
-    color: "#e5e7eb",
   } as React.CSSProperties,
   input: {
     width: "100%",
     padding: "8px 10px",
-    background: "#020617",          // puedes subir a #0b1120 si lo quieres aún más claro
-    border: "1px solid #334155",
+    background: "#ffffff",
+    border: "1px solid #d1d5db",     // gris claro
     borderRadius: 10,
-    color: "#f9fafb",
+    color: "#111827",
     outline: "none",
     fontSize: 14,
   } as React.CSSProperties,
   btn: {
-    background: "#2563eb",          // azul confiable
+    background: "#2563eb",           // azul principal
     color: "#ffffff",
     border: "none",
     borderRadius: 10,
     padding: "10px 14px",
     cursor: "pointer",
     fontWeight: 600,
-    boxShadow: "0 6px 16px rgba(37,99,235,0.35)",
+    boxShadow: "0 8px 20px rgba(37,99,235,0.25)",
   } as React.CSSProperties,
   ghost: {
-    background: "#374151",
-    color: "#e5e7eb",
-    border: "1px solid #4b5563",
+    background: "#e5e7eb",
+    color: "#111827",
+    border: "none",
     borderRadius: 10,
     padding: "10px 14px",
     cursor: "pointer",
     fontWeight: 500,
   } as React.CSSProperties,
-  // Error más claro y legible
   error: {
     background: "#fef2f2",
     border: "1px solid #fecaca",
     padding: 12,
-    color: "#991b1b",
+    color: "#b91c1c",
     borderRadius: 10,
   } as React.CSSProperties,
-  // Éxito “bancario”: fondo claro y texto verde oscuro
   ok: {
     background: "#ecfdf3",
     border: "1px solid #bbf7d0",
     padding: 12,
-    color: "#166534",
+    color: "#15803d",
     borderRadius: 10,
-  } as React.CSSProperties,
-  // Toast flotante de éxito (reposicionado para no tapar botones)
-  okFloat: {
-    position: "fixed" as const,
-    right: 24,
-    bottom: 140,
-    maxWidth: 380,
-    background: "#ecfdf3",
-    border: "1px solid #bbf7d0",
-    padding: 12,
-    color: "#166534",
-    borderRadius: 12,
-    boxShadow: "0 12px 30px rgba(15,23,42,0.6)",
-    zIndex: 60,
-    display: "flex",
-    gap: 10,
-    fontSize: 13,
-    alignItems: "flex-start",
   } as React.CSSProperties,
   tabs: {
     display: "flex",
@@ -118,9 +102,9 @@ const css = {
   tab(active: boolean, disabled?: boolean): React.CSSProperties {
     return {
       position: "relative",
-      background: active ? "#1d4ed8" : "#111827", // activo más claro, inactivo gris oscuro
-      color: disabled ? "rgba(255,255,255,.6)" : "#e5e7eb",
-      border: "1px solid #1f2937",
+      background: active ? "#2563eb" : "#e5e7eb",
+      color: disabled ? "rgba(15,23,42,.5)" : active ? "#ffffff" : "#111827",
+      border: "none",
       borderRadius: 10,
       padding: "8px 12px",
       cursor: disabled ? "not-allowed" : "pointer",
@@ -135,10 +119,35 @@ const css = {
     right: -8,
     padding: "2px 6px",
     borderRadius: 8,
-    background: "#fbbf24",
+    background: "#f97316",
     color: "#111827",
     fontSize: 10,
     fontWeight: 700,
+  } as React.CSSProperties,
+  toastSuccess: {
+    position: "fixed" as const,
+    right: 24,
+    bottom: 106,                    // deja espacio al botón flotante de WhatsApp
+    zIndex: 60,
+    maxWidth: 360,
+    background: "#ecfdf3",
+    border: "1px solid #bbf7d0",
+    color: "#166534",
+    padding: 14,
+    borderRadius: 12,
+    boxShadow: "0 12px 30px rgba(15,23,42,0.25)",
+    display: "flex",
+    gap: 8,
+    alignItems: "flex-start",
+  } as React.CSSProperties,
+  toastClose: {
+    marginLeft: 8,
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    color: "#166534",
+    fontSize: 16,
+    lineHeight: 1,
   } as React.CSSProperties,
 };
 
@@ -366,40 +375,28 @@ function CheckoutInner() {
 
   return (
     <div style={css.wrapper}>
-      {/* Toast flotante de éxito */}
-      {successMsg && (
-        <div style={css.okFloat}>
-          <span style={{ fontSize: 16, marginTop: 2 }}>✅</span>
-          <pre
-            style={{
-              margin: 0,
-              whiteSpace: "pre-wrap",
-              flex: 1,
-              fontFamily: "inherit",
-            }}
-          >
-            {successMsg}
-          </pre>
-          <button
-            onClick={() => setSuccessMsg("")}
-            style={{
-              border: "none",
-              background: "transparent",
-              color: "#166534",
-              cursor: "pointer",
-              fontSize: 16,
-              lineHeight: 1,
-              marginLeft: 8,
-            }}
-            aria-label="Cerrar"
-          >
-            ×
-          </button>
-        </div>
-      )}
-
       <div style={css.inner}>
-        {/* MENSAJES DE ERROR */}
+        {/* TOAST DE ÉXITO FLOTANTE */}
+        {successMsg && (
+          <div style={css.toastSuccess}>
+            <div style={{ fontSize: 18, lineHeight: 1, marginRight: 4 }}>✅</div>
+            <div style={{ flex: 1 }}>
+              <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
+                {successMsg}
+              </pre>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSuccessMsg("")}
+              style={css.toastClose}
+              aria-label="Cerrar"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
+        {/* MENSAJES DE ERROR (EN LA PÁGINA) */}
         {errors.length > 0 && (
           <div style={css.error}>
             <b>Revisa antes de continuar:</b>
@@ -413,10 +410,9 @@ function CheckoutInner() {
 
         {/* DATOS DE CONTACTO */}
         <section style={css.card}>
-          <h2 style={{ marginTop: 0, color: "#f9fafb" }}>Tus datos de contacto</h2>
-          <p style={{ fontSize: 13, opacity: 0.85, marginBottom: 14, color: "#e5e7eb" }}>
-            Usaremos estos datos para enviarte acceso al asistente y coordinar
-            tu proceso DS-160.
+          <h2 style={{ marginTop: 0, color: "#111827" }}>Tus datos de contacto</h2>
+          <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 14, color: "#4b5563" }}>
+            Usaremos estos datos para enviarte acceso al asistente y coordinar tu proceso DS-160.
           </p>
 
           <div
@@ -514,8 +510,8 @@ function CheckoutInner() {
 
         {/* RESUMEN */}
         <section style={css.card}>
-          <h3 style={{ marginTop: 0, color: "#f9fafb" }}>Resumen de tu compra</h3>
-          <ul style={{ margin: "6px 0 12px 18px", color: "#e5e7eb" }}>
+          <h3 style={{ marginTop: 0, color: "#111827" }}>Resumen de tu compra</h3>
+          <ul style={{ margin: "6px 0 12px 18px", color: "#111827" }}>
             {items.map((id) => (
               <li
                 key={id}
@@ -528,8 +524,8 @@ function CheckoutInner() {
                   onClick={() => setItems(items.filter((x) => x !== id))}
                   style={{
                     marginLeft: 8,
-                    background: "#4b5563",
-                    color: "#f9fafb",
+                    background: "#e5e7eb",
+                    color: "#111827",
                     border: "none",
                     borderRadius: 8,
                     padding: "4px 8px",
@@ -542,14 +538,14 @@ function CheckoutInner() {
               </li>
             ))}
           </ul>
-          <p style={{ color: "#e5e7eb" }}>
+          <p style={{ color: "#111827" }}>
             Total: <b>${total} USD</b>
           </p>
         </section>
 
         {/* MÉTODO DE PAGO */}
         <section style={css.card}>
-          <h3 style={{ marginTop: 0, color: "#f9fafb" }}>Elige cómo pagaste</h3>
+          <h3 style={{ marginTop: 0, color: "#111827" }}>Elige cómo pagaste</h3>
           <div style={css.tabs}>
             <button
               style={css.tab(method === "deuna")}
@@ -583,7 +579,7 @@ function CheckoutInner() {
         {/* DEUNA */}
         {method === "deuna" && (
           <section style={css.card}>
-            <h3 style={{ marginTop: 0, color: "#f9fafb" }}>Pago con Deuna (QR)</h3>
+            <h3 style={{ marginTop: 0, color: "#111827" }}>Pago con Deuna (QR)</h3>
             <div
               style={{
                 display: "grid",
@@ -594,8 +590,8 @@ function CheckoutInner() {
             >
               <div
                 style={{
-                  background: "#020617",
-                  border: "1px solid #1f2937",
+                  background: "#f9fafb",
+                  border: "1px solid #e5e7eb",
                   borderRadius: 14,
                   padding: 14,
                   display: "grid",
@@ -609,17 +605,18 @@ function CheckoutInner() {
                     width: 190,
                     height: "auto",
                     borderRadius: 12,
-                    boxShadow: "0 10px 30px rgba(0,0,0,.45)",
+                    boxShadow: "0 10px 30px rgba(15,23,42,.08)",
                   }}
                 />
               </div>
-              <div style={{ display: "grid", gap: 10, color: "#e5e7eb" }}>
+              <div style={{ display: "grid", gap: 10 }}>
                 <label
                   style={{
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
                     fontSize: 13,
+                    color: "#111827",
                   }}
                 >
                   <input
@@ -652,13 +649,13 @@ function CheckoutInner() {
                     }
                   />
                   {deunaFile && (
-                    <small style={{ opacity: 0.75 }}>
+                    <small style={{ opacity: 0.75, color: "#4b5563" }}>
                       Archivo: {deunaFile.name}
                     </small>
                   )}
                 </div>
 
-                <small style={{ opacity: 0.75 }}>
+                <small style={{ opacity: 0.75, color: "#4b5563" }}>
                   Al enviar, tu pago quedará <b>pendiente de revisión</b>. Te
                   habilitaremos el acceso cuando sea aprobado.
                 </small>
@@ -670,19 +667,18 @@ function CheckoutInner() {
         {/* TRANSFERENCIA */}
         {method === "transferencia" && (
           <section style={css.card}>
-            <h3 style={{ marginTop: 0, color: "#f9fafb" }}>Transferencia bancaria</h3>
+            <h3 style={{ marginTop: 0, color: "#111827" }}>Transferencia bancaria</h3>
             <div
               style={{
-                background: "#020617",
+                background: "#f9fafb",
                 borderRadius: 14,
-                border: "1px solid #1f2937",
+                border: "1px solid #e5e7eb",
                 padding: 14,
                 display: "grid",
                 gap: 10,
-                color: "#e5e7eb",
               }}
             >
-              <div style={{ fontSize: 13, opacity: 0.9 }}>
+              <div style={{ fontSize: 13, opacity: 0.85, color: "#111827" }}>
                 Datos para transferencia
               </div>
               <div>
@@ -691,8 +687,8 @@ function CheckoutInner() {
                   onClick={() => copy("2200449871")}
                   style={{
                     marginLeft: 6,
-                    background: "#4b5563",
-                    color: "#f9fafb",
+                    background: "#e5e7eb",
+                    color: "#111827",
                     border: "none",
                     borderRadius: 8,
                     padding: "3px 8px",
@@ -735,7 +731,7 @@ function CheckoutInner() {
                   }
                 />
                 {transFile && (
-                  <small style={{ opacity: 0.75 }}>
+                  <small style={{ opacity: 0.75, color: "#4b5563" }}>
                     Archivo: {transFile.name}
                   </small>
                 )}
@@ -747,6 +743,7 @@ function CheckoutInner() {
                   alignItems: "center",
                   gap: 8,
                   fontSize: 13,
+                  color: "#111827",
                 }}
               >
                 <input
@@ -757,7 +754,7 @@ function CheckoutInner() {
                 Confirmo que realicé la transferencia por el total indicado
               </label>
 
-              <small style={{ opacity: 0.75 }}>
+              <small style={{ opacity: 0.75, color: "#4b5563" }}>
                 Al enviar, tu pago quedará <b>pendiente de revisión</b>. Te
                 habilitaremos el acceso cuando sea aprobado.
               </small>
@@ -774,10 +771,9 @@ function CheckoutInner() {
               gap: 10,
               alignItems: "center",
               justifyContent: "space-between",
-              color: "#e5e7eb",
             }}
           >
-            <div style={{ fontSize: 13, opacity: 0.9, maxWidth: 420 }}>
+            <div style={{ fontSize: 13, opacity: 0.9, maxWidth: 420, color: "#4b5563" }}>
               Al continuar, enviaremos tu pago a revisión. Te contactaremos
               usando los datos que ingresaste para habilitar el acceso al
               asistente DS-160 y continuar tu proceso.
@@ -803,3 +799,4 @@ export default function CheckoutPage() {
     </Suspense>
   );
 }
+

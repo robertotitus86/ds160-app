@@ -96,19 +96,27 @@ const STORAGE_KEY = 'ds160_wizard_v3_full';
 
 const styles = {
   page: { display: 'grid', gap: 16 as const },
+
   card: {
     background: '#0f172a',
     padding: 18,
     borderRadius: 14,
     border: '1px solid #111827',
+    maxWidth: 980,        // ⬅ hace el formulario más angosto
+    margin: '0 auto',     // ⬅ centrado
   },
-  // ⬇️ 3 columnas proporcionales por defecto
+
+  // ⬇️ campos de ancho fijo (~260px) alineados a la izquierda
   row: {
     display: 'grid',
-    gap: 16,
-    gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+    columnGap: 16,
+    rowGap: 12,
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 260px))',
+    justifyContent: 'flex-start',
   },
+
   label: { fontSize: 13, opacity: 0.9 },
+
   input: {
     width: '100%',
     padding: 10,
@@ -117,6 +125,7 @@ const styles = {
     background: '#0b1220',
     color: '#fff',
   } as React.CSSProperties,
+
   textarea: {
     width: '100%',
     minHeight: 90,
@@ -126,8 +135,11 @@ const styles = {
     background: '#0b1220',
     color: '#fff',
   } as React.CSSProperties,
+
   help: { fontSize: 12, opacity: 0.75, marginTop: 6 },
+
   actions: { display: 'flex', gap: 10, flexWrap: 'wrap' as const },
+
   btn: {
     background: '#2563eb',
     color: '#fff',
@@ -137,6 +149,7 @@ const styles = {
     cursor: 'pointer',
     textDecoration: 'none',
   } as React.CSSProperties,
+
   ghost: {
     background: '#334155',
     color: '#fff',
@@ -146,11 +159,13 @@ const styles = {
     cursor: 'pointer',
     textDecoration: 'none',
   } as React.CSSProperties,
+
   stepper: {
     display: 'grid',
     gap: 8,
     gridTemplateColumns: 'repeat(8,1fr)',
   },
+
   pill: (active: boolean) => ({
     background: active ? '#2563eb' : '#0b1220',
     border: `1px solid ${active ? '#2563eb' : '#1f2937'}`,
@@ -490,7 +505,7 @@ export default function WizardPage() {
             </div>
 
             {/* fila de 2 columnas: estado civil / género */}
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Estado civil *</div>
                 <select
@@ -526,7 +541,7 @@ export default function WizardPage() {
         {/* 2) PASAPORTE */}
         {step === 'pasaporte' && (
           <div style={{ display: 'grid', gap: 16 }}>
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Nro. de pasaporte *</div>
                 <input
@@ -547,7 +562,7 @@ export default function WizardPage() {
                 />
               </div>
             </div>
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Fecha de emisión *</div>
                 <input
@@ -576,7 +591,7 @@ export default function WizardPage() {
         {/* 3) CONTACTO */}
         {step === 'contacto' && (
           <div style={{ display: 'grid', gap: 16 }}>
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Email *</div>
                 <input
@@ -599,7 +614,7 @@ export default function WizardPage() {
             </div>
 
             {/* fila de 4 columnas */}
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(4, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Dirección *</div>
                 <input
@@ -640,7 +655,7 @@ export default function WizardPage() {
         {/* 4) VIAJE */}
         {step === 'viaje' && (
           <div style={{ display: 'grid', gap: 16 }}>
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Propósito del viaje *</div>
                 <select
@@ -702,7 +717,7 @@ export default function WizardPage() {
         {/* 5) EMPLEO Y EDUCACIÓN */}
         {step === 'empleo' && (
           <div style={{ display: 'grid', gap: 18 }}>
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Situación laboral actual *</div>
                 <select
@@ -789,7 +804,7 @@ export default function WizardPage() {
                     />
                   </div>
                 </div>
-                <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
                   <div>
                     <div style={styles.label}>Fecha de inicio *</div>
                     <input
@@ -831,7 +846,7 @@ export default function WizardPage() {
 
             {/* Educación general */}
             <h4>Educación</h4>
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Nivel educativo alcanzado *</div>
                 <select
@@ -857,7 +872,7 @@ export default function WizardPage() {
                 />
               </div>
             </div>
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>Año de inicio</div>
                 <input
@@ -1057,7 +1072,7 @@ export default function WizardPage() {
               )}
             </div>
 
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>¿Su padre vive? *</div>
                 <select
@@ -1114,7 +1129,7 @@ export default function WizardPage() {
         {/* 8) SEGURIDAD */}
         {step === 'seguridad' && (
           <div style={{ display: 'grid', gap: 16 }}>
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>¿Ha sido arrestado o condenado? *</div>
                 <select
@@ -1141,7 +1156,7 @@ export default function WizardPage() {
               </div>
             </div>
 
-            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+            <div style={{ ...styles.row, gridTemplateColumns: 'repeat(2, minmax(260px, 260px))' }}>
               <div>
                 <div style={styles.label}>¿Ha estado involucrado en tráfico de personas? *</div>
                 <select

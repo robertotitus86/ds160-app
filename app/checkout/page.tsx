@@ -27,9 +27,9 @@ const css = {
     display: "flex",
     justifyContent: "center",
     width: "100%",
-    background: "#f3f4f6",           // fondo general claro
     minHeight: "100vh",
-    padding: "24px 0",
+    padding: "32px 16px 48px",
+    background: "#f3f4f6", // fondo gris claro (más confianza)
   } as React.CSSProperties,
   inner: {
     width: "100%",
@@ -38,38 +38,38 @@ const css = {
     gap: 18,
   } as React.CSSProperties,
   card: {
-    background: "#ffffff",           // tarjetas blancas
+    background: "#ffffff",
     padding: 18,
     borderRadius: 14,
-    border: "1px solid #e5e7eb",     // borde gris claro
-    boxShadow: "0 4px 12px rgba(15,23,42,0.04)",
+    border: "1px solid #e5e7eb",
+    boxShadow: "0 12px 30px rgba(15,23,42,0.06)",
   } as React.CSSProperties,
   label: {
     fontSize: 13,
     opacity: 0.9,
-    color: "#111827",
     display: "block",
     marginBottom: 4,
+    color: "#111827",
   } as React.CSSProperties,
   input: {
     width: "100%",
     padding: "8px 10px",
-    background: "#ffffff",
-    border: "1px solid #d1d5db",     // gris claro
+    background: "#f9fafb",
+    border: "1px solid #d1d5db",
     borderRadius: 10,
     color: "#111827",
     outline: "none",
     fontSize: 14,
   } as React.CSSProperties,
   btn: {
-    background: "#2563eb",           // azul principal
+    background: "#2563eb",
     color: "#ffffff",
     border: "none",
     borderRadius: 10,
     padding: "10px 14px",
     cursor: "pointer",
     fontWeight: 600,
-    boxShadow: "0 8px 20px rgba(37,99,235,0.25)",
+    boxShadow: "0 10px 20px rgba(37,99,235,0.25)",
   } as React.CSSProperties,
   ghost: {
     background: "#e5e7eb",
@@ -87,13 +87,6 @@ const css = {
     color: "#b91c1c",
     borderRadius: 10,
   } as React.CSSProperties,
-  ok: {
-    background: "#ecfdf3",
-    border: "1px solid #bbf7d0",
-    padding: 12,
-    color: "#15803d",
-    borderRadius: 10,
-  } as React.CSSProperties,
   tabs: {
     display: "flex",
     flexWrap: "wrap" as const,
@@ -103,7 +96,7 @@ const css = {
     return {
       position: "relative",
       background: active ? "#2563eb" : "#e5e7eb",
-      color: disabled ? "rgba(15,23,42,.5)" : active ? "#ffffff" : "#111827",
+      color: disabled ? "rgba(55,65,81,.6)" : active ? "#ffffff" : "#111827",
       border: "none",
       borderRadius: 10,
       padding: "8px 12px",
@@ -124,24 +117,29 @@ const css = {
     fontSize: 10,
     fontWeight: 700,
   } as React.CSSProperties,
-  toastSuccess: {
+
+  // Toast flotante
+  toastOverlay: {
     position: "fixed" as const,
+    top: 80, // debajo del navbar
     right: 24,
-    bottom: 106,                    // deja espacio al botón flotante de WhatsApp
     zIndex: 60,
     maxWidth: 360,
+  } as React.CSSProperties,
+  toast: {
     background: "#ecfdf3",
     border: "1px solid #bbf7d0",
     color: "#166534",
     padding: 14,
     borderRadius: 12,
-    boxShadow: "0 12px 30px rgba(15,23,42,0.25)",
+    boxShadow: "0 18px 40px rgba(15,23,42,0.35)",
+    fontSize: 13,
     display: "flex",
-    gap: 8,
     alignItems: "flex-start",
+    gap: 8,
   } as React.CSSProperties,
-  toastClose: {
-    marginLeft: 8,
+  toastCloseBtn: {
+    marginLeft: 6,
     background: "transparent",
     border: "none",
     cursor: "pointer",
@@ -230,6 +228,13 @@ function CheckoutInner() {
       /* ignore */
     }
   }, [fromURL.join(",")]);
+
+  // Autocerrar el toast de éxito después de unos segundos
+  useEffect(() => {
+    if (!successMsg) return;
+    const id = setTimeout(() => setSuccessMsg(""), 9000);
+    return () => clearTimeout(id);
+  }, [successMsg]);
 
   function copy(text: string) {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -362,8 +367,8 @@ function CheckoutInner() {
       <div style={css.wrapper}>
         <div style={css.inner}>
           <div style={css.card}>
-            <h2>Checkout</h2>
-            <p>No hay servicios seleccionados.</p>
+            <h2 style={{ marginTop: 0, color: "#111827" }}>Checkout</h2>
+            <p style={{ color: "#4b5563" }}>No hay servicios seleccionados.</p>
             <a href="/" style={css.btn}>
               Volver a servicios
             </a>
@@ -375,31 +380,31 @@ function CheckoutInner() {
 
   return (
     <div style={css.wrapper}>
-      <div style={css.inner}>
-        {/* TOAST DE ÉXITO FLOTANTE */}
-        {successMsg && (
-          <div style={css.toastSuccess}>
-            <div style={{ fontSize: 18, lineHeight: 1, marginRight: 4 }}>✅</div>
-            <div style={{ flex: 1 }}>
-              <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-                {successMsg}
-              </pre>
-            </div>
+      {/* TOAST flotante de éxito */}
+      {successMsg && (
+        <div style={css.toastOverlay}>
+          <div style={css.toast}>
+            <span style={{ marginTop: 2 }}>✅</span>
+            <div style={{ flex: 1, whiteSpace: "pre-wrap" }}>{successMsg}</div>
             <button
               type="button"
+              style={css.toastCloseBtn}
               onClick={() => setSuccessMsg("")}
-              style={css.toastClose}
-              aria-label="Cerrar"
+              aria-label="Cerrar mensaje"
             >
               ×
             </button>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* MENSAJES DE ERROR (EN LA PÁGINA) */}
+      <div style={css.inner}>
+        {/* MENSAJES DE ERROR */}
         {errors.length > 0 && (
           <div style={css.error}>
-            <b>Revisa antes de continuar:</b>
+            <b style={{ display: "block", marginBottom: 4 }}>
+              Revisa antes de continuar:
+            </b>
             <ul style={{ margin: "6px 0 0 18px" }}>
               {errors.map((e, i) => (
                 <li key={i}>{e}</li>
@@ -411,8 +416,16 @@ function CheckoutInner() {
         {/* DATOS DE CONTACTO */}
         <section style={css.card}>
           <h2 style={{ marginTop: 0, color: "#111827" }}>Tus datos de contacto</h2>
-          <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 14, color: "#4b5563" }}>
-            Usaremos estos datos para enviarte acceso al asistente y coordinar tu proceso DS-160.
+          <p
+            style={{
+              fontSize: 13,
+              opacity: 0.9,
+              marginBottom: 14,
+              color: "#4b5563",
+            }}
+          >
+            Usaremos estos datos para enviarte acceso al asistente y coordinar
+            tu proceso DS-160.
           </p>
 
           <div
@@ -605,7 +618,7 @@ function CheckoutInner() {
                     width: 190,
                     height: "auto",
                     borderRadius: 12,
-                    boxShadow: "0 10px 30px rgba(15,23,42,.08)",
+                    boxShadow: "0 10px 30px rgba(15,23,42,.15)",
                   }}
                 />
               </div>
@@ -655,7 +668,7 @@ function CheckoutInner() {
                   )}
                 </div>
 
-                <small style={{ opacity: 0.75, color: "#4b5563" }}>
+                <small style={{ opacity: 0.8, color: "#4b5563" }}>
                   Al enviar, tu pago quedará <b>pendiente de revisión</b>. Te
                   habilitaremos el acceso cuando sea aprobado.
                 </small>
@@ -667,7 +680,9 @@ function CheckoutInner() {
         {/* TRANSFERENCIA */}
         {method === "transferencia" && (
           <section style={css.card}>
-            <h3 style={{ marginTop: 0, color: "#111827" }}>Transferencia bancaria</h3>
+            <h3 style={{ marginTop: 0, color: "#111827" }}>
+              Transferencia bancaria
+            </h3>
             <div
               style={{
                 background: "#f9fafb",
@@ -678,10 +693,10 @@ function CheckoutInner() {
                 gap: 10,
               }}
             >
-              <div style={{ fontSize: 13, opacity: 0.85, color: "#111827" }}>
+              <div style={{ fontSize: 13, opacity: 0.9, color: "#4b5563" }}>
                 Datos para transferencia
               </div>
-              <div>
+              <div style={{ color: "#111827" }}>
                 <b>Número de cuenta:</b> 2200449871{" "}
                 <button
                   onClick={() => copy("2200449871")}
@@ -699,13 +714,13 @@ function CheckoutInner() {
                   Copiar
                 </button>
               </div>
-              <div>
+              <div style={{ color: "#111827" }}>
                 <b>Tipo de cuenta:</b> Ahorros
               </div>
-              <div>
+              <div style={{ color: "#111827" }}>
                 <b>Banco:</b> Pichincha
               </div>
-              <div>
+              <div style={{ color: "#111827" }}>
                 <b>Titular:</b> Roberto Acosta
               </div>
 
@@ -754,7 +769,7 @@ function CheckoutInner() {
                 Confirmo que realicé la transferencia por el total indicado
               </label>
 
-              <small style={{ opacity: 0.75, color: "#4b5563" }}>
+              <small style={{ opacity: 0.8, color: "#4b5563" }}>
                 Al enviar, tu pago quedará <b>pendiente de revisión</b>. Te
                 habilitaremos el acceso cuando sea aprobado.
               </small>
@@ -773,7 +788,14 @@ function CheckoutInner() {
               justifyContent: "space-between",
             }}
           >
-            <div style={{ fontSize: 13, opacity: 0.9, maxWidth: 420, color: "#4b5563" }}>
+            <div
+              style={{
+                fontSize: 13,
+                opacity: 0.9,
+                maxWidth: 420,
+                color: "#4b5563",
+              }}
+            >
               Al continuar, enviaremos tu pago a revisión. Te contactaremos
               usando los datos que ingresaste para habilitar el acceso al
               asistente DS-160 y continuar tu proceso.
@@ -799,4 +821,3 @@ export default function CheckoutPage() {
     </Suspense>
   );
 }
-

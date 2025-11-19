@@ -88,6 +88,24 @@ const css = {
     color: "#dcfce7",
     borderRadius: 10,
   } as React.CSSProperties,
+  // ✅ Toast flotante de éxito (no tapa los botones de ayuda / WhatsApp)
+  okFloat: {
+    position: "fixed" as const,
+    right: 24,
+    bottom: 140, // <-- más arriba para no cubrir los botones flotantes
+    maxWidth: 380,
+    background: "#14532d",
+    border: "1px solid #16a34a",
+    padding: 12,
+    color: "#dcfce7",
+    borderRadius: 12,
+    boxShadow: "0 10px 30px rgba(0,0,0,.6)",
+    zIndex: 60,
+    display: "flex",
+    gap: 10,
+    fontSize: 13,
+    alignItems: "flex-start",
+  } as React.CSSProperties,
   tabs: {
     display: "flex",
     flexWrap: "wrap" as const,
@@ -117,34 +135,6 @@ const css = {
     color: "#111827",
     fontSize: 10,
     fontWeight: 700,
-  } as React.CSSProperties,
-
-  // ==== TOAST DE ÉXITO FLOTANTE ====
-  toastWrapper: {
-    position: "fixed",
-    bottom: 24,
-    right: 24,
-    zIndex: 50,
-  } as React.CSSProperties,
-  toastOk: {
-    background: "#14532d",
-    border: "1px solid #16a34a",
-    padding: 12,
-    color: "#dcfce7",
-    borderRadius: 12,
-    maxWidth: 360,
-    boxShadow: "0 12px 30px rgba(0,0,0,0.6)",
-    fontSize: 13,
-    whiteSpace: "pre-wrap",
-  } as React.CSSProperties,
-  toastClose: {
-    marginLeft: 8,
-    background: "transparent",
-    border: "none",
-    color: "#dcfce7",
-    cursor: "pointer",
-    fontSize: 16,
-    lineHeight: 1,
   } as React.CSSProperties,
 };
 
@@ -372,8 +362,40 @@ function CheckoutInner() {
 
   return (
     <div style={css.wrapper}>
+      {/* ✅ Toast flotante de éxito */}
+      {successMsg && (
+        <div style={css.okFloat}>
+          <span style={{ fontSize: 16, marginTop: 2 }}>✅</span>
+          <pre
+            style={{
+              margin: 0,
+              whiteSpace: "pre-wrap",
+              flex: 1,
+              fontFamily: "inherit",
+            }}
+          >
+            {successMsg}
+          </pre>
+          <button
+            onClick={() => setSuccessMsg("")}
+            style={{
+              border: "none",
+              background: "transparent",
+              color: "#dcfce7",
+              cursor: "pointer",
+              fontSize: 16,
+              lineHeight: 1,
+              marginLeft: 8,
+            }}
+            aria-label="Cerrar"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div style={css.inner}>
-        {/* MENSAJES (errores siguen arriba) */}
+        {/* MENSAJES DE ERROR (arriba del formulario) */}
         {errors.length > 0 && (
           <div style={css.error}>
             <b>Revisa antes de continuar:</b>
@@ -764,24 +786,6 @@ function CheckoutInner() {
           </div>
         </section>
       </div>
-
-      {/* TOAST VERDE FLOTANTE DE ÉXITO */}
-      {successMsg && (
-        <div style={css.toastWrapper}>
-          <div style={css.toastOk}>
-            <div style={{ display: "flex", alignItems: "flex-start" }}>
-              <div style={{ flex: 1 }}>{successMsg}</div>
-              <button
-                style={css.toastClose}
-                onClick={() => setSuccessMsg("")}
-                aria-label="Cerrar mensaje"
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -793,4 +797,3 @@ export default function CheckoutPage() {
     </Suspense>
   );
 }
-

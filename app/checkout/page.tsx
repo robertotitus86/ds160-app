@@ -118,6 +118,34 @@ const css = {
     fontSize: 10,
     fontWeight: 700,
   } as React.CSSProperties,
+
+  // ==== TOAST DE ÉXITO FLOTANTE ====
+  toastWrapper: {
+    position: "fixed",
+    bottom: 24,
+    right: 24,
+    zIndex: 50,
+  } as React.CSSProperties,
+  toastOk: {
+    background: "#14532d",
+    border: "1px solid #16a34a",
+    padding: 12,
+    color: "#dcfce7",
+    borderRadius: 12,
+    maxWidth: 360,
+    boxShadow: "0 12px 30px rgba(0,0,0,0.6)",
+    fontSize: 13,
+    whiteSpace: "pre-wrap",
+  } as React.CSSProperties,
+  toastClose: {
+    marginLeft: 8,
+    background: "transparent",
+    border: "none",
+    color: "#dcfce7",
+    cursor: "pointer",
+    fontSize: 16,
+    lineHeight: 1,
+  } as React.CSSProperties,
 };
 
 // Helper para subir comprobante (opcional, si existe archivo)
@@ -281,9 +309,10 @@ function CheckoutInner() {
         order_id: orderId,
         items,
         total,
-        method: method === "deuna" || method === "transferencia"
-          ? method
-          : ("deuna" as "deuna" | "transferencia"), // fallback
+        method:
+          method === "deuna" || method === "transferencia"
+            ? method
+            : ("deuna" as "deuna" | "transferencia"), // fallback
         contact: {
           name: name.trim(),
           lastName: lastName.trim(),
@@ -344,7 +373,7 @@ function CheckoutInner() {
   return (
     <div style={css.wrapper}>
       <div style={css.inner}>
-        {/* MENSAJES */}
+        {/* MENSAJES (errores siguen arriba) */}
         {errors.length > 0 && (
           <div style={css.error}>
             <b>Revisa antes de continuar:</b>
@@ -353,14 +382,6 @@ function CheckoutInner() {
                 <li key={i}>{e}</li>
               ))}
             </ul>
-          </div>
-        )}
-
-        {successMsg && (
-          <div style={css.ok}>
-            <pre style={{ margin: 0, whiteSpace: "pre-wrap" }}>
-              {successMsg}
-            </pre>
           </div>
         )}
 
@@ -743,6 +764,24 @@ function CheckoutInner() {
           </div>
         </section>
       </div>
+
+      {/* TOAST VERDE FLOTANTE DE ÉXITO */}
+      {successMsg && (
+        <div style={css.toastWrapper}>
+          <div style={css.toastOk}>
+            <div style={{ display: "flex", alignItems: "flex-start" }}>
+              <div style={{ flex: 1 }}>{successMsg}</div>
+              <button
+                style={css.toastClose}
+                onClick={() => setSuccessMsg("")}
+                aria-label="Cerrar mensaje"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -754,3 +793,4 @@ export default function CheckoutPage() {
     </Suspense>
   );
 }
+

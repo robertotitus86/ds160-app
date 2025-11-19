@@ -35,71 +35,75 @@ const css = {
     gap: 18,
   } as React.CSSProperties,
   card: {
-    background: "#0f172a",
+    background: "#111827",          // antes #0f172a → un poco más claro
     padding: 18,
     borderRadius: 14,
-    border: "1px solid #1e293b",
+    border: "1px solid #1f2937",    // borde un poco más visible
   } as React.CSSProperties,
   label: {
     fontSize: 13,
-    opacity: 0.8,
+    opacity: 0.9,
     display: "block",
     marginBottom: 4,
+    color: "#e5e7eb",
   } as React.CSSProperties,
   input: {
     width: "100%",
     padding: "8px 10px",
-    background: "#020617",
-    border: "1px solid #1e293b",
+    background: "#020617",          // puedes subir a #0b1120 si lo quieres aún más claro
+    border: "1px solid #334155",
     borderRadius: 10,
-    color: "#e5e7eb",
+    color: "#f9fafb",
     outline: "none",
     fontSize: 14,
   } as React.CSSProperties,
   btn: {
-    background: "#2563eb",
-    color: "#fff",
+    background: "#2563eb",          // azul confiable
+    color: "#ffffff",
     border: "none",
     borderRadius: 10,
     padding: "10px 14px",
     cursor: "pointer",
     fontWeight: 600,
+    boxShadow: "0 6px 16px rgba(37,99,235,0.35)",
   } as React.CSSProperties,
   ghost: {
-    background: "#334155",
-    color: "#fff",
-    border: "none",
+    background: "#374151",
+    color: "#e5e7eb",
+    border: "1px solid #4b5563",
     borderRadius: 10,
     padding: "10px 14px",
     cursor: "pointer",
     fontWeight: 500,
   } as React.CSSProperties,
+  // Error más claro y legible
   error: {
-    background: "#7f1d1d",
-    border: "1px solid #b91c1c",
+    background: "#fef2f2",
+    border: "1px solid #fecaca",
     padding: 12,
-    color: "#fee2e2",
+    color: "#991b1b",
     borderRadius: 10,
   } as React.CSSProperties,
+  // Éxito “bancario”: fondo claro y texto verde oscuro
   ok: {
-    background: "#14532d",
-    border: "1px solid #16a34a",
+    background: "#ecfdf3",
+    border: "1px solid #bbf7d0",
     padding: 12,
-    color: "#dcfce7",
+    color: "#166534",
     borderRadius: 10,
   } as React.CSSProperties,
-  // ✅ Toast flotante de éxito (no tapa los botones de ayuda / WhatsApp)
+  // Toast flotante de éxito (reposicionado para no tapar botones)
   okFloat: {
     position: "fixed" as const,
     right: 24,
-    bottom: 140, // <-- más arriba para no cubrir los botones flotantes
+    bottom: 140,
     maxWidth: 380,
-    background: "#14532d",
-    border: "1px solid #16a34a",
+    background: "#ecfdf3",
+    border: "1px solid #bbf7d0",
     padding: 12,
-    color: "#dcfce7",
+    color: "#166534",
     borderRadius: 12,
-    boxShadow: "0 10px 30px rgba(0,0,0,.6)",
+    boxShadow: "0 12px 30px rgba(15,23,42,0.6)",
     zIndex: 60,
     display: "flex",
     gap: 10,
@@ -114,9 +118,9 @@ const css = {
   tab(active: boolean, disabled?: boolean): React.CSSProperties {
     return {
       position: "relative",
-      background: active ? "#2563eb" : "#334155",
-      color: disabled ? "rgba(255,255,255,.5)" : "#fff",
-      border: "none",
+      background: active ? "#1d4ed8" : "#111827", // activo más claro, inactivo gris oscuro
+      color: disabled ? "rgba(255,255,255,.6)" : "#e5e7eb",
+      border: "1px solid #1f2937",
       borderRadius: 10,
       padding: "8px 12px",
       cursor: disabled ? "not-allowed" : "pointer",
@@ -131,7 +135,7 @@ const css = {
     right: -8,
     padding: "2px 6px",
     borderRadius: 8,
-    background: "#f59e0b",
+    background: "#fbbf24",
     color: "#111827",
     fontSize: 10,
     fontWeight: 700,
@@ -362,7 +366,7 @@ function CheckoutInner() {
 
   return (
     <div style={css.wrapper}>
-      {/* ✅ Toast flotante de éxito */}
+      {/* Toast flotante de éxito */}
       {successMsg && (
         <div style={css.okFloat}>
           <span style={{ fontSize: 16, marginTop: 2 }}>✅</span>
@@ -381,7 +385,7 @@ function CheckoutInner() {
             style={{
               border: "none",
               background: "transparent",
-              color: "#dcfce7",
+              color: "#166534",
               cursor: "pointer",
               fontSize: 16,
               lineHeight: 1,
@@ -395,7 +399,7 @@ function CheckoutInner() {
       )}
 
       <div style={css.inner}>
-        {/* MENSAJES DE ERROR (arriba del formulario) */}
+        {/* MENSAJES DE ERROR */}
         {errors.length > 0 && (
           <div style={css.error}>
             <b>Revisa antes de continuar:</b>
@@ -409,8 +413,8 @@ function CheckoutInner() {
 
         {/* DATOS DE CONTACTO */}
         <section style={css.card}>
-          <h2 style={{ marginTop: 0 }}>Tus datos de contacto</h2>
-          <p style={{ fontSize: 13, opacity: 0.8, marginBottom: 14 }}>
+          <h2 style={{ marginTop: 0, color: "#f9fafb" }}>Tus datos de contacto</h2>
+          <p style={{ fontSize: 13, opacity: 0.85, marginBottom: 14, color: "#e5e7eb" }}>
             Usaremos estos datos para enviarte acceso al asistente y coordinar
             tu proceso DS-160.
           </p>
@@ -510,8 +514,8 @@ function CheckoutInner() {
 
         {/* RESUMEN */}
         <section style={css.card}>
-          <h3 style={{ marginTop: 0 }}>Resumen de tu compra</h3>
-          <ul style={{ margin: "6px 0 12px 18px" }}>
+          <h3 style={{ marginTop: 0, color: "#f9fafb" }}>Resumen de tu compra</h3>
+          <ul style={{ margin: "6px 0 12px 18px", color: "#e5e7eb" }}>
             {items.map((id) => (
               <li
                 key={id}
@@ -524,8 +528,8 @@ function CheckoutInner() {
                   onClick={() => setItems(items.filter((x) => x !== id))}
                   style={{
                     marginLeft: 8,
-                    background: "#334155",
-                    color: "#fff",
+                    background: "#4b5563",
+                    color: "#f9fafb",
                     border: "none",
                     borderRadius: 8,
                     padding: "4px 8px",
@@ -538,14 +542,14 @@ function CheckoutInner() {
               </li>
             ))}
           </ul>
-          <p>
+          <p style={{ color: "#e5e7eb" }}>
             Total: <b>${total} USD</b>
           </p>
         </section>
 
         {/* MÉTODO DE PAGO */}
         <section style={css.card}>
-          <h3 style={{ marginTop: 0 }}>Elige cómo pagaste</h3>
+          <h3 style={{ marginTop: 0, color: "#f9fafb" }}>Elige cómo pagaste</h3>
           <div style={css.tabs}>
             <button
               style={css.tab(method === "deuna")}
@@ -579,7 +583,7 @@ function CheckoutInner() {
         {/* DEUNA */}
         {method === "deuna" && (
           <section style={css.card}>
-            <h3 style={{ marginTop: 0 }}>Pago con Deuna (QR)</h3>
+            <h3 style={{ marginTop: 0, color: "#f9fafb" }}>Pago con Deuna (QR)</h3>
             <div
               style={{
                 display: "grid",
@@ -609,7 +613,7 @@ function CheckoutInner() {
                   }}
                 />
               </div>
-              <div style={{ display: "grid", gap: 10 }}>
+              <div style={{ display: "grid", gap: 10, color: "#e5e7eb" }}>
                 <label
                   style={{
                     display: "flex",
@@ -666,7 +670,7 @@ function CheckoutInner() {
         {/* TRANSFERENCIA */}
         {method === "transferencia" && (
           <section style={css.card}>
-            <h3 style={{ marginTop: 0 }}>Transferencia bancaria</h3>
+            <h3 style={{ marginTop: 0, color: "#f9fafb" }}>Transferencia bancaria</h3>
             <div
               style={{
                 background: "#020617",
@@ -675,9 +679,10 @@ function CheckoutInner() {
                 padding: 14,
                 display: "grid",
                 gap: 10,
+                color: "#e5e7eb",
               }}
             >
-              <div style={{ fontSize: 13, opacity: 0.85 }}>
+              <div style={{ fontSize: 13, opacity: 0.9 }}>
                 Datos para transferencia
               </div>
               <div>
@@ -686,8 +691,8 @@ function CheckoutInner() {
                   onClick={() => copy("2200449871")}
                   style={{
                     marginLeft: 6,
-                    background: "#334155",
-                    color: "#fff",
+                    background: "#4b5563",
+                    color: "#f9fafb",
                     border: "none",
                     borderRadius: 8,
                     padding: "3px 8px",
@@ -769,9 +774,10 @@ function CheckoutInner() {
               gap: 10,
               alignItems: "center",
               justifyContent: "space-between",
+              color: "#e5e7eb",
             }}
           >
-            <div style={{ fontSize: 13, opacity: 0.8, maxWidth: 420 }}>
+            <div style={{ fontSize: 13, opacity: 0.9, maxWidth: 420 }}>
               Al continuar, enviaremos tu pago a revisión. Te contactaremos
               usando los datos que ingresaste para habilitar el acceso al
               asistente DS-160 y continuar tu proceso.

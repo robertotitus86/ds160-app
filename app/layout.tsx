@@ -1,6 +1,6 @@
 // app/layout.tsx
 import type { Metadata } from "next";
-import React from "react";
+import React, { CSSProperties } from "react";
 
 export const metadata: Metadata = {
   title: "DS-160 Asistido · Formulario guiado",
@@ -8,24 +8,41 @@ export const metadata: Metadata = {
     "Asistente para completar el formulario DS-160 paso a paso. No es asesoría legal.",
 };
 
-const styles = {
+type StyleMap = {
+  body: CSSProperties;
+  shell: CSSProperties;
+  navbar: CSSProperties;
+  navInner: CSSProperties;
+  brand: CSSProperties;
+  brandLogo: CSSProperties;
+  brandText: CSSProperties;
+  brandTitle: CSSProperties;
+  brandSub: CSSProperties;
+  navRight: CSSProperties;
+  badge: CSSProperties;
+  main: CSSProperties;
+  footer: CSSProperties;
+  footerInner: CSSProperties;
+};
+
+const styles: StyleMap = {
   body: {
     margin: 0,
     fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-    backgroundColor: "#f3f4f6", // gris muy claro (página casi blanca)
+    backgroundColor: "#f3f4f6", // página gris muy clara
     color: "#111827",
-  } as React.CSSProperties,
+  },
 
   shell: {
     minHeight: "100vh",
     display: "flex",
-    flexDirection: "column",
-  } as React.CSSProperties,
+    flexDirection: "column", // <- YA tipado correctamente
+  },
 
   navbar: {
     borderBottom: "1px solid #e5e7eb",
     backgroundColor: "#ffffff",
-  } as React.CSSProperties,
+  },
 
   navInner: {
     maxWidth: 1100,
@@ -35,13 +52,13 @@ const styles = {
     alignItems: "center",
     justifyContent: "space-between",
     gap: 16,
-  } as React.CSSProperties,
+  },
 
   brand: {
     display: "flex",
     alignItems: "center",
     gap: 10,
-  } as React.CSSProperties,
+  },
 
   brandLogo: {
     width: 28,
@@ -50,23 +67,23 @@ const styles = {
     border: "1px solid #e5e7eb",
     background:
       "radial-gradient(circle at 30% 30%, #1d4ed8, #1e293b 60%, #020617)",
-  } as React.CSSProperties,
+  },
 
   brandText: {
     display: "flex",
     flexDirection: "column",
-  } as React.CSSProperties,
+  },
 
   brandTitle: {
     fontSize: 15,
     fontWeight: 600,
     color: "#111827",
-  } as React.CSSProperties,
+  },
 
   brandSub: {
     fontSize: 11,
     color: "#6b7280",
-  } as React.CSSProperties,
+  },
 
   navRight: {
     display: "flex",
@@ -74,7 +91,7 @@ const styles = {
     gap: 12,
     fontSize: 12,
     color: "#4b5563",
-  } as React.CSSProperties,
+  },
 
   badge: {
     padding: "3px 8px",
@@ -83,7 +100,7 @@ const styles = {
     backgroundColor: "#f9fafb",
     fontSize: 11,
     color: "#374151",
-  } as React.CSSProperties,
+  },
 
   main: {
     flex: 1,
@@ -91,7 +108,7 @@ const styles = {
     width: "100%",
     margin: "0 auto",
     padding: "20px 16px 40px",
-  } as React.CSSProperties,
+  },
 
   footer: {
     borderTop: "1px solid #e5e7eb",
@@ -99,13 +116,13 @@ const styles = {
     padding: "10px 16px",
     fontSize: 11,
     color: "#6b7280",
-    textAlign: "center" as const,
-  } as React.CSSProperties,
+    textAlign: "center",
+  },
 
   footerInner: {
     maxWidth: 1100,
     margin: "0 auto",
-  } as React.CSSProperties,
+  },
 };
 
 export default function RootLayout({

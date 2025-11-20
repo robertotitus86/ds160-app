@@ -1,89 +1,151 @@
-export const metadata = {
-  title: "DS-160 Asistido",
-};
-
+import "./globals.css";
+import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import dynamic from "next/dynamic";
 import NavClient from "./NavClient";
 
-const ChatWidget = dynamic(() => import("../components/ChatWidget"), { ssr: false });
-const WhatsAppFloat = dynamic(() => import("../components/WhatsAppFloat"), { ssr: false });
+export const metadata: Metadata = {
+  title: "DS-160 Asistido",
+  description:
+    "Asistente guiado para completar tu formulario DS-160 con pasos claros y soporte humano.",
+};
+
+const ChatWidget = dynamic(() => import("../components/ChatWidget"), {
+  ssr: false,
+});
+
+const WhatsAppFloat = dynamic(() => import("../components/WhatsAppFloat"), {
+  ssr: false,
+});
 
 const styles = {
   body: {
     margin: 0,
-    fontFamily: "ui-sans-serif, system-ui, Segoe UI, Roboto, Inter, Arial",
-    background: "#0b1120",
-    color: "#e5e7eb",
-  } as React.CSSProperties,
-  container: { maxWidth: 1100, margin: "0 auto", padding: "0 20px" } as React.CSSProperties,
+    fontFamily:
+      "-apple-system, BlinkMacSystemFont, system-ui, -system-ui, sans-serif",
+    background: "#f3f4f6",
+    color: "#111827",
+    WebkitFontSmoothing: "antialiased" as const,
+  },
+  shell: {
+    minHeight: "100vh",
+    display: "flex",
+    flexDirection: "column",
+  },
   navbar: {
     position: "sticky" as const,
     top: 0,
-    zIndex: 1000,
-    backdropFilter: "blur(10px)",
-    background: "linear-gradient(180deg, rgba(2,6,23,0.85), rgba(2,6,23,0.55))",
-    borderBottom: "1px solid #0f172a",
+    zIndex: 40,
+    background:
+      "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.98))",
+    backdropFilter: "blur(12px)",
+    borderBottom: "1px solid #e5e7eb",
   },
-  navRow: { display: "flex", alignItems: "center", justifyContent: "space-between", height: 64 } as React.CSSProperties,
-  brand: {
-    display: "inline-flex",
+  navInner: {
+    maxWidth: 1100,
+    margin: "0 auto",
+    padding: "10px 18px",
+    display: "flex",
     alignItems: "center",
-    gap: 10,
-    color: "#e5e7eb",
-    textDecoration: "none",
-    fontWeight: 800,
-    letterSpacing: 0.2,
-  } as React.CSSProperties,
-  content: { padding: "28px 20px 80px" } as React.CSSProperties,
-  footer: { borderTop: "1px solid #0f172a", background: "#0c1224", padding: "22px 0", marginTop: 60 } as React.CSSProperties,
-  footCol: { display: "flex", flexDirection: "column" as const, alignItems: "center", gap: 4, textAlign: "center" as const },
+    justifyContent: "space-between",
+    gap: 16,
+  },
+  brand: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 2,
+  },
+  brandTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    letterSpacing: "0.02em",
+    color: "#111827",
+  },
+  brandSubtitle: {
+    fontSize: 12,
+    color: "#6b7280",
+  },
+  navRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: 16,
+  },
+  main: {
+    flex: 1,
+    padding: "22px 12px 28px",
+  },
+  mainInner: {
+    maxWidth: 1100,
+    margin: "0 auto",
+  },
+  footer: {
+    borderTop: "1px solid #e5e7eb",
+    background: "#f9fafb",
+  },
+  footerInner: {
+    maxWidth: 1100,
+    margin: "0 auto",
+    padding: "12px 18px",
+    display: "flex",
+    flexWrap: "wrap" as const,
+    justifyContent: "space-between",
+    gap: 12,
+    fontSize: 12,
+    color: "#6b7280",
+  },
+  footerLeft: {
+    display: "flex",
+    flexDirection: "column" as const,
+    gap: 2,
+  },
+  footerRight: {
+    display: "flex",
+    gap: 12,
+    flexWrap: "wrap" as const,
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es">
       <body style={styles.body}>
-        {/* NAV */}
-        <header style={styles.navbar}>
-          <div style={{ ...styles.container, ...styles.navRow }}>
-            <a href="/" style={styles.brand} aria-label="Inicio">
-              <span
-                style={{
-                  display: "inline-grid",
-                  placeItems: "center",
-                  width: 34,
-                  height: 34,
-                  borderRadius: 10,
-                  background: "#1d4ed8",
-                  color: "#fff",
-                  boxShadow: "0 8px 24px rgba(37,99,235,.35)",
-                  fontSize: 18,
-                }}
-              >
-                🛂
-              </span>
-              <span>DS-160 Asistido</span>
-            </a>
+        <div style={styles.shell}>
+          <header style={styles.navbar}>
+            <div style={styles.navInner}>
+              <div style={styles.brand}>
+                <div style={styles.brandTitle}>DS-160 Asistido</div>
+                <div style={styles.brandSubtitle}>
+                  Plataforma independiente para ayudarte a completar tu formulario.
+                </div>
+              </div>
+              <div style={styles.navRight}>
+                <NavClient />
+              </div>
+            </div>
+          </header>
 
-            {/* Menú con contador de carrito */}
-            <NavClient />
-          </div>
-        </header>
+          <main style={styles.main}>
+            <div style={styles.mainInner}>{children}</div>
+          </main>
 
-        {/* CONTENIDO */}
-        <main style={{ ...styles.container, ...styles.content }}>{children}</main>
+          <footer style={styles.footer}>
+            <div style={styles.footerInner}>
+              <div style={styles.footerLeft}>
+                <span>© {new Date().getFullYear()} · DS-160 Asistido</span>
+                <span>
+                  No es asesoría legal ni reemplaza la información oficial del
+                  Departamento de Estado de EE. UU.
+                </span>
+              </div>
+              <div style={styles.footerRight}>
+                <span>Verifica siempre en CEAC antes de enviar tu formulario.</span>
+              </div>
+            </div>
+          </footer>
 
-        {/* FOOTER exacto como solicitaste */}
-        <footer style={styles.footer}>
-          <div style={{ ...styles.container, ...styles.footCol }}>
-            <small>© 2025 · DS-160 Asistido</small>
-            <small style={{ opacity: 0.7 }}>No es asesoría legal. Verifica siempre en CEAC.</small>
-          </div>
-        </footer>
-
-        {/* Widgets flotantes existentes */}
-        <ChatWidget />
-        <WhatsAppFloat />
+          <ChatWidget />
+          <WhatsAppFloat />
+        </div>
       </body>
     </html>
   );

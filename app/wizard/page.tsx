@@ -97,7 +97,7 @@ const STORAGE_KEY = 'ds160_wizard_v3_full';
 const styles = {
   page: { display: 'grid', gap: 16 as const },
   card: {
-    background: '#0f172a',
+    background: '#ffffff',
     padding: 18,
     borderRadius: 14,
     border: '1px solid #111827',
@@ -115,9 +115,9 @@ const styles = {
     maxWidth: 320,              // 👈 límite de ancho para que no se “alargue” demasiado
     padding: 10,
     borderRadius: 10,
-    border: '1px solid #1f2937',
-    background: '#0b1220',
-    color: '#fff',
+    border: '1px solid #cbd5e1',
+    background: '#f9fafb',
+    color: '#111827',
   } as React.CSSProperties,
   textarea: {
     width: '100%',
@@ -125,15 +125,15 @@ const styles = {
     minHeight: 90,
     padding: 10,
     borderRadius: 10,
-    border: '1px solid #1f2937',
-    background: '#0b1220',
-    color: '#fff',
+    border: '1px solid #cbd5e1',
+    background: '#f9fafb',
+    color: '#111827',
   } as React.CSSProperties,
   help: { fontSize: 12, opacity: 0.75, marginTop: 6 },
   actions: { display: 'flex', gap: 10, flexWrap: 'wrap' as const },
-  btn: {
+    btn: {
     background: '#2563eb',
-    color: '#fff',
+    color: '#ffffff',
     border: 'none',
     borderRadius: 10,
     padding: '10px 14px',
@@ -141,22 +141,22 @@ const styles = {
     textDecoration: 'none',
   } as React.CSSProperties,
   ghost: {
-    background: '#334155',
-    color: '#fff',
+    background: '#e5e7eb',
+    color: '#1f2937',
     border: 'none',
     borderRadius: 10,
     padding: '10px 14px',
     cursor: 'pointer',
     textDecoration: 'none',
   } as React.CSSProperties,
-  stepper: {
+stepper: {
     display: 'grid',
     gap: 8,
     gridTemplateColumns: 'repeat(8,1fr)',
   },
   pill: (active: boolean) => ({
-    background: active ? '#2563eb' : '#0b1220',
-    border: `1px solid ${active ? '#2563eb' : '#1f2937'}`,
+    background: active ? '#2563eb' : '#f9fafb',
+    border: `1px solid ${active ? '#2563eb' : '#cbd5e1'}`,
     color: active ? '#fff' : '#cbd5e1',
     textAlign: 'center' as const,
     padding: '8px 10px',

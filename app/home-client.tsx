@@ -14,11 +14,12 @@ const TITLES: Record<PlanId, string> = {
 export default function HomeClient() {
   // ---------- estilos ----------
   const card: React.CSSProperties = {
-    background: '#0f172a',
-    padding: 18,
-    borderRadius: 14,
-    border: '1px solid #111827',
-  };
+  background: "#ffffff",
+  padding: 18,
+  borderRadius: 14,
+  border: "1px solid #e5e7eb",
+  boxShadow: "0 1px 2px rgba(15,23,42,0.06)",
+};
   const btn: React.CSSProperties = {
     background: '#2563eb',
     color: '#fff',

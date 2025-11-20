@@ -1,150 +1,152 @@
-import "./globals.css";
+// app/layout.tsx
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
-import dynamic from "next/dynamic";
-import NavClient from "./NavClient";
+import React from "react";
 
 export const metadata: Metadata = {
-  title: "DS-160 Asistido",
+  title: "DS-160 Asistido · Formulario guiado",
   description:
-    "Asistente guiado para completar tu formulario DS-160 con pasos claros y soporte humano.",
+    "Asistente para completar el formulario DS-160 paso a paso. No es asesoría legal.",
 };
-
-const ChatWidget = dynamic(() => import("../components/ChatWidget"), {
-  ssr: false,
-});
-
-const WhatsAppFloat = dynamic(() => import("../components/WhatsAppFloat"), {
-  ssr: false,
-});
 
 const styles = {
   body: {
     margin: 0,
-    fontFamily:
-      "-apple-system, BlinkMacSystemFont, system-ui, -system-ui, sans-serif",
-    background: "#f3f4f6",
+    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
+    backgroundColor: "#f3f4f6", // gris muy claro (página casi blanca)
     color: "#111827",
-    WebkitFontSmoothing: "antialiased" as const,
-  },
+  } as React.CSSProperties,
+
   shell: {
     minHeight: "100vh",
     display: "flex",
     flexDirection: "column",
-  },
+  } as React.CSSProperties,
+
   navbar: {
-    position: "sticky" as const,
-    top: 0,
-    zIndex: 40,
-    background:
-      "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.98))",
-    backdropFilter: "blur(12px)",
     borderBottom: "1px solid #e5e7eb",
-  },
+    backgroundColor: "#ffffff",
+  } as React.CSSProperties,
+
   navInner: {
     maxWidth: 1100,
     margin: "0 auto",
-    padding: "10px 18px",
+    padding: "10px 16px",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 16,
-  },
+  } as React.CSSProperties,
+
   brand: {
     display: "flex",
-    flexDirection: "column" as const,
-    gap: 2,
-  },
+    alignItems: "center",
+    gap: 10,
+  } as React.CSSProperties,
+
+  brandLogo: {
+    width: 28,
+    height: 28,
+    borderRadius: "50%",
+    border: "1px solid #e5e7eb",
+    background:
+      "radial-gradient(circle at 30% 30%, #1d4ed8, #1e293b 60%, #020617)",
+  } as React.CSSProperties,
+
+  brandText: {
+    display: "flex",
+    flexDirection: "column",
+  } as React.CSSProperties,
+
   brandTitle: {
-    fontSize: 18,
-    fontWeight: 700,
-    letterSpacing: "0.02em",
+    fontSize: 15,
+    fontWeight: 600,
     color: "#111827",
-  },
-  brandSubtitle: {
-    fontSize: 12,
+  } as React.CSSProperties,
+
+  brandSub: {
+    fontSize: 11,
     color: "#6b7280",
-  },
+  } as React.CSSProperties,
+
   navRight: {
     display: "flex",
     alignItems: "center",
-    gap: 16,
-  },
+    gap: 12,
+    fontSize: 12,
+    color: "#4b5563",
+  } as React.CSSProperties,
+
+  badge: {
+    padding: "3px 8px",
+    borderRadius: 999,
+    border: "1px solid #e5e7eb",
+    backgroundColor: "#f9fafb",
+    fontSize: 11,
+    color: "#374151",
+  } as React.CSSProperties,
+
   main: {
     flex: 1,
-    padding: "22px 12px 28px",
-  },
-  mainInner: {
     maxWidth: 1100,
+    width: "100%",
     margin: "0 auto",
-  },
+    padding: "20px 16px 40px",
+  } as React.CSSProperties,
+
   footer: {
     borderTop: "1px solid #e5e7eb",
-    background: "#f9fafb",
-  },
+    backgroundColor: "#ffffff",
+    padding: "10px 16px",
+    fontSize: 11,
+    color: "#6b7280",
+    textAlign: "center" as const,
+  } as React.CSSProperties,
+
   footerInner: {
     maxWidth: 1100,
     margin: "0 auto",
-    padding: "12px 18px",
-    display: "flex",
-    flexWrap: "wrap" as const,
-    justifyContent: "space-between",
-    gap: 12,
-    fontSize: 12,
-    color: "#6b7280",
-  },
-  footerLeft: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 2,
-  },
-  footerRight: {
-    display: "flex",
-    gap: 12,
-    flexWrap: "wrap" as const,
-  },
+  } as React.CSSProperties,
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="es">
       <body style={styles.body}>
         <div style={styles.shell}>
           <header style={styles.navbar}>
             <div style={styles.navInner}>
+              {/* Marca / “tipo embajada” */}
               <div style={styles.brand}>
-                <div style={styles.brandTitle}>DS-160 Asistido</div>
-                <div style={styles.brandSubtitle}>
-                  Plataforma independiente para ayudarte a completar tu formulario.
+                <div style={styles.brandLogo} />
+                <div style={styles.brandText}>
+                  <span style={styles.brandTitle}>DS-160 Asistido</span>
+                  <span style={styles.brandSub}>
+                    Plataforma privada · No es el sitio oficial
+                  </span>
                 </div>
               </div>
+
               <div style={styles.navRight}>
-                <NavClient />
+                <span style={styles.badge}>Sitio seguro</span>
+                <span>Soporte por WhatsApp y correo</span>
               </div>
             </div>
           </header>
 
-          <main style={styles.main}>
-            <div style={styles.mainInner}>{children}</div>
-          </main>
+          <main style={styles.main}>{children}</main>
 
           <footer style={styles.footer}>
             <div style={styles.footerInner}>
-              <div style={styles.footerLeft}>
-                <span>© {new Date().getFullYear()} · DS-160 Asistido</span>
-                <span>
-                  No es asesoría legal ni reemplaza la información oficial del
-                  Departamento de Estado de EE. UU.
-                </span>
-              </div>
-              <div style={styles.footerRight}>
-                <span>Verifica siempre en CEAC antes de enviar tu formulario.</span>
-              </div>
+              © 2025 · DS-160 Asistido · Esta plataforma no es asesoría legal ni
+              reemplaza la consulta con un abogado de inmigración. Verifica
+              siempre en CEAC y en el sitio oficial del Departamento de Estado
+              de EE. UU.
             </div>
           </footer>
-
-          <ChatWidget />
-          <WhatsAppFloat />
         </div>
       </body>
     </html>

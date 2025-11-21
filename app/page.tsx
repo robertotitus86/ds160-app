@@ -91,21 +91,21 @@ export default function Page() {
                     fontWeight: 600,
                   }}
                 >
-                  Empezar llenado asistido
+                  Empezar llenado DS-160
                 </Link>
 
                 <Link
-                  href="/checkout?plan=asesoria"
+                  href="/schengen"
                   style={{
                     padding: "10px 16px",
-                    background: "#f3f4f6",
-                    color: "#111827",
+                    background: "#0f766e",
+                    color: "#ffffff",
                     borderRadius: 999,
                     fontSize: 14,
-                    fontWeight: 500,
+                    fontWeight: 600,
                   }}
                 >
-                  Asesoría para la entrevista
+                  Ver opciones para visa Schengen
                 </Link>
               </div>
             </div>
@@ -158,7 +158,7 @@ export default function Page() {
                 }}
               >
                 <strong style={{ display: "block", marginBottom: 4 }}>
-                  3. DS-160 listo para registrar
+                  3. Formulario listo para registrar
                 </strong>
                 Obtienes un resumen claro para registrar en el portal oficial y
                 llegar mejor preparado a la entrevista.
@@ -418,6 +418,81 @@ export default function Page() {
                 </Link>
               </div>
             </article>
+
+            {/* Schengen visible como plan */}
+            <article
+              style={{
+                borderRadius: 16,
+                border: "1px solid #d1fae5",
+                padding: 16,
+                display: "grid",
+                gap: 8,
+                background: "#ecfdf5",
+              }}
+            >
+              <header>
+                <h3
+                  style={{
+                    margin: "0 0 4px",
+                    fontSize: 16,
+                    fontWeight: 600,
+                  }}
+                >
+                  Visa Schengen (Europa)
+                </h3>
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 12,
+                    color: "#047857",
+                  }}
+                >
+                  Desde $5 USD · Checklists y formulario
+                </p>
+              </header>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: 13,
+                  color: "#065f46",
+                }}
+              >
+                Organiza tus requisitos, viajes y documentos para tu visa
+                Schengen (turismo, visitas, negocios) con un asistente en
+                español.
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginTop: 4,
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#047857",
+                  }}
+                >
+                  Desde $5 USD · Requisitos express
+                </span>
+                <Link
+                  href="/schengen"
+                  style={{
+                    padding: "8px 14px",
+                    borderRadius: 999,
+                    background: "#059669",
+                    color: "#ffffff",
+                    fontSize: 13,
+                    fontWeight: 600,
+                  }}
+                >
+                  Ver planes Schengen
+                </Link>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -576,63 +651,6 @@ export default function Page() {
                 María · 32 años · Cuenca
               </p>
             </article>
-          </div>
-        </section>
-
-        {/* ===================== VISA SCHENGEN (INTERACCIÓN EXTRA) ===================== */}
-        <section
-          style={{
-            background: "#ffffff",
-            borderRadius: 20,
-            border: "1px solid #e5e7eb",
-            padding: 20,
-            boxShadow: "0 8px 18px rgba(15, 23, 42, 0.04)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: 10,
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <div>
-              <h2
-                style={{
-                  margin: "0 0 6px",
-                  fontSize: 18,
-                  fontWeight: 700,
-                }}
-              >
-                ¿También estás pensando en viajar a Europa?
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 13,
-                  color: "#4b5563",
-                }}
-              >
-                Tenemos un asistente similar para organizar tus requisitos y
-                datos de visa Schengen (turismo, visitas, etc.).
-              </p>
-            </div>
-
-            <Link
-              href="/schengen"
-              style={{
-                padding: "9px 16px",
-                borderRadius: 999,
-                background: "#0f766e",
-                color: "#ffffff",
-                fontSize: 13,
-                fontWeight: 600,
-              }}
-            >
-              Ver ayuda para visa Schengen
-            </Link>
           </div>
         </section>
       </div>

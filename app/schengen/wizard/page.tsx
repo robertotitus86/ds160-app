@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 type SchengenStepKey = "perfil" | "viaje" | "documentos" | "resumen";
 
-type SchengenPlanId = "schengen_requisitos" | "schengen_llenado" | "schengen_completo";
+type SchengenPlanId =
+  | "schengen_requisitos"
+  | "schengen_llenado"
+  | "schengen_completo";
 
 type SchengenFormState = {
   // Perfil
@@ -85,6 +87,7 @@ const styles: Record<string, React.CSSProperties> = {
   layout: {
     display: "grid",
     gap: 16,
+    gridTemplateColumns: "minmax(0, 260px) minmax(0, 1fr)",
   },
   sidebar: {
     background: "#ffffff",
@@ -206,13 +209,13 @@ const styles: Record<string, React.CSSProperties> = {
 
 const STEP_INTROS: Record<SchengenStepKey, string> = {
   perfil:
-    "Empezamos por lo básico: tus datos y cómo te contactamos, además de tu nacionalidad y ciudad de residencia.",
+    "Empezamos por lo básico: tus datos y cómo contactarte, además de tu nacionalidad y ciudad de residencia.",
   viaje:
     "Luego aclaramos a dónde vas, por qué viajas, cuánto tiempo y quién cubre los gastos.",
   documentos:
     "Aquí revisamos qué documentos clave ya tienes y cuáles faltan para tu checklist.",
   resumen:
-    "Finalmente, verás un resumen para que puedas usarlo al preparar tu solicitud y documentos.",
+    "Finalmente, verás un resumen que puedes usar como guía al preparar tu solicitud.",
 };
 
 const STEPS: { key: SchengenStepKey; title: string }[] = [
@@ -235,11 +238,27 @@ function loadInitialState(): SchengenFormState {
 }
 
 function SchengenWizardInner() {
-  const params = useSearchParams();
-  const planParam = (params.get("plan") || "") as SchengenPlanId | "";
-
   const [step, setStep] = useState<SchengenStepKey>("perfil");
   const [data, setData] = useState<SchengenFormState>(() => loadInitialState());
+  const [planParam, setPlanParam] = useState<SchengenPlanId | "">("");
+
+  // Leer ?plan=... desde la URL en cliente (sin useSearchParams)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const search = new URLSearchParams(window.location.search);
+      const plan = search.get("plan") as SchengenPlanId | null;
+      if (
+        plan === "schengen_requisitos" ||
+        plan === "schengen_llenado" ||
+        plan === "schengen_completo"
+      ) {
+        setPlanParam(plan);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   // Persistir en localStorage
   useEffect(() => {
@@ -251,7 +270,10 @@ function SchengenWizardInner() {
     }
   }, [data]);
 
-  function update<K extends keyof SchengenFormState>(key: K, value: SchengenFormState[K]) {
+  function update<K extends keyof SchengenFormState>(
+    key: K,
+    value: SchengenFormState[K]
+  ) {
     setData((prev) => ({ ...prev, [key]: value }));
   }
 
@@ -326,7 +348,9 @@ function SchengenWizardInner() {
                   <input
                     style={styles.input}
                     value={data.nombreCompleto}
-                    onChange={(e) => update("nombreCompleto", e.target.value)}
+                    onChange={(e) =>
+                      update("nombreCompleto", e.target.value)
+                    }
                   />
                 </div>
 
@@ -337,7 +361,9 @@ function SchengenWizardInner() {
                   <input
                     style={styles.input}
                     value={data.nacionalidad}
-                    onChange={(e) => update("nacionalidad", e.target.value)}
+                    onChange={(e) =>
+                      update("nacionalidad", e.target.value)
+                    }
                   />
                 </div>
 
@@ -382,67 +408,87 @@ function SchengenWizardInner() {
               <div style={styles.fieldGroup}>
                 <div style={styles.field}>
                   <div style={styles.labelRow}>
-                    <label style={styles.label}>País de destino principal</label>
+                    <label style={styles.label}>
+                      País de destino principal
+                    </label>
                   </div>
                   <input
                     style={styles.input}
                     value={data.paisDestino}
-                    onChange={(e) => update("paisDestino", e.target.value)}
+                    onChange={(e) =>
+                      update("paisDestino", e.target.value)
+                    }
                   />
                   <p style={styles.help}>
-                    Por ejemplo: España, Francia, Alemania. Es el país donde pasarás
-                    más tiempo.
+                    Por ejemplo: España, Francia, Alemania. Es el país donde
+                    pasarás más tiempo.
                   </p>
                 </div>
 
                 <div style={styles.field}>
                   <div style={styles.labelRow}>
-                    <label style={styles.label}>Motivo principal del viaje</label>
+                    <label style={styles.label}>
+                      Motivo principal del viaje
+                    </label>
                   </div>
                   <input
                     style={styles.input}
                     placeholder="Turismo, visita familiar, negocios, estudios cortos, etc."
                     value={data.motivoViaje}
-                    onChange={(e) => update("motivoViaje", e.target.value)}
+                    onChange={(e) =>
+                      update("motivoViaje", e.target.value)
+                    }
                   />
                 </div>
 
                 <div style={styles.field}>
                   <div style={styles.labelRow}>
-                    <label style={styles.label}>Fecha estimada de salida</label>
+                    <label style={styles.label}>
+                      Fecha estimada de salida
+                    </label>
                   </div>
                   <input
                     type="date"
                     style={styles.input}
                     value={data.fechaSalida}
-                    onChange={(e) => update("fechaSalida", e.target.value)}
+                    onChange={(e) =>
+                      update("fechaSalida", e.target.value)
+                    }
                   />
                 </div>
 
                 <div style={styles.field}>
                   <div style={styles.labelRow}>
-                    <label style={styles.label}>Fecha estimada de regreso</label>
+                    <label style={styles.label}>
+                      Fecha estimada de regreso
+                    </label>
                   </div>
                   <input
                     type="date"
                     style={styles.input}
                     value={data.fechaRegreso}
-                    onChange={(e) => update("fechaRegreso", e.target.value)}
+                    onChange={(e) =>
+                      update("fechaRegreso", e.target.value)
+                    }
                   />
                 </div>
 
                 <div style={styles.field}>
                   <div style={styles.labelRow}>
-                    <label style={styles.label}>Días aproximados de estancia</label>
+                    <label style={styles.label}>
+                      Días aproximados de estancia
+                    </label>
                   </div>
                   <input
                     style={styles.input}
                     value={data.diasEstancia}
-                    onChange={(e) => update("diasEstancia", e.target.value)}
+                    onChange={(e) =>
+                      update("diasEstancia", e.target.value)
+                    }
                   />
                   <p style={styles.help}>
-                    Ayuda a estimar medios económicos mínimos según lo que pide el
-                    consulado (por ejemplo, cierto monto por día).
+                    Ayuda a estimar medios económicos mínimos según lo que pide
+                    el consulado (por ejemplo, cierto monto por día).
                   </p>
                 </div>
 
@@ -456,7 +502,9 @@ function SchengenWizardInner() {
                     style={styles.input}
                     placeholder="Sí / No. Si la respuesta es sí, indica si es familiar, amigo, empresa, etc."
                     value={data.tieneInvitante}
-                    onChange={(e) => update("tieneInvitante", e.target.value)}
+                    onChange={(e) =>
+                      update("tieneInvitante", e.target.value)
+                    }
                   />
                 </div>
 
@@ -470,7 +518,9 @@ function SchengenWizardInner() {
                     style={styles.input}
                     placeholder="Yo mismo, mis padres, patrocinador, empresa, etc."
                     value={data.quienPagaViaje}
-                    onChange={(e) => update("quienPagaViaje", e.target.value)}
+                    onChange={(e) =>
+                      update("quienPagaViaje", e.target.value)
+                    }
                   />
                 </div>
               </div>
@@ -493,26 +543,32 @@ function SchengenWizardInner() {
                     }
                   />
                   <p style={styles.help}>
-                    Validez mínima, páginas en blanco, antigüedad máxima, etc., según
-                    lo que suele pedir el consulado.
+                    Validez mínima, páginas en blanco, antigüedad máxima, etc.,
+                    según lo que suele pedir el consulado.
                   </p>
                 </div>
 
                 <div style={styles.field}>
                   <div style={styles.labelRow}>
-                    <label style={styles.label}>¿Ya tienes seguro médico de viaje?</label>
+                    <label style={styles.label}>
+                      ¿Ya tienes seguro médico de viaje?
+                    </label>
                   </div>
                   <input
                     style={styles.input}
                     placeholder="Sí / No"
                     value={data.tieneSeguro}
-                    onChange={(e) => update("tieneSeguro", e.target.value)}
+                    onChange={(e) =>
+                      update("tieneSeguro", e.target.value)
+                    }
                   />
                 </div>
 
                 <div style={styles.field}>
                   <div style={styles.labelRow}>
-                    <label style={styles.label}>¿Tienes reservas de vuelo?</label>
+                    <label style={styles.label}>
+                      ¿Tienes reservas de vuelo?
+                    </label>
                   </div>
                   <input
                     style={styles.input}
@@ -526,7 +582,9 @@ function SchengenWizardInner() {
 
                 <div style={styles.field}>
                   <div style={styles.labelRow}>
-                    <label style={styles.label}>¿Tienes reservas de alojamiento?</label>
+                    <label style={styles.label}>
+                      ¿Tienes reservas de alojamiento?
+                    </label>
                   </div>
                   <input
                     style={styles.input}
@@ -558,48 +616,99 @@ function SchengenWizardInner() {
             {step === "resumen" && (
               <div style={styles.fieldGroup}>
                 <p style={styles.pMuted}>
-                  Este es un resumen de lo que has indicado. Puedes usarlo como guía
-                  al revisar los requisitos oficiales y preparar tu solicitud.
+                  Este es un resumen de lo que has indicado. Puedes usarlo como
+                  guía al revisar los requisitos oficiales y preparar tu
+                  solicitud.
                 </p>
-                <pre
+
+                <div
                   style={{
                     background: "#f9fafb",
                     borderRadius: 10,
                     padding: 12,
-                    fontSize: 12,
-                    maxWidth: "100%",
-                    overflowX: "auto",
                     border: "1px solid #e5e7eb",
+                    fontSize: 13,
+                    display: "grid",
+                    gap: 6,
                   }}
                 >
-{`Perfil:
-- Nombre completo: ${"${data.nombreCompleto}"}
-- Nacionalidad: ${"${data.nacionalidad}"}
-- Ciudad de residencia: ${"${data.ciudadResidencia}"}
-- Teléfono: ${"${data.telefono}"}
-- Email: ${"${data.email}"}
+                  <div>
+                    <strong>Perfil</strong>
+                    <ul
+                      style={{
+                        margin: "4px 0 0",
+                        paddingLeft: 18,
+                        listStyle: "disc",
+                      }}
+                    >
+                      <li>Nombre: {data.nombreCompleto || "—"}</li>
+                      <li>Nacionalidad: {data.nacionalidad || "—"}</li>
+                      <li>
+                        Ciudad de residencia: {data.ciudadResidencia || "—"}
+                      </li>
+                      <li>Teléfono: {data.telefono || "—"}</li>
+                      <li>Email: {data.email || "—"}</li>
+                    </ul>
+                  </div>
 
-Viaje:
-- País de destino: ${"${data.paisDestino}"}
-- Motivo del viaje: ${"${data.motivoViaje}"}
-- Fecha salida: ${"${data.fechaSalida}"} / regreso: ${"${data.fechaRegreso}"}
-- Días de estancia: ${"${data.diasEstancia}"}
-- Invitante: ${"${data.tieneInvitante}"}
-- Quién paga: ${"${data.quienPagaViaje}"}
+                  <div>
+                    <strong>Viaje</strong>
+                    <ul
+                      style={{
+                        margin: "4px 0 0",
+                        paddingLeft: 18,
+                        listStyle: "disc",
+                      }}
+                    >
+                      <li>País destino: {data.paisDestino || "—"}</li>
+                      <li>Motivo: {data.motivoViaje || "—"}</li>
+                      <li>
+                        Salida: {data.fechaSalida || "—"} · Regreso:{" "}
+                        {data.fechaRegreso || "—"}
+                      </li>
+                      <li>Días de estancia: {data.diasEstancia || "—"}</li>
+                      <li>Invitante: {data.tieneInvitante || "—"}</li>
+                      <li>Quién paga: {data.quienPagaViaje || "—"}</li>
+                    </ul>
+                  </div>
 
-Documentos:
-- Pasaporte vigente: ${"${data.tienePasaporteVigente}"}
-- Seguro médico de viaje: ${"${data.tieneSeguro}"}
-- Reservas de vuelo: ${"${data.tieneReservasVuelo}"}
-- Reservas de alojamiento: ${"${data.tieneReservasAlojamiento}"}
+                  <div>
+                    <strong>Documentos</strong>
+                    <ul
+                      style={{
+                        margin: "4px 0 0",
+                        paddingLeft: 18,
+                        listStyle: "disc",
+                      }}
+                    >
+                      <li>
+                        Pasaporte vigente: {data.tienePasaporteVigente || "—"}
+                      </li>
+                      <li>
+                        Seguro médico de viaje: {data.tieneSeguro || "—"}
+                      </li>
+                      <li>
+                        Reservas de vuelo: {data.tieneReservasVuelo || "—"}
+                      </li>
+                      <li>
+                        Reservas de alojamiento:{" "}
+                        {data.tieneReservasAlojamiento || "—"}
+                      </li>
+                    </ul>
+                  </div>
 
-Comentarios:
-${"${data.comentariosAdicionales}"}
-`}
-                </pre>
+                  <div>
+                    <strong>Comentarios</strong>
+                    <p style={{ margin: "4px 0 0" }}>
+                      {data.comentariosAdicionales || "—"}
+                    </p>
+                  </div>
+                </div>
+
                 <p style={styles.pMuted}>
-                  Recuerda que esto no reemplaza los requisitos oficiales ni garantiza
-                  una aprobación. Sirve como apoyo para que prepares mejor tu caso.
+                  Recuerda que esto no reemplaza los requisitos oficiales ni
+                  garantiza una aprobación. Sirve como apoyo para que prepares
+                  mejor tu caso.
                 </p>
               </div>
             )}
@@ -615,7 +724,11 @@ ${"${data.comentariosAdicionales}"}
                   Anterior
                 </button>
                 {step !== "resumen" && (
-                  <button type="button" style={styles.btn} onClick={goNext}>
+                  <button
+                    type="button"
+                    style={styles.btn}
+                    onClick={goNext}
+                  >
                     Siguiente
                   </button>
                 )}

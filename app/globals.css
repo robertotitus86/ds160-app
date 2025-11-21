@@ -1,28 +1,36 @@
-.footer {
-  border-top: 1px solid #0f172a;
-  background: #0c1224;
-  padding: 22px 0;
-  margin-top: 60px;
+/* Reset básico */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.footer-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  text-align: center;
+html,
+body {
+  margin: 0;
+  padding: 0;
 }
 
-.footer small {
-  font-size: 14px;
+/* Estilo base claro para toda la app */
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f3f4f6;        /* gris muy claro */
+  color: #111827;             /* gris casi negro, alto contraste */
 }
 
-.muted {
-  opacity: .7;
+/* Links y botones */
+a {
+  color: inherit;
+  text-decoration: none;
 }
 
-/* Footer */
-.footer { border-top:1px solid #0f172a; padding: 18px 0; background: #0c1224; }
-.footer-row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
-.muted { opacity:.7; }
+button {
+  font: inherit;
+}
 
+/* Evitar scroll horizontal raro */
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}

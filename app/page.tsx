@@ -425,7 +425,8 @@ export default function Page() {
                     width: 8,
                     height: 8,
                     borderRadius: 999,
-                    background: selectedVisa === "usa" ? "#2563eb" : "#059669",
+                    background:
+                      selectedVisa === "usa" ? "#2563eb" : "#059669",
                   }}
                 />
                 <span>
@@ -1038,7 +1039,7 @@ export default function Page() {
           )}
         </section>
 
-        {/* ===================== TESTIMONIOS (TURISMO, SIN ICONOS) ===================== */}
+        {/* ===================== TESTIMONIOS (TURISMO, CON FOTOS CIRCULARES) ===================== */}
         <section
           style={{
             background: "#ffffff",
@@ -1107,7 +1108,7 @@ export default function Page() {
                 >
                   <img
                     src="/images/testimonios/andrea-turismo.jpg"
-                    alt="Persona viajera con enfoque turístico"
+                    alt="Persona viajera en contexto turístico"
                     style={{
                       width: "100%",
                       height: "100%",
@@ -1136,9 +1137,9 @@ export default function Page() {
                 </div>
               </div>
               <p style={{ margin: 0 }}>
-                “Quería viajar a conocer parques y ciudades, pero el formulario
-                me parecía muy complejo. Aquí pude responder en español y ver
-                todo organizado antes de enviarlo.”
+                “Quería viajar a conocer parques y ciudades, pero el formulario me
+                parecía muy complejo. Aquí pude responder en español y ver todo
+                organizado antes de enviarlo.”
               </p>
             </article>
 
@@ -1174,7 +1175,7 @@ export default function Page() {
                 >
                   <img
                     src="/images/testimonios/carlos-turismo.jpg"
-                    alt="Persona viajera con maleta"
+                    alt="Persona viajera con maleta de mano"
                     style={{
                       width: "100%",
                       height: "100%",
@@ -1203,9 +1204,9 @@ export default function Page() {
                 </div>
               </div>
               <p style={{ margin: 0 }}>
-                “Me preocupaba mezclar mal las fechas de viajes anteriores. La
-                guía paso a paso me ayudó a ordenar todo y sentir que el
-                formulario tenía sentido.”
+                “Me preocupaba mezclar mal las fechas de viajes anteriores. La guía
+                paso a paso me ayudó a ordenar todo y sentir que el formulario
+                tenía sentido.”
               </p>
             </article>
 
@@ -1270,9 +1271,9 @@ export default function Page() {
                 </div>
               </div>
               <p style={{ margin: 0 }}>
-                “Para la visa Schengen no sabía por dónde empezar con tantos
-                requisitos. Tener un checklist claro y un resumen del formulario
-                me dio mucha tranquilidad.”
+                “Para la visa Schengen no sabía por dónde empezar con tantos requisitos.
+                Tener un checklist claro y un resumen del formulario me dio mucha
+                tranquilidad.”
               </p>
             </article>
           </div>

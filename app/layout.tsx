@@ -1,128 +1,107 @@
-// app/layout.tsx
 import type { Metadata } from "next";
-import React, { CSSProperties } from "react";
+import React from "react";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DS-160 Asistido · Formulario guiado",
-  description:
-    "Asistente para completar el formulario DS-160 paso a paso. No es asesoría legal.",
+  title: "DS-160 Asistido",
+  description: "Asistente en español para completar tu formulario DS-160 con apoyo guiado.",
 };
 
-type StyleMap = {
-  body: CSSProperties;
-  shell: CSSProperties;
-  navbar: CSSProperties;
-  navInner: CSSProperties;
-  brand: CSSProperties;
-  brandLogo: CSSProperties;
-  brandText: CSSProperties;
-  brandTitle: CSSProperties;
-  brandSub: CSSProperties;
-  navRight: CSSProperties;
-  badge: CSSProperties;
-  main: CSSProperties;
-  footer: CSSProperties;
-  footerInner: CSSProperties;
-};
-
-const styles: StyleMap = {
+const styles = {
   body: {
     margin: 0,
-    fontFamily: "system-ui, -apple-system, BlinkMacSystemFont, sans-serif",
-    backgroundColor: "#f3f4f6", // página gris muy clara
+    background: "#f3f4f6",
     color: "#111827",
-  },
-
+  } as React.CSSProperties,
   shell: {
     minHeight: "100vh",
     display: "flex",
-    flexDirection: "column", // <- YA tipado correctamente
-  },
-
+    flexDirection: "column",
+  } as React.CSSProperties,
   navbar: {
+    background: "#ffffff",
     borderBottom: "1px solid #e5e7eb",
-    backgroundColor: "#ffffff",
+    position: "sticky" as const,
+    top: 0,
+    zIndex: 20,
   },
-
   navInner: {
-    maxWidth: 1100,
+    maxWidth: 1120,
     margin: "0 auto",
-    padding: "10px 16px",
+    padding: "10px 20px",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: 16,
-  },
-
+  } as React.CSSProperties,
   brand: {
     display: "flex",
     alignItems: "center",
     gap: 10,
-  },
-
-  brandLogo: {
-    width: 28,
-    height: 28,
-    borderRadius: "50%",
-    border: "1px solid #e5e7eb",
-    background:
-      "radial-gradient(circle at 30% 30%, #1d4ed8, #1e293b 60%, #020617)",
-  },
-
+  } as React.CSSProperties,
+  brandDot: {
+    width: 26,
+    height: 26,
+    borderRadius: "999px",
+    background: "radial-gradient(circle at 30% 30%, #60a5fa, #1d4ed8)",
+    boxShadow: "0 0 0 2px #e5edff",
+  } as React.CSSProperties,
   brandText: {
     display: "flex",
     flexDirection: "column",
-  },
-
+    fontSize: 13,
+    lineHeight: 1.25,
+  } as React.CSSProperties,
   brandTitle: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: "#111827",
-  },
-
+    fontWeight: 700,
+  } as React.CSSProperties,
   brandSub: {
     fontSize: 11,
     color: "#6b7280",
-  },
-
+  } as React.CSSProperties,
   navRight: {
     display: "flex",
     alignItems: "center",
     gap: 12,
     fontSize: 12,
-    color: "#4b5563",
-  },
-
-  badge: {
-    padding: "3px 8px",
+  } as React.CSSProperties,
+  navPill: {
+    padding: "4px 10px",
     borderRadius: 999,
-    border: "1px solid #e5e7eb",
-    backgroundColor: "#f9fafb",
-    fontSize: 11,
-    color: "#374151",
-  },
-
+    border: "1px solid #d1fae5",
+    background: "#ecfdf3",
+    color: "#047857",
+    fontWeight: 500,
+  } as React.CSSProperties,
+  navLink: {
+    color: "#2563eb",
+    textDecoration: "underline",
+    textUnderlineOffset: 2,
+  } as React.CSSProperties,
   main: {
     flex: 1,
-    maxWidth: 1100,
-    width: "100%",
+    padding: "24px 16px 40px",
+  } as React.CSSProperties,
+  mainInner: {
+    maxWidth: 1120,
     margin: "0 auto",
-    padding: "20px 16px 40px",
-  },
-
+  } as React.CSSProperties,
   footer: {
     borderTop: "1px solid #e5e7eb",
-    backgroundColor: "#ffffff",
-    padding: "10px 16px",
-    fontSize: 11,
+    background: "#ffffff",
+    padding: "14px 16px",
+    fontSize: 12,
     color: "#6b7280",
-    textAlign: "center",
-  },
-
+  } as React.CSSProperties,
   footerInner: {
-    maxWidth: 1100,
+    maxWidth: 1120,
     margin: "0 auto",
-  },
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 10,
+    flexWrap: "wrap" as const,
+  } as React.CSSProperties,
 };
 
 export default function RootLayout({
@@ -136,9 +115,8 @@ export default function RootLayout({
         <div style={styles.shell}>
           <header style={styles.navbar}>
             <div style={styles.navInner}>
-              {/* Marca / “tipo embajada” */}
               <div style={styles.brand}>
-                <div style={styles.brandLogo} />
+                <div style={styles.brandDot} />
                 <div style={styles.brandText}>
                   <span style={styles.brandTitle}>DS-160 Asistido</span>
                   <span style={styles.brandSub}>
@@ -146,22 +124,28 @@ export default function RootLayout({
                   </span>
                 </div>
               </div>
-
               <div style={styles.navRight}>
-                <span style={styles.badge}>Sitio seguro</span>
-                <span>Soporte por WhatsApp y correo</span>
+                <span style={styles.navPill}>Sitio seguro</span>
+                <a
+                  href="https://wa.me/593987846751"
+                  target="_blank"
+                  rel="noreferrer"
+                  style={styles.navLink}
+                >
+                  Soporte por WhatsApp y correo
+                </a>
               </div>
             </div>
           </header>
 
-          <main style={styles.main}>{children}</main>
+          <main style={styles.main}>
+            <div style={styles.mainInner}>{children}</div>
+          </main>
 
           <footer style={styles.footer}>
             <div style={styles.footerInner}>
-              © 2025 · DS-160 Asistido · Esta plataforma no es asesoría legal ni
-              reemplaza la consulta con un abogado de inmigración. Verifica
-              siempre en CEAC y en el sitio oficial del Departamento de Estado
-              de EE. UU.
+              <span>© {new Date().getFullYear()} · DS-160 Asistido</span>
+              <span>No es asesoría legal. Verifica siempre en CEAC.</span>
             </div>
           </footer>
         </div>

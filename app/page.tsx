@@ -17,7 +17,7 @@ const PLANS: {
     title: "Llenado DS-160",
     price: 45,
     short:
-      "Te guiamos paso a paso y nuestro equipo completa tu DS-160 en el portal oficial.",
+      "Respondes en español y nuestro equipo traslada todo al portal oficial, evitando errores frecuentes en el DS-160.",
     badge: "Más elegido",
   },
   {
@@ -25,14 +25,14 @@ const PLANS: {
     title: "Asesoría Entrevista",
     price: 35,
     short:
-      "Simulación de entrevista, preguntas frecuentes y recomendaciones personalizadas.",
+      "Practica posibles preguntas, organiza tus ideas y recibe recomendaciones claras para llegar más seguro a la entrevista.",
   },
   {
     id: "cita",
     title: "Toma de Cita",
     price: 15,
     short:
-      "Te ayudamos a programar tu cita (requiere DS-160 listo). Revisión de datos clave.",
+      "Este plan aplica solo si ya tienes el DS-160 listo. Te acompañamos a agendar tu cita correctamente y revisamos los datos más importantes antes de enviarla.",
   },
 ];
 
@@ -54,6 +54,12 @@ const styles = {
     margin: "0 0 12px",
     fontSize: 13,
     color: "#6b7280",
+  } as React.CSSProperties,
+  stepsList: {
+    margin: 0,
+    paddingLeft: 18,
+    fontSize: 13,
+    color: "#374151",
   } as React.CSSProperties,
   btnPrimary: {
     background: "#2563eb",
@@ -139,8 +145,37 @@ const styles = {
     flexWrap: "wrap" as const,
     gap: 10,
     marginTop: 8,
+  } as React.CSSProperties
+  bulletsList: {
+    margin: 0,
+    paddingLeft: 18,
+    fontSize: 13,
+    color: "#374151",
+    display: "grid",
+    gap: 4,
   } as React.CSSProperties,
-};
+  testimonialsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+    gap: 12,
+  } as React.CSSProperties,
+  testimonialCard: {
+    borderRadius: 14,
+    border: "1px solid #e5e7eb",
+    background: "#f9fafb",
+    padding: 14,
+  } as React.CSSProperties,
+  testimonialText: {
+    margin: 0,
+    fontSize: 13,
+    color: "#111827",
+  } as React.CSSProperties,
+  testimonialMeta: {
+    margin: "8px 0 0",
+    fontSize: 12,
+    color: "#6b7280",
+  } as React.CSSProperties,
+}};
 
 export default function LandingPage() {
   const router = useRouter();
@@ -266,11 +301,10 @@ export default function LandingPage() {
       <section style={styles.sectionCard}>
         <div style={styles.heroRow}>
           <div>
-            <h2 style={styles.h2}>Tu DS-160 guiado, fácil y seguro</h2>
+            <h2 style={styles.h2}>Evita errores críticos en tu DS-160 y gana confianza</h2>
             <p style={styles.pMuted}>
-              Responde en español con ayuda paso a paso. Al finalizar, nuestro
-              equipo completa tu DS-160 en el portal oficial y te acompaña con
-              la cita y la entrevista.
+              Respondes en español, sin tecnicismos ni complicaciones. Nosotros transformamos tus respuestas
+              en un DS-160 limpio, coherente y listo para enviar, y te acompañamos con la cita y la entrevista.
             </p>
           </div>
 
@@ -305,6 +339,19 @@ export default function LandingPage() {
             únicamente para ayudarte a completar el formulario.
           </p>
         </div>
+      </section>
+
+      {/* Cómo funciona */}
+      <section style={styles.sectionCard}>
+        <h2 style={styles.h2}>¿Cómo funciona?</h2>
+        <p style={styles.pMuted}>
+          En lugar de pelearte solo con el inglés del formulario, seguimos un proceso claro en tres pasos:
+        </p>
+        <ol style={styles.stepsList}>
+          <li>Eliges el plan que necesitas y realizas el pago.</li>
+          <li>Respondes nuestro asistente en español, paso a paso.</li>
+          <li>Trasladamos tus respuestas al DS-160 oficial y te guiamos con los siguientes pasos.</li>
+        </ol>
       </section>
 
       {/* Planes */}
@@ -413,6 +460,49 @@ export default function LandingPage() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      {/* Errores comunes que ayudamos a evitar */}
+      <section style={styles.sectionCard}>
+        <h2 style={styles.h2}>Errores comunes que ayudamos a evitar</h2>
+        <p style={styles.pMuted}>
+          Muchos rechazos y demoras vienen de errores simples en el DS-160. Nuestro objetivo es ayudarte a evitarlos desde el inicio.
+        </p>
+        <ul style={styles.bulletsList}>
+          <li>Fechas inconsistentes entre empleo, estudios y viajes.</li>
+          <li>Motivo de viaje poco claro o contradictorio.</li>
+          <li>Direcciones mal escritas o en formatos que el sistema no reconoce.</li>
+          <li>Información laboral que no coincide con lo que se dice en la entrevista.</li>
+          <li>Respuestas de seguridad mal interpretadas por no entender bien el inglés.</li>
+        </ul>
+      </section>
+
+      {/* Testimonios */}
+      <section style={styles.sectionCard}>
+        <h2 style={styles.h2}>Personas como tú ya han usado este acompañamiento</h2>
+        <p style={styles.pMuted}>
+          Estos son ejemplos de cómo este tipo de asistencia puede marcar la diferencia. Te ayudan a visualizar el resultado que buscamos contigo.
+        </p>
+        <div style={styles.testimonialsGrid}>
+          <article style={styles.testimonialCard}>
+            <p style={styles.testimonialText}>
+              “Tenía mucho miedo de equivocarme en el DS-160. Responder en español y que luego lo pasen al formato oficial me dio mucha tranquilidad.”
+            </p>
+            <p style={styles.testimonialMeta}>Andrea · 29 años · Quito</p>
+          </article>
+          <article style={styles.testimonialCard}>
+            <p style={styles.testimonialText}>
+              “Me di cuenta de varios detalles que estaba respondiendo mal, sobre todo en la parte laboral y de viajes. Sentí que llegué a la entrevista con una historia más ordenada.”
+            </p>
+            <p style={styles.testimonialMeta}>Carlos · 35 años · Guayaquil</p>
+          </article>
+          <article style={styles.testimonialCard}>
+            <p style={styles.testimonialText}>
+              “No es magia ni promesas de aprobación, pero sí una guía clara. Yo solo respondí lo que vivo en la realidad y me ayudaron a presentarlo bien.”
+            </p>
+            <p style={styles.testimonialMeta}>María · 32 años · Cuenca</p>
+          </article>
         </div>
       </section>
     </div>

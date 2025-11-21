@@ -120,7 +120,7 @@ export default function RootLayout({
                 <div style={styles.brandText}>
                   <span style={styles.brandTitle}>DS-160 Asistido</span>
                   <span style={styles.brandSub}>
-                    Plataforma privada · No es el sitio oficial
+                    Plataforma privada de acompañamiento · No es el sitio oficial
                   </span>
                 </div>
               </div>

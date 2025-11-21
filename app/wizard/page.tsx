@@ -130,6 +130,12 @@ const styles = {
     color: '#111827',
   } as React.CSSProperties,
   help: { fontSize: 12, opacity: 0.75, marginTop: 6 },
+  stepIntro: {
+    marginTop: 4,
+    marginBottom: 16,
+    fontSize: 13,
+    color: '#4b5563',
+  } as React.CSSProperties,
   actions: { display: 'flex', gap: 10, flexWrap: 'wrap' as const },
     btn: {
     background: '#2563eb',
@@ -208,17 +214,36 @@ export default function WizardPage() {
   const [step, setStep] = useState<StepKey>('personales');
   const steps: { key: StepKey; title: string }[] = useMemo(
     () => [
-      { key: 'personales', title: 'Personales' },
-      { key: 'pasaporte',  title: 'Pasaporte' },
-      { key: 'contacto',   title: 'Contacto' },
-      { key: 'viaje',      title: 'Viaje' },
-      { key: 'empleo',     title: 'Empleo/Educación' },
-      { key: 'viajes',     title: 'Hist. viajes' },
-      { key: 'familia',    title: 'Familia' },
-      { key: 'seguridad',  title: 'Seguridad' },
+      { key: 'personales', title: '1. Datos personales' },
+      { key: 'pasaporte',  title: '2. Pasaporte' },
+      { key: 'contacto',   title: '3. Contacto y domicilio' },
+      { key: 'viaje',      title: '4. Detalles del viaje' },
+      { key: 'empleo',     title: '5. Empleo y estudios' },
+      { key: 'viajes',     title: '6. Historial de viajes' },
+      { key: 'familia',    title: '7. Familia' },
+      { key: 'seguridad',  title: '8. Seguridad' },
     ],
     []
   );
+
+  const STEP_INTROS: Record<StepKey, string> = {
+    personales:
+      'Empezamos con tus datos básicos tal como aparecen en tu pasaporte. No te preocupes, podrás revisar todo antes de enviarlo.',
+    pasaporte:
+      'Aquí copiamos los datos de tu pasaporte exactamente como están impresos para evitar errores en el sistema.',
+    contacto:
+      'Registramos tus datos de contacto y dirección actual para que la Embajada pueda ubicarte si es necesario.',
+    viaje:
+      'Definimos el motivo de tu viaje, fechas tentativas y lugar de estadía, tal como lo pide el DS-160.',
+    empleo:
+      'Contamos tu situación laboral y estudios de forma clara y coherente con tu realidad actual.',
+    viajes:
+      'Anotamos tus viajes previos, especialmente a EE.UU., si los tienes, de forma ordenada y sencilla.',
+    familia:
+      'Agregamos la información de tu familia y contactos en EE.UU., si aplica, con los datos que conozcas.',
+    seguridad:
+      'Revisamos con calma las preguntas de seguridad para que respondas con confianza y sin confusiones.',
+  };
 
   // Cargar / Guardar
   useEffect(() => {
@@ -423,6 +448,7 @@ export default function WizardPage() {
         <h2 style={{ marginTop: 0 }}>
           {steps.find((s) => s.key === step)?.title}
         </h2>
+        <p style={styles.stepIntro}>{STEP_INTROS[step]}</p>
 
         {/* 1) PERSONALES */}
         {step === 'personales' && (

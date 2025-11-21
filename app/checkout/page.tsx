@@ -305,7 +305,7 @@ function CheckoutInner() {
     }
 
     if (method === "deuna") {
-      if (!deunaChecked) out.push("Marca que confirmas tu pago con Deuna (QR).");
+      if (!deunaChecked) out.push("Marca que confirmas tu pago con Pago con QR / PayPhone (recomendado).");
       if (!deunaRef && !deunaFile) {
         out.push(
           "En Deuna ingresa una referencia o adjunta el comprobante de pago."
@@ -405,7 +405,7 @@ function CheckoutInner() {
         <div style={css.wrapper}>
           <div style={css.inner}>
             <div style={css.card}>
-              <h2 style={{ marginTop: 0, color: "#111827" }}>Checkout</h2>
+              <h2 style={{ marginTop: 0, color: "#111827" }}>Confirmar y pagar tu acompañamiento</h2>
               <p style={{ color: "#4b5563" }}>No hay servicios seleccionados.</p>
               <a href="/" style={css.btn}>
                 Volver a servicios
@@ -613,7 +613,7 @@ function CheckoutInner() {
                 style={css.tab(method === "deuna")}
                 onClick={() => setMethod("deuna")}
               >
-                Deuna (QR)
+                Pago con QR / PayPhone (recomendado)
               </button>
               <button
                 style={css.tab(method === "transferencia")}
@@ -642,7 +642,7 @@ function CheckoutInner() {
           {method === "deuna" && (
             <section style={css.card}>
               <h3 style={{ marginTop: 0, color: "#111827" }}>
-                Pago con Deuna (QR)
+                Pago con Pago con QR / PayPhone (recomendado)
               </h3>
               <div
                 style={{
@@ -688,7 +688,7 @@ function CheckoutInner() {
                       checked={deunaChecked}
                       onChange={(e) => setDeunaChecked(e.target.checked)}
                     />
-                    Confirmo que pagué con Deuna (QR) por el total indicado
+                    Confirmo que pagué con Pago con QR / PayPhone (recomendado) por el total indicado
                   </label>
 
                   <div>

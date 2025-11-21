@@ -42,6 +42,7 @@ export default function Page() {
             }}
           >
             <div>
+              {/* Badge superior */}
               <div
                 style={{
                   display: "inline-flex",
@@ -54,9 +55,23 @@ export default function Page() {
                   marginBottom: 10,
                 }}
               >
-                <span style={{ fontSize: 14 }}>🛂</span>
-                <span style={{ fontSize: 12, color: "#1d4ed8" }}>
-                  Acompañamiento para visas USA y Europa
+                <div
+                  style={{
+                    width: 16,
+                    height: 16,
+                    borderRadius: 4,
+                    background:
+                      "linear-gradient(135deg, #2563eb 0%, #0f766e 100%)",
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 500,
+                    color: "#1d4ed8",
+                  }}
+                >
+                  Acompañamiento para visas de Estados Unidos y Europa
                 </span>
               </div>
 
@@ -68,7 +83,8 @@ export default function Page() {
                   color: "#111827",
                 }}
               >
-                Convierte la ansiedad del trámite de visa en claridad y seguridad
+                Organiza tu trámite de visa con claridad, orden y acompañamiento
+                experto
               </h1>
 
               <p
@@ -79,7 +95,7 @@ export default function Page() {
                   lineHeight: 1.5,
                 }}
               >
-                Te guiamos paso a paso con instrucciones claras y en tu idioma.
+                Procesos guiados, sin confusión y adaptados a tu tipo de viaje.
               </p>
 
               <p
@@ -101,7 +117,7 @@ export default function Page() {
                   fontWeight: 500,
                 }}
               >
-                ¿A dónde viajas?
+                ¿A dónde vas a viajar?
               </p>
 
               {/* Selector de tipo de visa */}
@@ -128,6 +144,7 @@ export default function Page() {
                     cursor: "pointer",
                     display: "grid",
                     gap: 6,
+                    transition: "border-color 0.15s, background 0.15s",
                   }}
                 >
                   <div
@@ -137,7 +154,22 @@ export default function Page() {
                       gap: 8,
                     }}
                   >
-                    <span style={{ fontSize: 18 }}>🇺🇸</span>
+                    <div
+                      style={{
+                        width: 22,
+                        height: 22,
+                        borderRadius: 999,
+                        border: "2px solid #1d4ed8",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#1d4ed8",
+                      }}
+                    >
+                      US
+                    </div>
                     <span
                       style={{
                         fontSize: 13,
@@ -174,6 +206,7 @@ export default function Page() {
                     cursor: "pointer",
                     display: "grid",
                     gap: 6,
+                    transition: "border-color 0.15s, background 0.15s",
                   }}
                 >
                   <div
@@ -183,7 +216,22 @@ export default function Page() {
                       gap: 8,
                     }}
                   >
-                    <span style={{ fontSize: 18 }}>🇪🇺</span>
+                    <div
+                      style={{
+                        width: 22,
+                        height: 22,
+                        borderRadius: 999,
+                        border: "2px solid #047857",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#047857",
+                      }}
+                    >
+                      EU
+                    </div>
                     <span
                       style={{
                         fontSize: 13,
@@ -226,10 +274,25 @@ export default function Page() {
                   gap: 8,
                 }}
               >
-                <span style={{ fontSize: 20 }}>💬</span>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    background: "#eff6ff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "#1d4ed8",
+                  }}
+                >
+                  1
+                </div>
                 <div>
                   <strong style={{ display: "block", marginBottom: 2 }}>
-                    1. Respondes en español
+                    Respondes en español
                   </strong>
                   Usamos lenguaje claro, sin tecnicismos legales ni confusión.
                 </div>
@@ -247,10 +310,25 @@ export default function Page() {
                   gap: 8,
                 }}
               >
-                <span style={{ fontSize: 20 }}>🧩</span>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    background: "#f3f4f6",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "#374151",
+                  }}
+                >
+                  2
+                </div>
                 <div>
                   <strong style={{ display: "block", marginBottom: 2 }}>
-                    2. Ordenamos tu información
+                    Ordenamos tu información
                   </strong>
                   Revisamos coherencia entre empleo, ingresos, viajes y motivo.
                 </div>
@@ -259,7 +337,7 @@ export default function Page() {
               <article
                 style={{
                   borderRadius: 14,
-                  border: "1px solid #e5e7eb",
+                  border: "1px solid #d1fae5",
                   padding: 12,
                   background: "#ecfdf5",
                   fontSize: 12,
@@ -268,10 +346,25 @@ export default function Page() {
                   gap: 8,
                 }}
               >
-                <span style={{ fontSize: 20 }}>✅</span>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 999,
+                    background: "#bbf7d0",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color: "#166534",
+                  }}
+                >
+                  3
+                </div>
                 <div>
                   <strong style={{ display: "block", marginBottom: 2 }}>
-                    3. Llegas con más seguridad
+                    Llegas con más seguridad
                   </strong>
                   Obtienes datos claros para llenar el formulario oficial y
                   prepararte mejor para la entrevista.
@@ -332,8 +425,7 @@ export default function Page() {
                     width: 8,
                     height: 8,
                     borderRadius: 999,
-                    background:
-                      selectedVisa === "usa" ? "#2563eb" : "#059669",
+                    background: selectedVisa === "usa" ? "#2563eb" : "#059669",
                   }}
                 />
                 <span>
@@ -356,7 +448,7 @@ export default function Page() {
                 border: "1px solid #e5e7eb",
               }}
             >
-              🎯 Tip: puedes cambiar de destino cuando quieras
+              Puedes cambiar de destino en cualquier momento
             </span>
           </div>
 
@@ -392,15 +484,24 @@ export default function Page() {
                     border: "1px solid #bfdbfe",
                   }}
                 >
-                  ⭐ Más elegido
+                  Plan más elegido
                 </span>
                 <div
                   style={{
-                    fontSize: 22,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 10,
+                    background: "#2563eb1a",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#1d4ed8",
                     marginBottom: 4,
                   }}
                 >
-                  📝
+                  DS
                 </div>
                 <h3
                   style={{
@@ -418,8 +519,9 @@ export default function Page() {
                     color: "#4b5563",
                   }}
                 >
-                  Respondes en español y te ayudamos a estructurarlo en el
-                  formulario oficial, evitando errores frecuentes.
+                  Respondes en español y te ayudamos a estructurar la
+                  información en el formulario oficial, evitando errores
+                  frecuentes.
                 </p>
                 <ul
                   style={{
@@ -431,8 +533,8 @@ export default function Page() {
                     gap: 2,
                   }}
                 >
-                  <li>Revisión de coherencia en fechas y datos.</li>
-                  <li>Ayuda con campos que suelen generar dudas.</li>
+                  <li>Revisión de coherencia en fechas y datos clave.</li>
+                  <li>Apoyo en secciones que suelen generar confusión.</li>
                 </ul>
                 <div
                   style={{
@@ -478,11 +580,20 @@ export default function Page() {
               >
                 <div
                   style={{
-                    fontSize: 22,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 10,
+                    background: "#1118270d",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#111827",
                     marginBottom: 4,
                   }}
                 >
-                  🎤
+                  EN
                 </div>
                 <h3
                   style={{
@@ -514,7 +625,7 @@ export default function Page() {
                   }}
                 >
                   <li>Simulación de entrevista en español.</li>
-                  <li>Feedback sobre claridad y coherencia.</li>
+                  <li>Comentarios sobre claridad y coherencia.</li>
                 </ul>
                 <div
                   style={{
@@ -560,11 +671,20 @@ export default function Page() {
               >
                 <div
                   style={{
-                    fontSize: 22,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 10,
+                    background: "#f9731615",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#c2410c",
                     marginBottom: 4,
                   }}
                 >
-                  📅
+                  CT
                 </div>
                 <h3
                   style={{
@@ -595,7 +715,7 @@ export default function Page() {
                     gap: 2,
                   }}
                 >
-                  <li>Revisión de datos clave antes de agendar.</li>
+                  <li>Revisión rápida de datos antes de agendar.</li>
                   <li>Apoyo para evitar errores en el sistema.</li>
                 </ul>
                 <div
@@ -653,11 +773,20 @@ export default function Page() {
               >
                 <div
                   style={{
-                    fontSize: 22,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 10,
+                    background: "#0478571a",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#047857",
                     marginBottom: 4,
                   }}
                 >
-                  📋
+                  RQ
                 </div>
                 <h3
                   style={{
@@ -676,7 +805,7 @@ export default function Page() {
                   }}
                 >
                   Checklist personalizado de documentos mínimos según tu tipo de
-                  viaje.
+                  viaje turístico.
                 </p>
                 <ul
                   style={{
@@ -736,11 +865,20 @@ export default function Page() {
               >
                 <div
                   style={{
-                    fontSize: 22,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 10,
+                    background: "#0f766e15",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#0f766e",
                     marginBottom: 4,
                   }}
                 >
-                  ✍️
+                  FR
                 </div>
                 <h3
                   style={{
@@ -771,7 +909,7 @@ export default function Page() {
                     gap: 2,
                   }}
                 >
-                  <li>Apoyo en secciones que suelen generar confusión.</li>
+                  <li>Apoyo en secciones que generan dudas.</li>
                   <li>Revisión general de consistencia.</li>
                 </ul>
                 <div
@@ -818,11 +956,20 @@ export default function Page() {
               >
                 <div
                   style={{
-                    fontSize: 22,
+                    width: 32,
+                    height: 32,
+                    borderRadius: 10,
+                    background: "#04785710",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: "#047857",
                     marginBottom: 4,
                   }}
                 >
-                  🌍
+                  AC
                 </div>
                 <h3
                   style={{
@@ -841,7 +988,7 @@ export default function Page() {
                   }}
                 >
                   Requisitos, estructura de tu caso y acompañamiento en todo el
-                  proceso de solicitud.
+                  proceso de solicitud de visa turística.
                 </p>
                 <ul
                   style={{
@@ -854,7 +1001,7 @@ export default function Page() {
                   }}
                 >
                   <li>Guía integral desde el inicio hasta la entrega.</li>
-                  <li>Enfoque en claridad y orden de tu caso.</li>
+                  <li>Enfoque en claridad y orden de tu viaje.</li>
                 </ul>
                 <div
                   style={{
@@ -891,7 +1038,7 @@ export default function Page() {
           )}
         </section>
 
-        {/* ===================== TESTIMONIOS CON ICONOS ===================== */}
+        {/* ===================== TESTIMONIOS (TURISMO, SIN ICONOS) ===================== */}
         <section
           style={{
             background: "#ffffff",
@@ -908,7 +1055,7 @@ export default function Page() {
               fontWeight: 700,
             }}
           >
-            Personas latinas que ya usaron este acompañamiento
+            Viajeros que prepararon mejor su trámite de visa
           </h2>
           <p
             style={{
@@ -917,8 +1064,8 @@ export default function Page() {
               color: "#4b5563",
             }}
           >
-            Testimonios de personas de Ecuador que prepararon su trámite de visa
-            con más calma y claridad.
+            Historias reales de personas que organizaron su información antes de
+            solicitar su visa de turismo.
           </p>
 
           <div
@@ -950,17 +1097,24 @@ export default function Page() {
               >
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 999,
-                    background: "#eff6ff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 20,
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "#e5e7eb",
+                    flexShrink: 0,
                   }}
                 >
-                  👩
+                  <img
+                    src="/images/testimonios/andrea-turismo.jpg"
+                    alt="Persona viajera con enfoque turístico"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
                 </div>
                 <div>
                   <strong
@@ -969,7 +1123,7 @@ export default function Page() {
                       fontSize: 13,
                     }}
                   >
-                    Andrea · 29 años · Quito
+                    Andrea M.
                   </strong>
                   <span
                     style={{
@@ -977,27 +1131,15 @@ export default function Page() {
                       color: "#6b7280",
                     }}
                   >
-                    Visa Estados Unidos · DS-160 + entrevista
+                    Viaje de turismo a Estados Unidos
                   </span>
                 </div>
               </div>
               <p style={{ margin: 0 }}>
-                “Tenía mucho miedo de equivocarme en el DS-160. Responder en
-                español y que luego me ayuden a organizar todo me dio
-                tranquilidad para ir a la entrevista.”
+                “Quería viajar a conocer parques y ciudades, pero el formulario
+                me parecía muy complejo. Aquí pude responder en español y ver
+                todo organizado antes de enviarlo.”
               </p>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#6b7280",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <span>✈️</span>
-                <span>Objetivo: turismo y visita familiar</span>
-              </div>
             </article>
 
             {/* Testimonio 2 */}
@@ -1022,17 +1164,24 @@ export default function Page() {
               >
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 999,
-                    background: "#fef3c7",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 20,
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "#e5e7eb",
+                    flexShrink: 0,
                   }}
                 >
-                  👨
+                  <img
+                    src="/images/testimonios/carlos-turismo.jpg"
+                    alt="Persona viajera con maleta"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
                 </div>
                 <div>
                   <strong
@@ -1041,7 +1190,7 @@ export default function Page() {
                       fontSize: 13,
                     }}
                   >
-                    Carlos · 35 años · Guayaquil
+                    Carlos R.
                   </strong>
                   <span
                     style={{
@@ -1049,27 +1198,15 @@ export default function Page() {
                       color: "#6b7280",
                     }}
                   >
-                    Visa Estados Unidos · DS-160 + cita
+                    Turismo y compras en Miami
                   </span>
                 </div>
               </div>
               <p style={{ margin: 0 }}>
-                “Yo ya había intentado entender el formulario solo y era un
-                caos. Aquí pude ordenar las fechas de trabajo, viajes y todo se
-                veía más coherente.”
+                “Me preocupaba mezclar mal las fechas de viajes anteriores. La
+                guía paso a paso me ayudó a ordenar todo y sentir que el
+                formulario tenía sentido.”
               </p>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#6b7280",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <span>🧳</span>
-                <span>Objetivo: viaje de negocios corto</span>
-              </div>
             </article>
 
             {/* Testimonio 3 */}
@@ -1094,17 +1231,24 @@ export default function Page() {
               >
                 <div
                   style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 999,
-                    background: "#ede9fe",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 20,
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "#e5e7eb",
+                    flexShrink: 0,
                   }}
                 >
-                  👩‍💼
+                  <img
+                    src="/images/testimonios/maria-europa.jpg"
+                    alt="Persona turista en ciudad europea"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
                 </div>
                 <div>
                   <strong
@@ -1113,7 +1257,7 @@ export default function Page() {
                       fontSize: 13,
                     }}
                   >
-                    María · 32 años · Cuenca
+                    María S.
                   </strong>
                   <span
                     style={{
@@ -1121,27 +1265,15 @@ export default function Page() {
                       color: "#6b7280",
                     }}
                   >
-                    Visa Schengen · requisitos + formulario
+                    Tour turístico por varias ciudades de Europa
                   </span>
                 </div>
               </div>
               <p style={{ margin: 0 }}>
-                “No prometen aprobaciones mágicas, pero sí una guía clara. Sentí
-                que mi caso estaba mejor explicado y eso me dio mucha paz
-                mental.”
+                “Para la visa Schengen no sabía por dónde empezar con tantos
+                requisitos. Tener un checklist claro y un resumen del formulario
+                me dio mucha tranquilidad.”
               </p>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "#6b7280",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 4,
-                }}
-              >
-                <span>🌍</span>
-                <span>Objetivo: viaje por varias ciudades de Europa</span>
-              </div>
             </article>
           </div>
         </section>

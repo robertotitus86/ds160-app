@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 export default function Page() {
@@ -12,24 +14,66 @@ export default function Page() {
           boxShadow: "0 8px 18px rgba(15, 23, 42, 0.04)",
         }}
       >
-        <h1 style={ margin: "0 0 12px", fontSize: 22, fontWeight: 700 }>
+        <h1
+          style={{
+            margin: "0 0 12px",
+            fontSize: 22,
+            fontWeight: 700,
+          }}
+        >
           Cómo prepararte para la entrevista de visa de EE.UU.
         </h1>
+
         <p
-          style={{ margin: "0 0 12px", fontSize: 14, color: "#4b5563" }}
+          style={{
+            margin: "0 0 12px",
+            fontSize: 14,
+            color: "#4b5563",
+          }}
         >
-          La entrevista es el momento donde tu historia se conecta con lo que escribiste en el DS-160. Estas recomendaciones te ayudarán a llegar más tranquilo y organizado.
+          La entrevista es el momento en el que el oficial consular contrasta lo
+          que ve en tu DS-160 con lo que dices y cómo lo dices. No se trata de
+          memorizar respuestas, sino de explicar tu situación con claridad.
         </p>
-        <p style={{ margin: "0 0 8px", fontSize: 14, color: "#4b5563" }}>
-          Esta página forma parte de la información general sobre el proceso de
-          visa y no reemplaza la revisión personalizada de tu caso. Siempre debes
-          contrastar esta información con las indicaciones oficiales de la
-          Embajada y del formulario DS-160.
+
+        <p
+          style={{
+            margin: "0 0 8px",
+            fontSize: 14,
+            color: "#4b5563",
+          }}
+        >
+          Prepararte significa:
         </p>
-        <p style={{ margin: "0 0 8px", fontSize: 14, color: "#4b5563" }}>
-          Nuestro asistente en español está diseñado para ayudarte a expresar tu
-          situación real de forma clara y coherente, y luego trasladar esa
-          información al formato oficial del DS-160.
+
+        <ul
+          style={{
+            margin: 0,
+            paddingLeft: 18,
+            fontSize: 14,
+            color: "#374151",
+            display: "grid",
+            gap: 4,
+          }}
+        >
+          <li>Entender bien lo que declaraste en tu DS-160.</li>
+          <li>Saber explicar tu motivo de viaje en 1–2 frases claras.</li>
+          <li>Tener coherencia entre tu empleo, ingresos y plan de viaje.</li>
+          <li>
+            Estar listo para responder sobre tu arraigo y motivos para regresar a
+            tu país.
+          </li>
+        </ul>
+
+        <p
+          style={{
+            margin: "12px 0 0",
+            fontSize: 14,
+            color: "#4b5563",
+          }}
+        >
+          Una buena asesoría no te da un libreto, sino que te ayuda a ordenar tu
+          propia historia para que puedas explicarla sin contradicciones.
         </p>
       </section>
     </div>

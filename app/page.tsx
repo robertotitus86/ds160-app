@@ -1,151 +1,43 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-
-type PlanId = "llenado" | "asesoria" | "cita";
-
-const PLANS: {
-  id: PlanId;
-  title: string;
-  price: number;
-  short: string;
-  badge?: string;
-}[] = [
-  {
-    id: "llenado",
-    title: "Llenado DS-160",
-    price: 45,
-    short:
-      "Respondes en español y nuestro equipo traslada todo al portal oficial, evitando errores frecuentes en el DS-160.",
-    badge: "Más elegido",
-  },
-  {
-    id: "asesoria",
-    title: "Asesoría Entrevista",
-    price: 35,
-    short:
-      "Practica posibles preguntas, organiza tus ideas y recibe recomendaciones claras para llegar más seguro a la entrevista.",
-  },
-  {
-    id: "cita",
-    title: "Toma de Cita",
-    price: 15,
-    short:
-      "Este plan aplica solo si ya tienes el DS-160 listo. Te acompañamos a agendar tu cita correctamente y revisamos los datos más importantes antes de enviarla.",
-  },
-];
+import React from "react";
+import Link from "next/link";
 
 const styles = {
-  sectionCard: {
+  wrapper: {
+    display: "grid",
+    gap: 24,
+  } as React.CSSProperties,
+
+  card: {
     background: "#ffffff",
-    borderRadius: 16,
+    borderRadius: 20,
     border: "1px solid #e5e7eb",
     padding: 20,
-    marginBottom: 16,
     boxShadow: "0 8px 18px rgba(15, 23, 42, 0.04)",
   } as React.CSSProperties,
-  h2: {
+
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: 700,
     margin: "0 0 8px",
-    fontSize: 20,
-    fontWeight: 700,
-  } as React.CSSProperties,
-  pMuted: {
-    margin: "0 0 12px",
-    fontSize: 13,
-    color: "#6b7280",
-  } as React.CSSProperties,
-  stepsList: {
-    margin: 0,
-    paddingLeft: 18,
-    fontSize: 13,
-    color: "#374151",
-  } as React.CSSProperties,
-  btnPrimary: {
-    background: "#2563eb",
-    borderRadius: 999,
-    border: "none",
-    padding: "9px 16px",
-    color: "#ffffff",
-    fontWeight: 600,
-    cursor: "pointer",
-    fontSize: 14,
-  } as React.CSSProperties,
-  btnOutline: {
-    background: "#ffffff",
-    borderRadius: 999,
-    border: "1px solid #d1d5db",
-    padding: "9px 16px",
     color: "#111827",
-    fontWeight: 500,
-    cursor: "pointer",
-    fontSize: 14,
   } as React.CSSProperties,
-  btnGhost: {
-    borderRadius: 999,
-    border: "none",
-    padding: "6px 12px",
-    background: "#f3f4f6",
-    cursor: "pointer",
-    fontSize: 12,
-    color: "#374151",
+
+  heroSubtitle: {
+    fontSize: 15,
+    color: "#4b5563",
+    margin: "0 0 16px",
+    lineHeight: 1.5,
   } as React.CSSProperties,
-  badge: {
-    fontSize: 11,
-    padding: "3px 8px",
-    borderRadius: 999,
-    background: "#eff6ff",
-    color: "#1d4ed8",
-    fontWeight: 600,
-  } as React.CSSProperties,
-  plansGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-    gap: 16,
-  } as React.CSSProperties,
-  planCard: {
-    background: "#ffffff",
-    borderRadius: 16,
-    border: "1px solid #e5e7eb",
-    padding: 18,
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-  } as React.CSSProperties,
-  price: {
-    fontSize: 18,
-    fontWeight: 700,
-  } as React.CSSProperties,
-  cartBar: {
-    background: "#eff6ff",
-    borderRadius: 999,
-    padding: "10px 14px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-    border: "1px solid #bfdbfe",
-  } as React.CSSProperties,
-  cartLeft: {
-    display: "flex",
-    flexDirection: "column",
-    fontSize: 13,
-    gap: 2,
-  } as React.CSSProperties,
-  cartItems: {
-    fontWeight: 500,
-  } as React.CSSProperties,
-  heroRow: {
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 16,
-  } as React.CSSProperties,
+
   heroButtonsRow: {
     display: "flex",
-    flexWrap: "wrap" as const,
+    flexWrap: "wrap",
     gap: 10,
     marginTop: 8,
-  } as React.CSSProperties
+  } as React.CSSProperties,  // ← AQUÍ ESTABA EL ERROR, COMA AÑADIDA
+
   bulletsList: {
     margin: 0,
     paddingLeft: 18,
@@ -154,358 +46,126 @@ const styles = {
     display: "grid",
     gap: 4,
   } as React.CSSProperties,
-  testimonialsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-    gap: 12,
+
+  h2: {
+    fontSize: 20,
+    fontWeight: 700,
+    margin: "0 0 12px",
   } as React.CSSProperties,
-  testimonialCard: {
-    borderRadius: 14,
-    border: "1px solid #e5e7eb",
-    background: "#f9fafb",
-    padding: 14,
+
+  testimonial: {
+    borderLeft: "4px solid #3b82f6",
+    paddingLeft: 12,
+    fontSize: 14,
+    color: "#4b5563",
   } as React.CSSProperties,
-  testimonialText: {
-    margin: 0,
-    fontSize: 13,
-    color: "#111827",
-  } as React.CSSProperties,
-  testimonialMeta: {
-    margin: "8px 0 0",
-    fontSize: 12,
-    color: "#6b7280",
-  } as React.CSSProperties,
-}};
+};
 
-export default function LandingPage() {
-  const router = useRouter();
-  const [cart, setCart] = useState<PlanId[]>([]);
-
-  // Cargar carrito desde localStorage
-  useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-      const raw = window.localStorage.getItem("ds160_cart");
-      if (raw) {
-        const parsed = JSON.parse(raw) as string[];
-        const valid = parsed.filter((id) =>
-          ["llenado", "asesoria", "cita"].includes(id)
-        ) as PlanId[];
-        setCart(valid);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  // Guardar carrito
-  useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-      window.localStorage.setItem("ds160_cart", JSON.stringify(cart));
-    } catch {
-      /* ignore */
-    }
-  }, [cart]);
-
-  const total = useMemo(
-    () =>
-      cart.reduce((acc, id) => {
-        const plan = PLANS.find((p) => p.id === id);
-        return acc + (plan?.price ?? 0);
-      }, 0),
-    [cart]
-  );
-
-  function handleAdd(id: PlanId) {
-    setCart((prev) => {
-      if (prev.includes(id)) return prev;
-      return [...prev, id];
-    });
-  }
-
-  function handleRemove(id: PlanId) {
-    setCart((prev) => prev.filter((x) => x !== id));
-  }
-
-  function goToCheckout() {
-    if (!cart.length) return;
-    router.push("/checkout");
-  }
-
-  function quickBuy(id: PlanId) {
-    try {
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("ds160_cart", JSON.stringify([id]));
-      }
-    } catch {
-      /* ignore */
-    }
-    router.push(`/checkout?plans=${id}`);
-  }
-
-  const cartLabel =
-    cart.length === 0
-      ? "No has agregado servicios todavía."
-      : cart
-          .map((id) => {
-            const plan = PLANS.find((p) => p.id === id);
-            return plan ? `${plan.title} — $${plan.price} USD` : id;
-          })
-          .join(" · ");
-
+export default function Page() {
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      {/* Tu selección */}
-      <section style={styles.sectionCard}>
-        <h2 style={styles.h2}>Tu selección</h2>
-        <p style={styles.pMuted}>
-          Revisa los servicios que vas a contratar antes de ir al checkout.
+    <div style={styles.wrapper}>
+      
+      {/* ===================== HERO ===================== */}
+      <section style={styles.card}>
+        <h1 style={styles.heroTitle}>
+          Acompañamiento en español para tu visa de EE.UU.
+        </h1>
+        <p style={styles.heroSubtitle}>
+          Te guiamos paso a paso para llenar el DS-160 correctamente,
+          evitar errores comunes y preparar tu cita con confianza.
+          *No somos la embajada, somos una plataforma de apoyo.*
         </p>
 
-        <div style={styles.cartBar}>
-          <div style={styles.cartLeft}>
-            <span style={styles.cartItems}>{cartLabel}</span>
-            <span style={{ fontSize: 12, color: "#4b5563" }}>
-              Total:{" "}
-              <b>
-                ${total} USD
-              </b>
-            </span>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            {cart.length > 0 && (
-              <button
-                type="button"
-                style={styles.btnPrimary}
-                onClick={goToCheckout}
-              >
-                Ir a Checkout
-              </button>
-            )}
-            {cart.length > 0 && (
-              <button
-                type="button"
-                style={styles.btnGhost}
-                onClick={() => setCart([])}
-              >
-                Vaciar
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Hero explicativo */}
-      <section style={styles.sectionCard}>
-        <div style={styles.heroRow}>
-          <div>
-            <h2 style={styles.h2}>Evita errores críticos en tu DS-160 y gana confianza</h2>
-            <p style={styles.pMuted}>
-              Respondes en español, sin tecnicismos ni complicaciones. Nosotros transformamos tus respuestas
-              en un DS-160 limpio, coherente y listo para enviar, y te acompañamos con la cita y la entrevista.
-            </p>
-          </div>
-
-          <div style={styles.heroButtonsRow}>
-            <button
-              type="button"
-              style={styles.btnPrimary}
-              onClick={() => {
-                handleAdd("llenado");
-                goToCheckout();
-              }}
-            >
-              Comenzar ahora
-            </button>
-            <button
-              type="button"
-              style={styles.btnOutline}
-              onClick={() => router.push("/wizard")}
-            >
-              Ver ejemplo del asistente
-            </button>
-          </div>
-
-          <p
+        <div style={styles.heroButtonsRow}>
+          <Link
+            href="/wizard?plan=ds160"
             style={{
-              margin: "4px 0 0",
-              fontSize: 11,
-              color: "#6b7280",
+              padding: "10px 16px",
+              background: "#2563eb",
+              color: "white",
+              borderRadius: 10,
+              fontSize: 14,
             }}
           >
-            No somos el sitio oficial de la Embajada. Usamos tu información
-            únicamente para ayudarte a completar el formulario.
-          </p>
+            Empezar llenado asistido
+          </Link>
+
+          <Link
+            href="/checkout?plan=asesoria"
+            style={{
+              padding: "10px 16px",
+              background: "#f3f4f6",
+              color: "#111827",
+              borderRadius: 10,
+              fontSize: 14,
+            }}
+          >
+            Asesoría previa a la entrevista
+          </Link>
         </div>
       </section>
 
-      {/* Cómo funciona */}
-      <section style={styles.sectionCard}>
+
+      {/* ===================== CÓMO FUNCIONA ===================== */}
+      <section style={styles.card}>
         <h2 style={styles.h2}>¿Cómo funciona?</h2>
-        <p style={styles.pMuted}>
-          En lugar de pelearte solo con el inglés del formulario, seguimos un proceso claro en tres pasos:
-        </p>
-        <ol style={styles.stepsList}>
-          <li>Eliges el plan que necesitas y realizas el pago.</li>
-          <li>Respondes nuestro asistente en español, paso a paso.</li>
-          <li>Trasladamos tus respuestas al DS-160 oficial y te guiamos con los siguientes pasos.</li>
-        </ol>
-      </section>
 
-      {/* Planes */}
-      <section style={styles.sectionCard}>
-        <h2 style={styles.h2}>Planes</h2>
-        <p style={styles.pMuted}>
-          Puedes contratar solo el llenado del DS-160 o complementar con
-          asesoría para tu entrevista y ayuda con la cita.
-        </p>
-
-        <div style={styles.plansGrid}>
-          {PLANS.map((plan) => {
-            const inCart = cart.includes(plan.id);
-            return (
-              <article key={plan.id} style={styles.planCard}>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    gap: 8,
-                  }}
-                >
-                  <div>
-                    <h3
-                      style={{
-                        margin: 0,
-                        fontSize: 16,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {plan.title}
-                    </h3>
-                    <p
-                      style={{
-                        margin: "4px 0 0",
-                        fontSize: 13,
-                        color: "#4b5563",
-                      }}
-                    >
-                      {plan.short}
-                    </p>
-                  </div>
-                  {plan.badge && <span style={styles.badge}>{plan.badge}</span>}
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginTop: 10,
-                  }}
-                >
-                  <div>
-                    <div style={styles.price}>${plan.price} USD</div>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 6,
-                      alignItems: "flex-end",
-                    }}
-                  >
-                    <div style={{ display: "flex", gap: 8 }}>
-                      {!inCart ? (
-                        <button
-                          type="button"
-                          style={styles.btnOutline}
-                          onClick={() => handleAdd(plan.id)}
-                        >
-                          Agregar
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          style={styles.btnGhost}
-                          onClick={() => handleRemove(plan.id)}
-                        >
-                          Quitar
-                        </button>
-                      )}
-
-                      <button
-                        type="button"
-                        style={styles.btnPrimary}
-                        onClick={() => quickBuy(plan.id)}
-                      >
-                        Comprar rápido
-                      </button>
-                    </div>
-                    <span
-                      style={{
-                        fontSize: 11,
-                        color: "#6b7280",
-                        textAlign: "right" as const,
-                      }}
-                    >
-                      Al pagar, revisamos los datos y te confirmamos por WhatsApp
-                      o correo.
-                    </span>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Errores comunes que ayudamos a evitar */}
-      <section style={styles.sectionCard}>
-        <h2 style={styles.h2}>Errores comunes que ayudamos a evitar</h2>
-        <p style={styles.pMuted}>
-          Muchos rechazos y demoras vienen de errores simples en el DS-160. Nuestro objetivo es ayudarte a evitarlos desde el inicio.
-        </p>
         <ul style={styles.bulletsList}>
-          <li>Fechas inconsistentes entre empleo, estudios y viajes.</li>
-          <li>Motivo de viaje poco claro o contradictorio.</li>
-          <li>Direcciones mal escritas o en formatos que el sistema no reconoce.</li>
-          <li>Información laboral que no coincide con lo que se dice en la entrevista.</li>
-          <li>Respuestas de seguridad mal interpretadas por no entender bien el inglés.</li>
+          <li>Llenas el formulario guiado en español paso a paso.</li>
+          <li>Validamos la coherencia entre tus datos y tu motivo de viaje.</li>
+          <li>Te damos tu resumen listo para registrar en el DS-160 oficial.</li>
+          <li>Puedes añadir asesoría para entrevista y toma de cita.</li>
         </ul>
       </section>
 
-      {/* Testimonios */}
-      <section style={styles.sectionCard}>
-        <h2 style={styles.h2}>Personas como tú ya han usado este acompañamiento</h2>
-        <p style={styles.pMuted}>
-          Estos son ejemplos de cómo este tipo de asistencia puede marcar la diferencia. Te ayudan a visualizar el resultado que buscamos contigo.
-        </p>
-        <div style={styles.testimonialsGrid}>
-          <article style={styles.testimonialCard}>
-            <p style={styles.testimonialText}>
-              “Tenía mucho miedo de equivocarme en el DS-160. Responder en español y que luego lo pasen al formato oficial me dio mucha tranquilidad.”
-            </p>
-            <p style={styles.testimonialMeta}>Andrea · 29 años · Quito</p>
-          </article>
-          <article style={styles.testimonialCard}>
-            <p style={styles.testimonialText}>
-              “Me di cuenta de varios detalles que estaba respondiendo mal, sobre todo en la parte laboral y de viajes. Sentí que llegué a la entrevista con una historia más ordenada.”
-            </p>
-            <p style={styles.testimonialMeta}>Carlos · 35 años · Guayaquil</p>
-          </article>
-          <article style={styles.testimonialCard}>
-            <p style={styles.testimonialText}>
-              “No es magia ni promesas de aprobación, pero sí una guía clara. Yo solo respondí lo que vivo en la realidad y me ayudaron a presentarlo bien.”
-            </p>
-            <p style={styles.testimonialMeta}>María · 32 años · Cuenca</p>
-          </article>
+
+      {/* ===================== ERRORES COMUNES ===================== */}
+      <section style={styles.card}>
+        <h2 style={styles.h2}>Errores comunes que evitamos</h2>
+
+        <ul style={styles.bulletsList}>
+          <li>Fechas inconsistentes entre viajes, estudios y trabajo.</li>
+          <li>Motivo del viaje mal explicado o incoherente.</li>
+          <li>Direcciones y datos personales con formato incorrecto.</li>
+          <li>Confusión con preguntas de seguridad en inglés.</li>
+        </ul>
+      </section>
+
+
+      {/* ===================== TESTIMONIOS ===================== */}
+      <section style={styles.card}>
+        <h2 style={styles.h2}>Personas que ya usamos este servicio</h2>
+
+        <div style={styles.testimonial}>
+          “No entendía nada del DS-160, pero con la guía pude llenarlo sin miedo.
+          En la entrevista me preguntaron justo lo que había practicado.”
+          <br />
+          <strong>— Andrea P. (Quito)</strong>
+        </div>
+
+        <div style={{ ...styles.testimonial, borderLeftColor: "#10b981" }}>
+          “Yo ya tenía el formulario listo, solo necesitaba ayuda para la cita.
+          Sin errores y me agendaron al día siguiente.”
+          <br />
+          <strong>— David R. (Guayaquil)</strong>
         </div>
       </section>
-    </div>
-  );
-}
 
+
+      {/* ===================== PLANES ===================== */}
+      <section style={styles.card}>
+        <h2 style={styles.h2}>Planes disponibles</h2>
+
+        <ul style={styles.bulletsList}>
+          <li>Llenado del DS-160 asistido</li>
+          <li>Asesoría para la entrevista</li>
+          <li>Agendamiento de cita (solo si ya tienes el DS-160 listo)</li>
+        </ul>
+
+        <div style={{ marginTop: 12 }}>
+          <Link
+            href="/checkout"
+            style={{
+              padding: "10px 16px",
+              background: "#2563eb",
+              color: "whi

@@ -425,7 +425,8 @@ export default function Page() {
                     width: 8,
                     height: 8,
                     borderRadius: 999,
-                    background: selectedVisa === "usa" ? "#2563eb" : "#059669",
+                    background:
+                      selectedVisa === "usa" ? "#2563eb" : "#059669",
                   }}
                 />
                 <span>
@@ -1038,7 +1039,7 @@ export default function Page() {
           )}
         </section>
 
-        {/* ===================== TESTIMONIOS (TURISMO, SIN ICONOS) ===================== */}
+        {/* ===================== TESTIMONIOS ===================== */}
         <section
           style={{
             background: "#ffffff",
@@ -1064,8 +1065,8 @@ export default function Page() {
               color: "#4b5563",
             }}
           >
-            Historias reales de personas que organizaron su información antes de
-            solicitar su visa de turismo.
+            Historias de personas que organizaron su información antes de
+            solicitar su visa de turismo a Estados Unidos o Europa.
           </p>
 
           <div
@@ -1075,7 +1076,7 @@ export default function Page() {
               gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
             }}
           >
-            {/* Testimonio 1 */}
+            {/* María */}
             <article
               style={{
                 borderRadius: 16,
@@ -1106,142 +1107,8 @@ export default function Page() {
                   }}
                 >
                   <img
-                    src="/images/testimonios/andrea-turismo.jpg"
-                    alt="Persona viajera con enfoque turístico"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                </div>
-                <div>
-                  <strong
-                    style={{
-                      display: "block",
-                      fontSize: 13,
-                    }}
-                  >
-                    Andrea M.
-                  </strong>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      color: "#6b7280",
-                    }}
-                  >
-                    Viaje de turismo a Estados Unidos
-                  </span>
-                </div>
-              </div>
-              <p style={{ margin: 0 }}>
-                “Quería viajar a conocer parques y ciudades, pero el formulario
-                me parecía muy complejo. Aquí pude responder en español y ver
-                todo organizado antes de enviarlo.”
-              </p>
-            </article>
-
-            {/* Testimonio 2 */}
-            <article
-              style={{
-                borderRadius: 16,
-                border: "1px solid #e5e7eb",
-                padding: 14,
-                background: "#f9fafb",
-                fontSize: 13,
-                color: "#4b5563",
-                display: "grid",
-                gap: 8,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <div
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    background: "#e5e7eb",
-                    flexShrink: 0,
-                  }}
-                >
-                  <img
-                    src="/images/testimonios/carlos-turismo.jpg"
-                    alt="Persona viajera con maleta"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      display: "block",
-                    }}
-                  />
-                </div>
-                <div>
-                  <strong
-                    style={{
-                      display: "block",
-                      fontSize: 13,
-                    }}
-                  >
-                    Carlos R.
-                  </strong>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      color: "#6b7280",
-                    }}
-                  >
-                    Turismo y compras en Miami
-                  </span>
-                </div>
-              </div>
-              <p style={{ margin: 0 }}>
-                “Me preocupaba mezclar mal las fechas de viajes anteriores. La
-                guía paso a paso me ayudó a ordenar todo y sentir que el
-                formulario tenía sentido.”
-              </p>
-            </article>
-
-            {/* Testimonio 3 */}
-            <article
-              style={{
-                borderRadius: 16,
-                border: "1px solid #e5e7eb",
-                padding: 14,
-                background: "#f9fafb",
-                fontSize: 13,
-                color: "#4b5563",
-                display: "grid",
-                gap: 8,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <div
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    background: "#e5e7eb",
-                    flexShrink: 0,
-                  }}
-                >
-                  <img
-                    src="/images/testimonios/maria-europa.jpg"
-                    alt="Persona turista en ciudad europea"
+                    src="/images/testimonios/maria.png"
+                    alt="María, viajera de turismo"
                     style={{
                       width: "100%",
                       height: "100%",
@@ -1265,14 +1132,148 @@ export default function Page() {
                       color: "#6b7280",
                     }}
                   >
-                    Tour turístico por varias ciudades de Europa
+                    Viaje turístico a Estados Unidos
                   </span>
                 </div>
               </div>
               <p style={{ margin: 0 }}>
-                “Para la visa Schengen no sabía por dónde empezar con tantos
-                requisitos. Tener un checklist claro y un resumen del formulario
-                me dio mucha tranquilidad.”
+                “Quería hacer un viaje de turismo pero el formulario me parecía
+                demasiado largo. Aquí pude responder todo en español y ver mi
+                información ordenada antes de pasarla al DS-160.”
+              </p>
+            </article>
+
+            {/* Mario */}
+            <article
+              style={{
+                borderRadius: 16,
+                border: "1px solid #e5e7eb",
+                padding: 14,
+                background: "#f9fafb",
+                fontSize: 13,
+                color: "#4b5563",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "#e5e7eb",
+                    flexShrink: 0,
+                  }}
+                >
+                  <img
+                    src="/images/testimonios/mario.png"
+                    alt="Mario, viajero con maleta de mano"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </div>
+                <div>
+                  <strong
+                    style={{
+                      display: "block",
+                      fontSize: 13,
+                    }}
+                  >
+                    Mario R.
+                  </strong>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: "#6b7280",
+                    }}
+                  >
+                    Turismo y compras en Miami
+                  </span>
+                </div>
+              </div>
+              <p style={{ margin: 0 }}>
+                “Tenía miedo de mezclar fechas y viajes anteriores. El
+                acompañamiento me ayudó a revisar todo con calma y sentir que el
+                formulario contaba bien mi historia.”
+              </p>
+            </article>
+
+            {/* Andrea */}
+            <article
+              style={{
+                borderRadius: 16,
+                border: "1px solid #e5e7eb",
+                padding: 14,
+                background: "#f9fafb",
+                fontSize: 13,
+                color: "#4b5563",
+                display: "grid",
+                gap: 8,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    width: 42,
+                    height: 42,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    background: "#e5e7eb",
+                    flexShrink: 0,
+                  }}
+                >
+                  <img
+                    src="/images/testimonios/andrea.png"
+                    alt="Andrea, viajera por Europa"
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      display: "block",
+                    }}
+                  />
+                </div>
+                <div>
+                  <strong
+                    style={{
+                      display: "block",
+                      fontSize: 13,
+                    }}
+                  >
+                    Andrea M.
+                  </strong>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: "#6b7280",
+                    }}
+                  >
+                    Tour turístico por ciudades de Europa
+                  </span>
+                </div>
+              </div>
+              <p style={{ margin: 0 }}>
+                “Para la visa Schengen veía demasiados requisitos diferentes. Con
+                la lista y el resumen que armamos, por fin sentí que mi carpeta
+                tenía un orden lógico.”
               </p>
             </article>
           </div>

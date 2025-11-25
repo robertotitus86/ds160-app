@@ -3,8 +3,8 @@ import React from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DS-160 Asistido",
-  description: "Asistente en español para completar tu formulario DS-160 con apoyo guiado.",
+  title: "Asistente de Visa",
+  description: "Plataforma privada de acompañamiento en español para organizar trámites de visa de Estados Unidos y Europa.",
 };
 
 const styles = {
@@ -118,9 +118,9 @@ export default function RootLayout({
               <div style={styles.brand}>
                 <div style={styles.brandDot} />
                 <div style={styles.brandText}>
-                  <span style={styles.brandTitle}>DS-160 Asistido</span>
+                  <span style={styles.brandTitle}>Asistente de Visa</span>
                   <span style={styles.brandSub}>
-                    Plataforma privada de acompañamiento · No es el sitio oficial
+                    Plataforma privada de acompañamiento para visas de EE.UU. y Europa · No es el sitio oficial
                   </span>
                 </div>
               </div>
@@ -144,7 +144,7 @@ export default function RootLayout({
 
           <footer style={styles.footer}>
             <div style={styles.footerInner}>
-              <span>© {new Date().getFullYear()} · DS-160 Asistido</span>
+              <span>© {new Date().getFullYear()} · Asistente de Visa</span>
               <span>No es asesoría legal. Verifica siempre en CEAC.</span>
             </div>
           </footer>

@@ -1,459 +1,746 @@
 "use client";
 
-import { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-type Step = 1 | 2 | 3;
+type SchengenStepKey = "perfil" | "viaje" | "documentos" | "resumen";
 
-export default function SchengenWizardPage() {
-  const [step, setStep] = useState<Step>(1);
+type SchengenPlanId =
+  | "schengen_requisitos"
+  | "schengen_llenado"
+  | "schengen_completo";
+
+type SchengenFormState = {
+  // Perfil
+  nombreCompleto: string;
+  nacionalidad: string;
+  ciudadResidencia: string;
+  telefono: string;
+  email: string;
+
+  // Viaje
+  paisDestino: string;
+  motivoViaje: string;
+  fechaSalida: string;
+  fechaRegreso: string;
+  diasEstancia: string;
+  tieneInvitante: string; // Sí/No
+  quienPagaViaje: string; // Yo / Patrocinador
+
+  // Documentos
+  tienePasaporteVigente: string;
+  tieneSeguro: string;
+  tieneReservasVuelo: string;
+  tieneReservasAlojamiento: string;
+  comentariosAdicionales: string;
+};
+
+const STORAGE_KEY = "schengen_form_v1";
+
+const initialSchengenState: SchengenFormState = {
+  nombreCompleto: "",
+  nacionalidad: "",
+  ciudadResidencia: "",
+  telefono: "",
+  email: "",
+  paisDestino: "",
+  motivoViaje: "",
+  fechaSalida: "",
+  fechaRegreso: "",
+  diasEstancia: "",
+  tieneInvitante: "",
+  quienPagaViaje: "",
+  tienePasaporteVigente: "",
+  tieneSeguro: "",
+  tieneReservasVuelo: "",
+  tieneReservasAlojamiento: "",
+  comentariosAdicionales: "",
+};
+
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    padding: "16px 12px 32px",
+  },
+  shell: {
+    width: "100%",
+    maxWidth: 1120,
+    display: "grid",
+    gap: 16,
+  },
+  header: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+  },
+  h1: {
+    margin: 0,
+    fontSize: 22,
+    fontWeight: 700,
+  },
+  pMuted: {
+    margin: 0,
+    fontSize: 13,
+    color: "#4b5563",
+  },
+  layout: {
+    display: "grid",
+    gap: 16,
+    gridTemplateColumns: "minmax(0, 260px) minmax(0, 1fr)",
+  },
+  sidebar: {
+    background: "#ffffff",
+    borderRadius: 16,
+    border: "1px solid #e5e7eb",
+    padding: 16,
+  },
+  stepsList: {
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    display: "grid",
+    gap: 6,
+  },
+  stepItem: {
+    padding: "8px 10px",
+    borderRadius: 999,
+    fontSize: 13,
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  stepBullet: {
+    width: 18,
+    height: 18,
+    borderRadius: 999,
+    border: "1px solid #d1d5db",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 11,
+  },
+  stepActive: {
+    background: "#eff6ff",
+    color: "#1d4ed8",
+  },
+  card: {
+    background: "#ffffff",
+    borderRadius: 16,
+    border: "1px solid #e5e7eb",
+    padding: 16,
+  },
+  fieldGroup: {
+    display: "grid",
+    gap: 10,
+  },
+  field: {
+    display: "grid",
+    gap: 4,
+  },
+  labelRow: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    gap: 8,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: 500,
+  },
+  input: {
+    width: "100%",
+    maxWidth: 420,
+    padding: "8px 10px",
+    borderRadius: 10,
+    border: "1px solid #cbd5e1",
+    background: "#f9fafb",
+    color: "#111827",
+    fontSize: 13,
+  },
+  textarea: {
+    width: "100%",
+    maxWidth: 700,
+    minHeight: 80,
+    padding: "8px 10px",
+    borderRadius: 10,
+    border: "1px solid #cbd5e1",
+    background: "#f9fafb",
+    color: "#111827",
+    fontSize: 13,
+  },
+  help: {
+    fontSize: 12,
+    opacity: 0.75,
+    marginTop: 2,
+  },
+  stepIntro: {
+    marginTop: 4,
+    marginBottom: 12,
+    fontSize: 13,
+    color: "#4b5563",
+  },
+  actions: {
+    display: "flex",
+    gap: 10,
+    flexWrap: "wrap",
+  },
+  btn: {
+    background: "#2563eb",
+    color: "#ffffff",
+    border: "none",
+    borderRadius: 10,
+    padding: "9px 14px",
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: 500,
+  },
+  ghost: {
+    background: "#e5e7eb",
+    color: "#111827",
+    border: "none",
+    borderRadius: 10,
+    padding: "9px 14px",
+    cursor: "pointer",
+    fontSize: 14,
+    fontWeight: 500,
+  },
+};
+
+const STEP_INTROS: Record<SchengenStepKey, string> = {
+  perfil:
+    "Empezamos por lo básico: tus datos y cómo contactarte, además de tu nacionalidad y ciudad de residencia.",
+  viaje:
+    "Luego aclaramos a dónde vas, por qué viajas, cuánto tiempo y quién cubre los gastos.",
+  documentos:
+    "Aquí revisamos qué documentos clave ya tienes y cuáles faltan para tu checklist.",
+  resumen:
+    "Finalmente, verás un resumen que puedes usar como guía al preparar tu solicitud.",
+};
+
+const STEPS: { key: SchengenStepKey; title: string }[] = [
+  { key: "perfil", title: "1. Perfil" },
+  { key: "viaje", title: "2. Viaje" },
+  { key: "documentos", title: "3. Documentos" },
+  { key: "resumen", title: "4. Resumen" },
+];
+
+function loadInitialState(): SchengenFormState {
+  if (typeof window === "undefined") return initialSchengenState;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return initialSchengenState;
+    const parsed = JSON.parse(raw) as SchengenFormState;
+    return { ...initialSchengenState, ...parsed };
+  } catch {
+    return initialSchengenState;
+  }
+}
+
+function SchengenWizardInner() {
+  const [step, setStep] = useState<SchengenStepKey>("perfil");
+  const [data, setData] = useState<SchengenFormState>(() => loadInitialState());
+  const [planParam, setPlanParam] = useState<SchengenPlanId | "">("");
+
+  // Leer ?plan=... desde la URL en cliente (sin useSearchParams)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const search = new URLSearchParams(window.location.search);
+      const plan = search.get("plan") as SchengenPlanId | null;
+      if (
+        plan === "schengen_requisitos" ||
+        plan === "schengen_llenado" ||
+        plan === "schengen_completo"
+      ) {
+        setPlanParam(plan);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Persistir en localStorage
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {
+      // ignore
+    }
+  }, [data]);
+
+  function update<K extends keyof SchengenFormState>(
+    key: K,
+    value: SchengenFormState[K]
+  ) {
+    setData((prev) => ({ ...prev, [key]: value }));
+  }
+
+  const currentIndex = useMemo(
+    () => STEPS.findIndex((s) => s.key === step),
+    [step]
+  );
+
+  function goNext() {
+    const idx = STEPS.findIndex((s) => s.key === step);
+    if (idx < STEPS.length - 1) {
+      setStep(STEPS[idx + 1].key);
+    }
+  }
+
+  function goPrev() {
+    const idx = STEPS.findIndex((s) => s.key === step);
+    if (idx > 0) {
+      setStep(STEPS[idx - 1].key);
+    }
+  }
 
   return (
-    <main
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        padding: "16px 12px 32px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 880,
-          display: "grid",
-          gap: 16,
-        }}
-      >
-        <section
-          style={{
-            background: "#ffffff",
-            borderRadius: 20,
-            border: "1px solid #e5e7eb",
-            padding: 20,
-            boxShadow: "0 8px 18px rgba(15, 23, 42, 0.04)",
-          }}
-        >
-          <h1
-            style={{
-              margin: "0 0 6px",
-              fontSize: 22,
-              fontWeight: 700,
-              color: "#111827",
-            }}
-          >
-            Asistente para preparar tu visa Schengen
-          </h1>
-          <p
-            style={{
-              margin: "0 0 10px",
-              fontSize: 13,
-              color: "#4b5563",
-            }}
-          >
-            Responde unas preguntas en español y obtén una guía más clara para
-            organizar tus documentos y preparar tu formulario.
+    <div style={styles.page}>
+      <div style={styles.shell}>
+        <header style={styles.header}>
+          <h1 style={styles.h1}>Asistente para visa Schengen</h1>
+          <p style={styles.pMuted}>
+            Esta guía no es el formulario oficial, sino una forma de ordenar tu
+            información en español antes de completar la solicitud del consulado.
           </p>
-          <p
-            style={{
-              margin: 0,
-              fontSize: 11,
-              color: "#6b7280",
-            }}
-          >
-            No es asesoría legal ni reemplaza la revisión del consulado. Revisa siempre
-            los requisitos oficiales de la embajada o consulado correspondiente.
-          </p>
-        </section>
+        </header>
 
-        <section
-          style={{
-            background: "#ffffff",
-            borderRadius: 20,
-            border: "1px solid #e5e7eb",
-            padding: 20,
-            boxShadow: "0 8px 18px rgba(15, 23, 42, 0.04)",
-          }}
-        >
-          {/* Indicador simple de pasos */}
-          <div
-            style={{
-              display: "flex",
-              gap: 8,
-              marginBottom: 16,
-            }}
-          >
-            {[1, 2, 3].map((s) => (
-              <div
-                key={s}
-                style={{
-                  flex: 1,
-                  height: 4,
-                  borderRadius: 999,
-                  background:
-                    s <= step ? "#0f766e" : "#e5e7eb",
-                }}
-              />
-            ))}
-          </div>
-
-          {step === 1 && (
-            <div
-              style={{
-                display: "grid",
-                gap: 12,
-              }}
-            >
-              <h2
-                style={{
-                  margin: 0,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: "#111827",
-                }}
-              >
-                1. Tipo de viaje y país principal
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 13,
-                  color: "#4b5563",
-                }}
-              >
-                Cuéntanos de forma general qué tipo de viaje harás para orientar mejor
-                los documentos que vas a necesitar.
+        <div style={styles.layout}>
+          <aside style={styles.sidebar}>
+            <ul style={styles.stepsList}>
+              {STEPS.map((s, index) => {
+                const isActive = s.key === step;
+                return (
+                  <li
+                    key={s.key}
+                    style={{
+                      ...styles.stepItem,
+                      ...(isActive ? styles.stepActive : {}),
+                    }}
+                  >
+                    <span style={styles.stepBullet}>{index + 1}</span>
+                    <span>{s.title}</span>
+                  </li>
+                );
+              })}
+            </ul>
+            {planParam && (
+              <p style={{ ...styles.pMuted, marginTop: 12 }}>
+                Plan seleccionado: <b>{planParam}</b>
               </p>
+            )}
+          </aside>
 
-              <label
-                style={{
-                  fontSize: 12,
-                  color: "#374151",
-                  display: "grid",
-                  gap: 4,
-                }}
-              >
-                Tipo de viaje (turismo, visita familiar, estudios cortos, etc.)
-                <textarea
-                  placeholder="Ejemplo: turismo de 15 días, visita a un familiar, viaje combinado por varias ciudades..."
-                  style={{
-                    marginTop: 2,
-                    minHeight: 70,
-                    padding: 8,
-                    fontSize: 13,
-                    borderRadius: 8,
-                    border: "1px solid #d1d5db",
-                    resize: "vertical",
-                  }}
-                />
-              </label>
+          <section style={styles.card}>
+            <h2 style={{ marginTop: 0 }}>
+              {STEPS.find((s) => s.key === step)?.title}
+            </h2>
+            <p style={styles.stepIntro}>{STEP_INTROS[step]}</p>
 
-              <label
-                style={{
-                  fontSize: 12,
-                  color: "#374151",
-                  display: "grid",
-                  gap: 4,
-                }}
-              >
-                País principal de estancia dentro del espacio Schengen
-                <input
-                  placeholder="Ejemplo: España, Francia, Italia..."
-                  style={{
-                    marginTop: 2,
-                    padding: 8,
-                    fontSize: 13,
-                    borderRadius: 8,
-                    border: "1px solid #d1d5db",
-                  }}
-                />
-              </label>
+            {step === "perfil" && (
+              <div style={styles.fieldGroup}>
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>Nombre completo</label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    value={data.nombreCompleto}
+                    onChange={(e) =>
+                      update("nombreCompleto", e.target.value)
+                    }
+                  />
+                </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  marginTop: 8,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setStep(2)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 999,
-                    border: "none",
-                    background: "#0f766e",
-                    color: "#ffffff",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  Continuar
-                </button>
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>Nacionalidad</label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    value={data.nacionalidad}
+                    onChange={(e) =>
+                      update("nacionalidad", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>Ciudad de residencia</label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    value={data.ciudadResidencia}
+                    onChange={(e) =>
+                      update("ciudadResidencia", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>Teléfono</label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    value={data.telefono}
+                    onChange={(e) => update("telefono", e.target.value)}
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>Correo electrónico</label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    value={data.email}
+                    onChange={(e) => update("email", e.target.value)}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {step === 2 && (
-            <div
-              style={{
-                display: "grid",
-                gap: 12,
-              }}
-            >
-              <h2
-                style={{
-                  margin: 0,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: "#111827",
-                }}
-              >
-                2. Fechas, alojamiento y recursos económicos
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 13,
-                  color: "#4b5563",
-                }}
-              >
-                Esta información suele ser clave para demostrar que tu viaje es claro,
-                acotado en el tiempo y económicamente sustentado.
-              </p>
+            {step === "viaje" && (
+              <div style={styles.fieldGroup}>
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      País de destino principal
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    value={data.paisDestino}
+                    onChange={(e) =>
+                      update("paisDestino", e.target.value)
+                    }
+                  />
+                  <p style={styles.help}>
+                    Por ejemplo: España, Francia, Alemania. Es el país donde
+                    pasarás más tiempo.
+                  </p>
+                </div>
 
-              <label
-                style={{
-                  fontSize: 12,
-                  color: "#374151",
-                  display: "grid",
-                  gap: 4,
-                }}
-              >
-                Fechas aproximadas de viaje
-                <textarea
-                  placeholder="Ejemplo: del 10 al 25 de julio, fechas flexibles dentro de la segunda quincena de agosto..."
-                  style={{
-                    marginTop: 2,
-                    minHeight: 60,
-                    padding: 8,
-                    fontSize: 13,
-                    borderRadius: 8,
-                    border: "1px solid #d1d5db",
-                    resize: "vertical",
-                  }}
-                />
-              </label>
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      Motivo principal del viaje
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    placeholder="Turismo, visita familiar, negocios, estudios cortos, etc."
+                    value={data.motivoViaje}
+                    onChange={(e) =>
+                      update("motivoViaje", e.target.value)
+                    }
+                  />
+                </div>
 
-              <label
-                style={{
-                  fontSize: 12,
-                  color: "#374151",
-                  display: "grid",
-                  gap: 4,
-                }}
-              >
-                Alojamiento previsto (hotel, familiar, Airbnb, etc.)
-                <textarea
-                  placeholder="Ejemplo: hotel reservado en Madrid, invitación de familiar en Barcelona..."
-                  style={{
-                    marginTop: 2,
-                    minHeight: 60,
-                    padding: 8,
-                    fontSize: 13,
-                    borderRadius: 8,
-                    border: "1px solid #d1d5db",
-                    resize: "vertical",
-                  }}
-                />
-              </label>
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      Fecha estimada de salida
+                    </label>
+                  </div>
+                  <input
+                    type="date"
+                    style={styles.input}
+                    value={data.fechaSalida}
+                    onChange={(e) =>
+                      update("fechaSalida", e.target.value)
+                    }
+                  />
+                </div>
 
-              <label
-                style={{
-                  fontSize: 12,
-                  color: "#374151",
-                  display: "grid",
-                  gap: 4,
-                }}
-              >
-                Cómo piensas demostrar recursos económicos
-                <textarea
-                  placeholder="Ejemplo: estados de cuenta, certificado laboral, ahorro personal, patrocinio de familiar..."
-                  style={{
-                    marginTop: 2,
-                    minHeight: 70,
-                    padding: 8,
-                    fontSize: 13,
-                    borderRadius: 8,
-                    border: "1px solid #d1d5db",
-                    resize: "vertical",
-                  }}
-                />
-              </label>
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      Fecha estimada de regreso
+                    </label>
+                  </div>
+                  <input
+                    type="date"
+                    style={styles.input}
+                    value={data.fechaRegreso}
+                    onChange={(e) =>
+                      update("fechaRegreso", e.target.value)
+                    }
+                  />
+                </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: 8,
-                  gap: 8,
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 999,
-                    border: "1px solid #d1d5db",
-                    background: "#ffffff",
-                    color: "#374151",
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                  }}
-                >
-                  Volver
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 999,
-                    border: "none",
-                    background: "#0f766e",
-                    color: "#ffffff",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  Continuar
-                </button>
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      Días aproximados de estancia
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    value={data.diasEstancia}
+                    onChange={(e) =>
+                      update("diasEstancia", e.target.value)
+                    }
+                  />
+                  <p style={styles.help}>
+                    Ayuda a estimar medios económicos mínimos según lo que pide
+                    el consulado (por ejemplo, cierto monto por día).
+                  </p>
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      ¿Tienes invitante en el país de destino?
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    placeholder="Sí / No. Si la respuesta es sí, indica si es familiar, amigo, empresa, etc."
+                    value={data.tieneInvitante}
+                    onChange={(e) =>
+                      update("tieneInvitante", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      ¿Quién cubre los gastos del viaje?
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    placeholder="Yo mismo, mis padres, patrocinador, empresa, etc."
+                    value={data.quienPagaViaje}
+                    onChange={(e) =>
+                      update("quienPagaViaje", e.target.value)
+                    }
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {step === 3 && (
-            <div
-              style={{
-                display: "grid",
-                gap: 12,
-              }}
-            >
-              <h2
-                style={{
-                  margin: 0,
-                  fontSize: 16,
-                  fontWeight: 600,
-                  color: "#111827",
-                }}
-              >
-                3. Siguiente paso: checklist y formulario
-              </h2>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 13,
-                  color: "#4b5563",
-                }}
-              >
-                Con la información anterior, el siguiente paso es preparar un checklist
-                de documentos y un resumen claro para usar al llenar tu formulario
-                Schengen.
-              </p>
+            {step === "documentos" && (
+              <div style={styles.fieldGroup}>
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      ¿Tienes pasaporte vigente que cumpla los requisitos?
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    placeholder="Sí / No / No estoy seguro"
+                    value={data.tienePasaporteVigente}
+                    onChange={(e) =>
+                      update("tienePasaporteVigente", e.target.value)
+                    }
+                  />
+                  <p style={styles.help}>
+                    Validez mínima, páginas en blanco, antigüedad máxima, etc.,
+                    según lo que suele pedir el consulado.
+                  </p>
+                </div>
 
-              <div
-                style={{
-                  borderRadius: 12,
-                  border: "1px solid #e5e7eb",
-                  background: "#f9fafb",
-                  padding: 12,
-                  fontSize: 12,
-                  color: "#374151",
-                  display: "grid",
-                  gap: 6,
-                }}
-              >
-                <p
-                  style={{
-                    margin: 0,
-                    fontWeight: 600,
-                  }}
-                >
-                  ¿Qué recibirás si continúas con el acompañamiento?
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      ¿Ya tienes seguro médico de viaje?
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    placeholder="Sí / No"
+                    value={data.tieneSeguro}
+                    onChange={(e) =>
+                      update("tieneSeguro", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      ¿Tienes reservas de vuelo?
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    placeholder="Sí / No / Aún no reservo"
+                    value={data.tieneReservasVuelo}
+                    onChange={(e) =>
+                      update("tieneReservasVuelo", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      ¿Tienes reservas de alojamiento?
+                    </label>
+                  </div>
+                  <input
+                    style={styles.input}
+                    placeholder="Hotel, Airbnb, casa de familiar, etc."
+                    value={data.tieneReservasAlojamiento}
+                    onChange={(e) =>
+                      update("tieneReservasAlojamiento", e.target.value)
+                    }
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <div style={styles.labelRow}>
+                    <label style={styles.label}>
+                      Comentarios adicionales sobre tu situación
+                    </label>
+                  </div>
+                  <textarea
+                    style={styles.textarea}
+                    value={data.comentariosAdicionales}
+                    onChange={(e) =>
+                      update("comentariosAdicionales", e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+            )}
+
+            {step === "resumen" && (
+              <div style={styles.fieldGroup}>
+                <p style={styles.pMuted}>
+                  Este es un resumen de lo que has indicado. Puedes usarlo como
+                  guía al revisar los requisitos oficiales y preparar tu
+                  solicitud.
                 </p>
-                <ul
+
+                <div
                   style={{
-                    margin: 0,
-                    paddingLeft: 18,
+                    background: "#f9fafb",
+                    borderRadius: 10,
+                    padding: 12,
+                    border: "1px solid #e5e7eb",
+                    fontSize: 13,
                     display: "grid",
-                    gap: 2,
+                    gap: 6,
                   }}
                 >
-                  <li>Lista orientativa de documentos habituales según tu tipo de viaje.</li>
-                  <li>Resumen estructurado de tu caso para completar el formulario.</li>
-                  <li>Orden sugerido para presentar tu información en la carpeta.</li>
-                </ul>
+                  <div>
+                    <strong>Perfil</strong>
+                    <ul
+                      style={{
+                        margin: "4px 0 0",
+                        paddingLeft: 18,
+                        listStyle: "disc",
+                      }}
+                    >
+                      <li>Nombre: {data.nombreCompleto || "—"}</li>
+                      <li>Nacionalidad: {data.nacionalidad || "—"}</li>
+                      <li>
+                        Ciudad de residencia: {data.ciudadResidencia || "—"}
+                      </li>
+                      <li>Teléfono: {data.telefono || "—"}</li>
+                      <li>Email: {data.email || "—"}</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <strong>Viaje</strong>
+                    <ul
+                      style={{
+                        margin: "4px 0 0",
+                        paddingLeft: 18,
+                        listStyle: "disc",
+                      }}
+                    >
+                      <li>País destino: {data.paisDestino || "—"}</li>
+                      <li>Motivo: {data.motivoViaje || "—"}</li>
+                      <li>
+                        Salida: {data.fechaSalida || "—"} · Regreso:{" "}
+                        {data.fechaRegreso || "—"}
+                      </li>
+                      <li>Días de estancia: {data.diasEstancia || "—"}</li>
+                      <li>Invitante: {data.tieneInvitante || "—"}</li>
+                      <li>Quién paga: {data.quienPagaViaje || "—"}</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <strong>Documentos</strong>
+                    <ul
+                      style={{
+                        margin: "4px 0 0",
+                        paddingLeft: 18,
+                        listStyle: "disc",
+                      }}
+                    >
+                      <li>
+                        Pasaporte vigente: {data.tienePasaporteVigente || "—"}
+                      </li>
+                      <li>
+                        Seguro médico de viaje: {data.tieneSeguro || "—"}
+                      </li>
+                      <li>
+                        Reservas de vuelo: {data.tieneReservasVuelo || "—"}
+                      </li>
+                      <li>
+                        Reservas de alojamiento:{" "}
+                        {data.tieneReservasAlojamiento || "—"}
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <strong>Comentarios</strong>
+                    <p style={{ margin: "4px 0 0" }}>
+                      {data.comentariosAdicionales || "—"}
+                    </p>
+                  </div>
+                </div>
+
+                <p style={styles.pMuted}>
+                  Recuerda que esto no reemplaza los requisitos oficiales ni
+                  garantiza una aprobación. Sirve como apoyo para que prepares
+                  mejor tu caso.
+                </p>
               </div>
+            )}
 
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: 11,
-                  color: "#6b7280",
-                }}
-              >
-                Nota: Las decisiones sobre visas dependen siempre de cada consulado.
-                Este servicio te ayuda a presentar tu información de forma más clara,
-                pero no garantiza resultados.
-              </p>
-
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginTop: 8,
-                  gap: 8,
-                }}
-              >
+            <div style={{ marginTop: 16 }}>
+              <div style={styles.actions}>
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 999,
-                    border: "1px solid #d1d5db",
-                    background: "#ffffff",
-                    color: "#374151",
-                    fontSize: 13,
-                    fontWeight: 500,
-                    cursor: "pointer",
-                  }}
+                  style={styles.ghost}
+                  onClick={goPrev}
+                  disabled={currentIndex === 0}
                 >
-                  Volver
+                  Anterior
                 </button>
-                <button
-                  type="button"
-                  style={{
-                    padding: "8px 16px",
-                    borderRadius: 999,
-                    border: "none",
-                    background: "#0f766e",
-                    color: "#ffffff",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  Continuar con el acompañamiento
-                </button>
+                {step !== "resumen" && (
+                  <button
+                    type="button"
+                    style={styles.btn}
+                    onClick={goNext}
+                  >
+                    Siguiente
+                  </button>
+                )}
               </div>
             </div>
-          )}
-        </section>
+          </section>
+        </div>
       </div>
-    </main>
+    </div>
   );
+}
+
+export default function SchengenWizardPage() {
+  return <SchengenWizardInner />;
 }

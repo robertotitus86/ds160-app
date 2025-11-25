@@ -41,6 +41,7 @@ export default function Page() {
               gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr)",
             }}
           >
+            {/* Columna izquierda: mensaje principal */}
             <div>
               {/* Badge superior */}
               <div
@@ -128,6 +129,7 @@ export default function Page() {
                   gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
                 }}
               >
+                {/* Botón Estados Unidos */}
                 <button
                   type="button"
                   onClick={() => setSelectedVisa("usa")}
@@ -190,6 +192,7 @@ export default function Page() {
                   </span>
                 </button>
 
+                {/* Botón Schengen */}
                 <button
                   type="button"
                   onClick={() => setSelectedVisa("schengen")}
@@ -255,7 +258,7 @@ export default function Page() {
               </div>
             </div>
 
-            {/* mini tarjetas de proceso general */}
+            {/* Columna derecha: mini proceso visual */}
             <div
               style={{
                 display: "grid",
@@ -453,6 +456,7 @@ export default function Page() {
             </span>
           </div>
 
+          {/* Planes USA */}
           {selectedVisa === "usa" && (
             <div
               style={{
@@ -753,6 +757,7 @@ export default function Page() {
             </div>
           )}
 
+          {/* Planes Schengen */}
           {selectedVisa === "schengen" && (
             <div
               style={{

@@ -1112,7 +1112,7 @@ export default function Page() {
                   }}
                 >
                   <img
-                    src="/images/testimonios/maria.png"
+                    src="/images/testimonios/maria.jpg"
                     alt="María, viajera de turismo"
                     style={{
                       width: "100%",
@@ -1179,7 +1179,7 @@ export default function Page() {
                   }}
                 >
                   <img
-                    src="/images/testimonios/mario.png"
+                    src="/images/testimonios/mario.jpg"
                     alt="Mario, viajero con maleta de mano"
                     style={{
                       width: "100%",
@@ -1246,7 +1246,7 @@ export default function Page() {
                   }}
                 >
                   <img
-                    src="/images/testimonios/andrea.png"
+                    src="/images/testimonios/andrea.jpg"
                     alt="Andrea, viajera por Europa"
                     style={{
                       width: "100%",
@@ -1287,3 +1287,4 @@ export default function Page() {
     </main>
   );
 }
+
